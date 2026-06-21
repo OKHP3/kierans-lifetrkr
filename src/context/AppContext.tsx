@@ -27,7 +27,7 @@ const defaultSettings: UserSettings = {
   theme: 'system',
 }
 
-const defaultTemplates: RoutineTemplate[] = (DAYS_OF_WEEK as string[]).map(day => ({
+const defaultTemplates: RoutineTemplate[] = ([...DAYS_OF_WEEK] as string[]).map(day => ({
   id: day.toLowerCase(),
   dayOfWeek: day as DayOfWeek,
   name: `${day} Rituals`,
