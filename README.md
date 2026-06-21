@@ -176,6 +176,20 @@ See `docs/HANDOFF.md` for the complete transfer checklist.
 
 ---
 
+## Origin
+
+Started on Father's Day, June 21, 2026 — the Summer Solstice — as a build session
+between Jamie Hill and his daughter Kieran.
+
+The goal was simple: teach by doing, ship something real, hand it to her when it's done.
+
+Kieran is the fourth generation.
+Ralph v0.0 → Virgil v1.0 → Jamie v2.0 → Kieran v3.0.
+
+Part of the [OverKill Hill P³](https://overkillhill.com/manifesto/) approach to
+paying forward what you know.
+
 ## License
 
-Personal use only. Not licensed for redistribution.
+MIT — free to use, fork, and build on.
+If this sparked something for you, a nod to where it came from is appreciated.
