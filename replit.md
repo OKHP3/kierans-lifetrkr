@@ -6,69 +6,114 @@ A personal life-management web app for Kieran — covering rituals, habits, task
 
 ```
 kieran-lifetrkr/
-├── client/src/          # React (Vite) frontend
-│   ├── context/         # AppContext — global state via useReducer + localStorage
-│   ├── components/      # BottomNav, CheckCircle, Toast
-│   ├── hooks/           # useToast
-│   └── pages/           # Home, Rituals, Habits, Calendar, Today, Archive
-├── server/              # Express.js backend
-│   ├── routes/notion.js # Notion API proxy (Phase 2)
-│   └── routes/google.js # Google Calendar OAuth (Phase 1.5)
-├── docs/                # PRD, Architecture, Design System, Roadmap, Handoff
-├── vite.config.js       # Vite — host 0.0.0.0:5000, proxy /api → localhost:3001
-├── tailwind.config.js   # Moonlit Hearth color tokens
-└── package.json         # Root; npm scripts for dev + build
+├── src/                     # React (Vite + TypeScript) frontend
+│   ├── context/             # AppContext (useReducer + localStorage), ThemeContext
+│   ├── components/          # BottomNav, SideNav, ThemeToggle, CheckCircle, Toast,
+│   │                        #   GoogleConnectButton, TokenExpiryBanner
+│   ├── hooks/               # useGoogleAuth, useToast
+│   ├── lib/                 # storage.ts, date.ts, googleCalendar.ts, googleTasks.ts
+│   ├── pages/               # Home, Rituals, Habits, Calendar, Today, Archive, Settings
+│   ├── types.ts             # All TypeScript types
+│   ├── constants.ts         # GOOGLE_CLIENT_ID, SCOPES, DAILY_QUOTES, SEASONAL_DATES
+│   ├── App.tsx              # HashRouter + Routes (7 routes incl. /settings)
+│   └── main.tsx             # Entry point
+├── docs/                    # PRD, Architecture, Design System, Roadmap, Handoff
+├── vite.config.ts           # Vite — host 0.0.0.0:5000, no proxy, base conditional
+├── tailwind.config.js       # Moonlit Hearth color tokens
+├── tsconfig.json            # TypeScript config
+└── package.json             # Root; npm scripts for dev, build, deploy
 ```
 
 ## Running the App
 
 ```bash
-npm run dev          # Starts both Vite (port 5000) + Express (port 3001) via concurrently
-npm run build        # Builds Vite to /dist
-npm start            # Production: Express serves /dist + handles /api/*
+npm run dev          # Starts Vite dev server on port 5000
+npm run build        # Type-checks (tsc) then builds to /dist
+npm run deploy       # build + gh-pages -d dist (GitHub Pages deployment)
+npm run preview      # Preview the production build locally
 ```
 
-## Architecture
+## Architecture (v3.0)
 
-- **Frontend:** React + Vite SPA, Tailwind CSS (dark mode, mobile-first), state in localStorage via React Context + useReducer
-- **Backend:** Express.js on port 3001; proxies Notion API and Google Calendar OAuth
-- **Phase 1 (current):** Full UI shell, all data in localStorage — no API keys needed
-- **Phase 1.5:** Google Calendar read-only OAuth — requires `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `SESSION_SECRET`
-- **Phase 2:** Notion backend — requires all `NOTION_*` secrets
+- **Frontend:** React 18 + Vite 5 + **TypeScript** SPA, Tailwind CSS (dark/light/system), state in localStorage via React Context + useReducer
+- **Router:** **HashRouter** (react-router-dom v6) — required for GitHub Pages compatibility
+- **No backend:** Express server removed. Google auth is **client-side GIS** (Google Identity Services token flow)
+- **Deploy:** `npm run deploy` uses the `gh-pages` npm package to push `/dist` to the `gh-pages` branch
+- **Google auth:** Client-side OAuth token via `window.google.accounts.oauth2.initTokenClient`. Token stored in `sessionStorage` (expires after ~1 hour). Requires only `VITE_GOOGLE_CLIENT_ID` (a public value, not a secret).
 
-## Environment Variables (Replit Secrets)
+## Phase Status
 
-| Secret | Phase | Notes |
+| Phase | Feature | Status |
 |---|---|---|
-| `GOOGLE_CLIENT_ID` | 1.5 | Google Cloud Console OAuth |
-| `GOOGLE_CLIENT_SECRET` | 1.5 | Google Cloud Console OAuth |
-| `GOOGLE_REDIRECT_URI` | 1.5 | `https://[your-repl].replit.app/api/google/callback` |
-| `SESSION_SECRET` | 1.5 | Random 32-char string |
-| `NOTION_API_KEY` | 2 | notion.so/my-integrations |
-| `NOTION_ROUTINE_TEMPLATES_DB_ID` | 2 | 32-char hex from Notion DB URL |
-| `NOTION_ROUTINE_COMPLETIONS_DB_ID` | 2 | 32-char hex from Notion DB URL |
-| `NOTION_HABITS_DB_ID` | 2 | 32-char hex from Notion DB URL |
-| `NOTION_HABIT_COMPLETIONS_DB_ID` | 2 | 32-char hex from Notion DB URL |
-| `NOTION_TASKS_DB_ID` | 2 | 32-char hex from Notion DB URL |
+| 1 | Full UI shell, all data in localStorage | ✅ Current |
+| 1.5 | Google Calendar read-only (client-side) | 🔧 Wired, needs Client ID |
+| 1.6 | Google Tasks read-only (client-side) | 🔧 Wired, needs Client ID |
+| 2 | Notion backend sync | 📋 Planned |
+
+## Environment Variables
+
+Only **one** value to configure — and it is **not a secret** (safe to embed in client-side code):
+
+```
+VITE_GOOGLE_CLIENT_ID=YOUR_CLIENT_ID.apps.googleusercontent.com
+```
+
+Set this as a Replit Secret or in a `.env` file. The app runs fully without it (Google sections show a disabled state).
 
 ## Design System — Moonlit Hearth
 
+### Colors
 - Background: `#0D0B14` (deep midnight purple-black)
 - Surface: `#1A1424` (cards, nav)
 - Accent: `#C4A0E8` (amethyst — active nav, CTAs, streaks)
-- Fonts: Cormorant Garamond (display), DM Sans (body), Space Mono (timestamps/streaks)
+- Light mode: `#F7F3FF` bg, `#7B4FBF` accent (Morning Parchment)
+
+### Typography
+- Display: Cormorant Garamond (serif) — page titles, headers
+- Body: DM Sans — all other text
+- Mono: Space Mono — timestamps, streaks, labels, version
+
+## Navigation
+
+- **Mobile (< 768px):** BottomNav with 6 tabs (Home, Rituals, Habits, Calendar, Today, Archive)
+- **Desktop (≥ 768px):** SideNav with 7 items (all 6 + Settings), bottom nav hidden
+- **Settings:** Accessible via gear icon in Home header AND as 7th SideNav item (not in BottomNav)
+
+## Data Schema (localStorage)
+
+Namespaced under `lifetrkr:{sub}:` where `sub` is the Google user ID (or `'guest'` if not connected).
+
+| Key | Type | Notes |
+|---|---|---|
+| `lifetrkr:profile` | `GoogleProfile` | Not namespaced; top-level |
+| `lifetrkr:{sub}:settings` | `UserSettings` | Display name, pronouns, birthday, social, theme prefs |
+| `lifetrkr:{sub}:routineTemplates` | `RoutineTemplate[]` | One per day of week, with `items[]` |
+| `lifetrkr:{sub}:routineCompletions` | `RoutineCompletion[]` | Per-date, per-template completion arrays |
+| `lifetrkr:{sub}:habits` | `Habit[]` | Active habits with color tags |
+| `lifetrkr:{sub}:habitCompletions` | `HabitCompletion[]` | Per-habit, per-date records |
+| `lifetrkr:{sub}:tasks` | `Task[]` | status: `'today'` \| `'done'` \| `'backlog'` |
 
 ## Account Transition Plan (Jamie → Kieran)
 
-See `docs/ARCHITECTURE.md` for the full handoff sequence. Summary:
 1. Fork/transfer the Repl to Kieran's Replit account
 2. Transfer the GitHub repo to Kieran's GitHub
-3. Re-enter all Replit Secrets in Kieran's Repl
-4. Create new Notion integration under Kieran's account
-5. Create new Google OAuth credentials under Kieran's GCP project
+3. Set `VITE_GOOGLE_CLIENT_ID` as a Replit Secret in Kieran's Repl
+4. *(Optional)* Create a new GCP project / OAuth 2.0 Client ID under Kieran's Google account
+5. Run `npm run deploy` from Kieran's machine to publish to GitHub Pages
+
+## Version History
+
+| Version | Author | Notes |
+|---|---|---|
+| v0.0 | Ralph | Initial concept |
+| v1.0 | Virgil | First working build |
+| v2.0 | Jamie | Full feature set (JSX + Express) |
+| v3.0 | Kieran | TypeScript migration, HashRouter, client-side Google auth, gh-pages |
+
+Built on Father's Day, Summer Solstice 2026. The fourth hill. ✦
 
 ## User Preferences
 
-- App is for Kieran's personal use — single user, no auth needed in v1
-- Always dark mode, never a light toggle
-- Mobile-first layout, max-width 480px centered
+- App is for Kieran's personal use — single user, no server-side auth needed
+- Dark mode default, with theme toggle available (dark / light / system)
+- Mobile-first layout, max-width 480px on mobile; desktop sidebar at ≥ 768px
