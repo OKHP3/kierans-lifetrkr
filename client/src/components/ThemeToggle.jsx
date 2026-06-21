@@ -45,11 +45,10 @@ export default function ThemeToggle() {
   const { theme, setTheme } = useTheme()
 
   return (
-    <div style={{
+    <div className="theme-toggle-float" style={{
       position: 'fixed',
       top: 12,
       right: 'max(12px, calc(50% - 240px + 12px))',
-      display: 'flex',
       background: 'var(--surface-raised)',
       border: '0.5px solid var(--border)',
       borderRadius: 20,
