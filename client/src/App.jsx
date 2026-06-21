@@ -11,7 +11,9 @@
 
 import React, { useState } from 'react'
 import { AppProvider } from './context/AppContext.jsx'
+import { ThemeProvider } from './context/ThemeContext.jsx'
 import BottomNav from './components/BottomNav.jsx'
+import ThemeToggle from './components/ThemeToggle.jsx'
 import Home from './pages/Home.jsx'
 import Rituals from './pages/Rituals.jsx'
 import Habits from './pages/Habits.jsx'
@@ -34,11 +36,14 @@ export default function App() {
   const PageComponent = PAGES[activeTab] || Home
 
   return (
-    <AppProvider>
-      <div className="app-container">
-        <PageComponent onTabChange={setActiveTab} />
-        <BottomNav active={activeTab} onTabChange={setActiveTab} />
-      </div>
-    </AppProvider>
+    <ThemeProvider>
+      <AppProvider>
+        <div className="app-container">
+          <ThemeToggle />
+          <PageComponent onTabChange={setActiveTab} />
+          <BottomNav active={activeTab} onTabChange={setActiveTab} />
+        </div>
+      </AppProvider>
+    </ThemeProvider>
   )
 }

@@ -88,21 +88,21 @@ export default function Home({ onTabChange }) {
     <div className="page-content">
       {/* Greeting */}
       <div style={{ marginBottom: 24 }}>
-        <div style={{ fontSize: 10, color: '#7B6A8C', letterSpacing: '0.12em', fontWeight: 400, marginBottom: 4 }}>
+        <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.12em', fontWeight: 400, marginBottom: 4 }}>
           {greeting}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-          <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 30, fontWeight: 300, color: '#EAE0F8' }}>
+          <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 30, fontWeight: 300, color: 'var(--text-primary)' }}>
             Kieran
           </span>
           <button
             onClick={handleStarTap}
-            style={{ background: 'none', border: 'none', color: '#C4A0E8', fontSize: 18, cursor: 'pointer', padding: 0, lineHeight: 1 }}
+            style={{ background: 'none', border: 'none', color: 'var(--accent-amethyst)', fontSize: 18, cursor: 'pointer', padding: 0, lineHeight: 1 }}
           >
             ✦
           </button>
         </div>
-        <div style={{ fontSize: 12, color: '#7B6A8C', marginBottom: seasonal ? 6 : 0 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: seasonal ? 6 : 0 }}>
           {dateLabel}
         </div>
         {seasonal && (
@@ -113,44 +113,47 @@ export default function Home({ onTabChange }) {
       {/* Today's Rituals */}
       <div className="section-header">Today's Rituals</div>
       {todayRoutine.length === 0 ? (
-        <div className="card" style={{ color: '#4A3560', fontSize: 13 }}>
+        <div className="card" style={{ color: 'var(--text-ghost)', fontSize: 13 }}>
           No rituals set for {dayName}. Add some in the Rituals tab.
         </div>
       ) : (
         <div className="card">
-          {todayRoutine.map(item => {
+          {todayRoutine.map((item, i, arr) => {
             const done = isRoutineDone(item.id)
+            const isLast = i === arr.length - 1
             return (
-              <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 10, marginBottom: 10, borderBottom: '0.5px solid #251B30' }}>
+              <div
+                key={item.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  paddingBottom: isLast ? 0 : 10,
+                  marginBottom: isLast ? 0 : 10,
+                  borderBottom: isLast ? 'none' : '0.5px solid var(--border-subtle)',
+                }}
+              >
                 <CheckCircle checked={done} onToggle={() => toggleRoutine(item.id)} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, color: done ? '#4A3560' : '#EAE0F8', textDecoration: done ? 'line-through' : 'none' }}>
+                  <div style={{ fontSize: 13, color: done ? 'var(--text-ghost)' : 'var(--text-primary)', textDecoration: done ? 'line-through' : 'none' }}>
                     {item.title}
                   </div>
                   {item.time && (
-                    <div style={{ fontFamily: 'Space Mono, monospace', fontSize: 11, color: '#7B6A8C', marginTop: 2 }}>
+                    <div style={{ fontFamily: 'Space Mono, monospace', fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
                       {item.time}
                     </div>
                   )}
                 </div>
               </div>
             )
-          }).reduce((acc, el, i, arr) => {
-            // remove border from last item
-            if (i === arr.length - 1) {
-              return [...acc, React.cloneElement(el, {
-                style: { display: 'flex', alignItems: 'center', gap: 10 }
-              })]
-            }
-            return [...acc, el]
-          }, [])}
+          })}
         </div>
       )}
 
       {/* Upcoming Calendar (placeholder when no API) */}
       <div className="section-header">Upcoming</div>
-      <div className="card" style={{ color: '#7B6A8C', fontSize: 13 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#4A3560' }}>
+      <div className="card" style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-ghost)' }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
           </svg>
@@ -168,7 +171,7 @@ export default function Home({ onTabChange }) {
           {/* Habits summary */}
           <div className="section-header">Habits Today</div>
           {state.habits.length === 0 ? (
-            <div className="card" style={{ color: '#4A3560', fontSize: 13 }}>No habits yet. Add some in the Habits tab.</div>
+            <div className="card" style={{ color: 'var(--text-ghost)', fontSize: 13 }}>No habits yet. Add some in the Habits tab.</div>
           ) : (
             <div className="card">
               {state.habits.map(h => {
@@ -176,7 +179,7 @@ export default function Home({ onTabChange }) {
                 return (
                   <div key={h.id} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                     <CheckCircle checked={done} onToggle={() => dispatch({ type: 'TOGGLE_HABIT_COMPLETION', habitId: h.id, date: todayStr })} />
-                    <span style={{ fontSize: 13, color: done ? '#4A3560' : '#EAE0F8', textDecoration: done ? 'line-through' : 'none' }}>{h.name}</span>
+                    <span style={{ fontSize: 13, color: done ? 'var(--text-ghost)' : 'var(--text-primary)', textDecoration: done ? 'line-through' : 'none' }}>{h.name}</span>
                   </div>
                 )
               })}
@@ -186,12 +189,12 @@ export default function Home({ onTabChange }) {
           {/* Today's tasks summary */}
           <div className="section-header">Today's Tasks</div>
           {todayTasks.length === 0 ? (
-            <div className="card" style={{ color: '#4A3560', fontSize: 13 }}>No tasks for today.</div>
+            <div className="card" style={{ color: 'var(--text-ghost)', fontSize: 13 }}>No tasks for today.</div>
           ) : (
             <div className="card">
               {todayTasks.slice(0, 5).map(t => (
-                <div key={t.id} style={{ fontSize: 13, color: t.status === 'Done' ? '#4A3560' : '#EAE0F8', marginBottom: 6, display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: t.priority === 'High' ? '#D4756B' : '#3A2A4A', flexShrink: 0 }} />
+                <div key={t.id} style={{ fontSize: 13, color: t.status === 'Done' ? 'var(--text-ghost)' : 'var(--text-primary)', marginBottom: 6, display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: t.priority === 'High' ? 'var(--accent-rose)' : 'var(--border)', flexShrink: 0 }} />
                   {t.title}
                 </div>
               ))}
@@ -202,18 +205,18 @@ export default function Home({ onTabChange }) {
           <div className="section-header">Progress</div>
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontSize: 12, color: '#9B8AB0' }}>Rituals</span>
-              <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 11, color: '#C4A0E8' }}>{routineDoneCount}/{todayRoutine.length} · {routinePct}%</span>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Rituals</span>
+              <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 11, color: 'var(--accent-amethyst)' }}>{routineDoneCount}/{todayRoutine.length} · {routinePct}%</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 12, color: '#9B8AB0' }}>Habits</span>
-              <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 11, color: '#C4A0E8' }}>{doneCount}/{state.habits.length}</span>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Habits</span>
+              <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 11, color: 'var(--accent-amethyst)' }}>{doneCount}/{state.habits.length}</span>
             </div>
           </div>
 
           {/* Quote */}
-          <div className="card" style={{ marginTop: 4, borderColor: '#251B30' }}>
-            <div style={{ fontSize: 13, color: '#9B8AB0', fontStyle: 'italic', lineHeight: 1.5 }}>
+          <div className="card" style={{ marginTop: 4, borderColor: 'var(--border-subtle)' }}>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5 }}>
               "{quote}"
             </div>
           </div>
@@ -226,16 +229,16 @@ export default function Home({ onTabChange }) {
           <div className="modal-sheet" onClick={e => e.stopPropagation()}>
             <div className="modal-handle" />
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
-              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 22, fontWeight: 300, color: '#EAE0F8', marginBottom: 8 }}>
+              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 22, fontWeight: 300, color: 'var(--text-primary)', marginBottom: 8 }}>
                 Kieran's LifeTrkr · v3.0
               </div>
-              <div style={{ fontSize: 13, color: '#9B8AB0', marginBottom: 16 }}>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>
                 The fourth generation.
               </div>
-              <div style={{ fontSize: 13, color: '#7B6A8C', letterSpacing: '0.08em', marginBottom: 20 }}>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', letterSpacing: '0.08em', marginBottom: 20 }}>
                 Ralph · Virgil · Jamie · Kieran
               </div>
-              <div style={{ color: '#C4A0E8', fontSize: 18 }}>Built with ✦</div>
+              <div style={{ color: 'var(--accent-amethyst)', fontSize: 18 }}>Built with ✦</div>
             </div>
           </div>
         </div>

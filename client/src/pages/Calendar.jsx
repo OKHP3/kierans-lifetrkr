@@ -45,11 +45,11 @@ export default function Calendar() {
     <div className="page-content">
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h1 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, fontWeight: 500, color: '#EAE0F8' }}>Calendar</h1>
+        <h1 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>Calendar</h1>
         {!connected && (
           <button
             onClick={() => setConnected(true)}
-            style={{ fontSize: 11, color: '#C4A0E8', background: '#251B30', border: '0.5px solid #C4A0E8', borderRadius: 20, padding: '4px 10px', cursor: 'pointer' }}
+            style={{ fontSize: 11, color: 'var(--accent-amethyst)', background: 'var(--surface-raised)', border: '0.5px solid var(--accent-amethyst)', borderRadius: 20, padding: '4px 10px', cursor: 'pointer' }}
           >
             Connect Google
           </button>
@@ -58,15 +58,15 @@ export default function Calendar() {
 
       {/* Month nav */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <button onClick={prevMonth} style={{ background: 'none', border: 'none', color: '#9B8AB0', cursor: 'pointer', padding: 8 }}>
+        <button onClick={prevMonth} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 8 }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
         </button>
-        <span style={{ fontSize: 15, fontWeight: 500, color: '#EAE0F8' }}>
+        <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>
           {MONTH_NAMES[month]} {year}
         </span>
-        <button onClick={nextMonth} style={{ background: 'none', border: 'none', color: '#9B8AB0', cursor: 'pointer', padding: 8 }}>
+        <button onClick={nextMonth} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 8 }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="9 18 15 12 9 6"/>
           </svg>
@@ -76,7 +76,7 @@ export default function Calendar() {
       {/* Day labels */}
       <div className="cal-grid" style={{ marginBottom: 4 }}>
         {DAY_LABELS.map((l, i) => (
-          <div key={i} style={{ textAlign: 'center', fontSize: 11, color: '#4A3560', padding: '4px 0' }}>{l}</div>
+          <div key={i} style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-ghost)', padding: '4px 0' }}>{l}</div>
         ))}
       </div>
 
@@ -85,7 +85,7 @@ export default function Calendar() {
         {cells.map((d, i) => (
           <div
             key={i}
-            className={`cal-day ${isToday(d) && !isSelected(d) ? 'today' : ''} ${d && isSelected(d) ? 'selected' : ''} ${!d ? '' : ''}`}
+            className={`cal-day ${isToday(d) && !isSelected(d) ? 'today' : ''} ${d && isSelected(d) ? 'selected' : ''}`}
             style={{ color: !d ? 'transparent' : undefined }}
             onClick={() => d && setSelectedDay(d)}
           >
@@ -95,22 +95,22 @@ export default function Calendar() {
       </div>
 
       {/* Selected day events */}
-      <div style={{ fontSize: 13, fontWeight: 500, color: '#9B8AB0', marginBottom: 12 }}>
+      <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 12 }}>
         {MONTH_NAMES[month]} {selectedDay}
       </div>
 
       {!connected ? (
         <div className="card">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center', padding: '12px 0' }}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4A3560" strokeWidth="1.5">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: 'var(--text-ghost)' }}>
               <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
-            <div style={{ fontSize: 13, color: '#7B6A8C', textAlign: 'center', lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5 }}>
               Connect Google Calendar to see your events here.
             </div>
             <button
               onClick={() => setConnected(true)}
-              style={{ marginTop: 8, background: '#C4A0E8', color: '#0D0B14', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+              style={{ marginTop: 8, background: 'var(--accent-amethyst)', color: 'var(--bg)', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
             >
               Connect Google Calendar
             </button>
@@ -118,9 +118,9 @@ export default function Calendar() {
         </div>
       ) : (
         <div className="card">
-          <div style={{ fontSize: 12, color: '#7B6A8C', textAlign: 'center', padding: '8px 0' }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', padding: '8px 0' }}>
             <div style={{ marginBottom: 4 }}>✓ Connected</div>
-            <div style={{ fontSize: 11, color: '#4A3560' }}>
+            <div style={{ fontSize: 11, color: 'var(--text-ghost)' }}>
               No events on this day. Your Google Calendar events will appear here once the backend API is configured.
             </div>
           </div>

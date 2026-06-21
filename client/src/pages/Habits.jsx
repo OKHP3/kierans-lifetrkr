@@ -80,14 +80,14 @@ export default function Habits() {
       <Toast message={toast} />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h1 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, fontWeight: 500, color: '#EAE0F8' }}>Habits</h1>
-        <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 11, color: '#7B6A8C' }}>
+        <h1 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>Habits</h1>
+        <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 11, color: 'var(--text-muted)' }}>
           {state.habits.filter(h => isToday(h.id)).length}/{state.habits.length} today
         </span>
       </div>
 
       {state.habits.length === 0 && !showAdd ? (
-        <div className="card" style={{ color: '#4A3560', fontSize: 13 }}>
+        <div className="card" style={{ color: 'var(--text-ghost)', fontSize: 13 }}>
           No habits yet. Tap + to add your first one.
         </div>
       ) : (
@@ -101,22 +101,22 @@ export default function Habits() {
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 }}>
                 <CheckCircle checked={done} onToggle={() => dispatch({ type: 'TOGGLE_HABIT_COMPLETION', habitId: habit.id, date: todayStr })} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: done ? '#4A3560' : '#EAE0F8', textDecoration: done ? 'line-through' : 'none' }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: done ? 'var(--text-ghost)' : 'var(--text-primary)', textDecoration: done ? 'line-through' : 'none' }}>
                     {habit.name}
                   </div>
                   {habit.description && (
-                    <div style={{ fontSize: 12, color: '#7B6A8C', marginTop: 2 }}>{habit.description}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{habit.description}</div>
                   )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={streak >= 30 ? '#E8B86D' : '#C4A0E8'} strokeWidth="1.8">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={streak >= 30 ? 'var(--accent-gold)' : 'var(--accent-amethyst)'} strokeWidth="1.8">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                   </svg>
-                  <span className="streak-count" style={{ color: streak >= 30 ? '#E8B86D' : '#C4A0E8' }}>{streak}</span>
+                  <span className="streak-count" style={{ color: streak >= 30 ? 'var(--accent-gold)' : 'var(--accent-amethyst)' }}>{streak}</span>
                 </div>
                 <button
                   onClick={() => handleRemove(habit.id)}
-                  style={{ background: 'none', border: 'none', color: '#4A3560', cursor: 'pointer', padding: 2 }}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', padding: 2 }}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -160,13 +160,13 @@ export default function Habits() {
             style={{ marginBottom: 12 }}
           />
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 11, color: '#7B6A8C', marginBottom: 6 }}>Color</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Color</div>
             <div style={{ display: 'flex', gap: 8 }}>
               {COLORS.map(c => (
                 <button
                   key={c}
                   onClick={() => setNewColor(c)}
-                  style={{ width: 22, height: 22, borderRadius: '50%', background: c, border: newColor === c ? '2px solid #EAE0F8' : '2px solid transparent', cursor: 'pointer' }}
+                  style={{ width: 22, height: 22, borderRadius: '50%', background: c, border: newColor === c ? '2px solid var(--text-primary)' : '2px solid transparent', cursor: 'pointer' }}
                 />
               ))}
             </div>
@@ -174,13 +174,13 @@ export default function Habits() {
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={handleAdd}
-              style={{ flex: 1, background: '#C4A0E8', color: '#0D0B14', border: 'none', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+              style={{ flex: 1, background: 'var(--accent-amethyst)', color: 'var(--bg)', border: 'none', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
             >
               Add Habit
             </button>
             <button
               onClick={() => { setShowAdd(false); setNewName(''); setNewDesc('') }}
-              style={{ padding: '10px 16px', background: '#251B30', color: '#9B8AB0', border: 'none', borderRadius: 10, fontSize: 13, cursor: 'pointer' }}
+              style={{ padding: '10px 16px', background: 'var(--surface-raised)', color: 'var(--text-secondary)', border: 'none', borderRadius: 10, fontSize: 13, cursor: 'pointer' }}
             >
               Cancel
             </button>
@@ -189,7 +189,7 @@ export default function Habits() {
       )}
 
       <button className="fab" onClick={() => setShowAdd(v => !v)}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0D0B14" strokeWidth="2.5" strokeLinecap="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ stroke: 'var(--bg)' }} strokeWidth="2.5" strokeLinecap="round">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
       </button>

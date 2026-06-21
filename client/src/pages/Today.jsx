@@ -58,33 +58,23 @@ export default function Today() {
     showToast('Task added')
   }
 
-  const handleToggle = (id) => {
-    dispatch({ type: 'TOGGLE_TASK', taskId: id })
-  }
-
-  const handleDemote = (id) => {
-    dispatch({ type: 'DEMOTE_TASK', taskId: id })
-    showToast('Moved to Archive')
-  }
-
-  const handleDelete = (id) => {
-    dispatch({ type: 'DELETE_TASK', taskId: id })
-    showToast('Task deleted')
-  }
+  const handleToggle = (id) => dispatch({ type: 'TOGGLE_TASK', taskId: id })
+  const handleDemote = (id) => { dispatch({ type: 'DEMOTE_TASK', taskId: id }); showToast('Moved to Archive') }
+  const handleDelete = (id) => { dispatch({ type: 'DELETE_TASK', taskId: id }); showToast('Task deleted') }
 
   return (
     <div className="page-content">
       <Toast message={toast} />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h1 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, fontWeight: 500, color: '#EAE0F8' }}>Today</h1>
-        <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 11, color: '#7B6A8C' }}>
+        <h1 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>Today</h1>
+        <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 11, color: 'var(--text-muted)' }}>
           {done.length}/{active.length + done.length} done
         </span>
       </div>
 
       {active.length === 0 && !showAdd && (
-        <div className="card" style={{ color: '#4A3560', fontSize: 13 }}>
+        <div className="card" style={{ color: 'var(--text-ghost)', fontSize: 13 }}>
           Nothing on your list. Tap + to add a task or promote one from Archive.
         </div>
       )}
@@ -127,10 +117,10 @@ export default function Today() {
                   fontSize: 11,
                   padding: '4px 10px',
                   borderRadius: 8,
-                  border: newPriority === p ? '1px solid #C4A0E8' : '1px solid #3A2A4A',
-                  background: newPriority === p ? '#251B30' : 'transparent',
-                  color: newPriority === p ? '#C4A0E8' : '#7B6A8C',
-                  cursor: 'pointer'
+                  border: newPriority === p ? '1px solid var(--accent-amethyst)' : '1px solid var(--border)',
+                  background: newPriority === p ? 'var(--surface-raised)' : 'transparent',
+                  color: newPriority === p ? 'var(--accent-amethyst)' : 'var(--text-muted)',
+                  cursor: 'pointer',
                 }}
               >
                 {p}
@@ -140,13 +130,13 @@ export default function Today() {
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={handleAdd}
-              style={{ flex: 1, background: '#C4A0E8', color: '#0D0B14', border: 'none', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+              style={{ flex: 1, background: 'var(--accent-amethyst)', color: 'var(--bg)', border: 'none', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
             >
               Add Task
             </button>
             <button
               onClick={() => { setShowAdd(false); setNewTitle(''); setNewNotes('') }}
-              style={{ padding: '10px 16px', background: '#251B30', color: '#9B8AB0', border: 'none', borderRadius: 10, fontSize: 13, cursor: 'pointer' }}
+              style={{ padding: '10px 16px', background: 'var(--surface-raised)', color: 'var(--text-secondary)', border: 'none', borderRadius: 10, fontSize: 13, cursor: 'pointer' }}
             >
               Cancel
             </button>
@@ -168,7 +158,7 @@ export default function Today() {
       )}
 
       <button className="fab" onClick={() => setShowAdd(v => !v)}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0D0B14" strokeWidth="2.5" strokeLinecap="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ stroke: 'var(--bg)' }} strokeWidth="2.5" strokeLinecap="round">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
       </button>
@@ -185,18 +175,18 @@ function TaskItem({ task, onToggle, onDemote, onDelete }) {
         <CheckCircle checked={task.status === 'Done'} onToggle={onToggle} />
         <div style={{ flex: 1 }} onClick={() => setShowActions(v => !v)}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 13, color: task.status === 'Done' ? '#4A3560' : '#EAE0F8', textDecoration: task.status === 'Done' ? 'line-through' : 'none' }}>
+            <span style={{ fontSize: 13, color: task.status === 'Done' ? 'var(--text-ghost)' : 'var(--text-primary)', textDecoration: task.status === 'Done' ? 'line-through' : 'none' }}>
               {task.title}
             </span>
             <PriorityBadge priority={task.priority} />
           </div>
           {task.notes && (
-            <div style={{ fontSize: 12, color: '#7B6A8C', marginTop: 2 }}>{task.notes}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{task.notes}</div>
           )}
         </div>
         <button
           onClick={() => setShowActions(v => !v)}
-          style={{ background: 'none', border: 'none', color: '#4A3560', cursor: 'pointer', padding: 2 }}
+          style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', padding: 2 }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
@@ -205,16 +195,16 @@ function TaskItem({ task, onToggle, onDemote, onDelete }) {
       </div>
 
       {showActions && (
-        <div style={{ display: 'flex', gap: 8, marginTop: 10, paddingTop: 10, borderTop: '0.5px solid #251B30' }}>
+        <div style={{ display: 'flex', gap: 8, marginTop: 10, paddingTop: 10, borderTop: '0.5px solid var(--border-subtle)' }}>
           <button
             onClick={() => { onDemote(); setShowActions(false) }}
-            style={{ flex: 1, fontSize: 11, color: '#9B8AB0', background: '#251B30', border: 'none', borderRadius: 8, padding: '6px 8px', cursor: 'pointer' }}
+            style={{ flex: 1, fontSize: 11, color: 'var(--text-secondary)', background: 'var(--surface-raised)', border: 'none', borderRadius: 8, padding: '6px 8px', cursor: 'pointer' }}
           >
             → Archive
           </button>
           <button
             onClick={() => { onDelete(); setShowActions(false) }}
-            style={{ flex: 1, fontSize: 11, color: '#D4756B', background: 'rgba(212,117,107,0.1)', border: 'none', borderRadius: 8, padding: '6px 8px', cursor: 'pointer' }}
+            style={{ flex: 1, fontSize: 11, color: 'var(--accent-rose)', background: 'var(--accent-rose-subtle)', border: 'none', borderRadius: 8, padding: '6px 8px', cursor: 'pointer' }}
           >
             Delete
           </button>

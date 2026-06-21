@@ -1,15 +1,15 @@
 import React from 'react'
 
 const tabs = [
-  { id: 'home', label: 'Home', icon: HomeIcon },
-  { id: 'rituals', label: 'Rituals', icon: RitualsIcon },
-  { id: 'habits', label: 'Habits', icon: HabitsIcon },
+  { id: 'home',     label: 'Home',     icon: HomeIcon },
+  { id: 'rituals',  label: 'Rituals',  icon: RitualsIcon },
+  { id: 'habits',   label: 'Habits',   icon: HabitsIcon },
   { id: 'calendar', label: 'Calendar', icon: CalendarIcon },
-  { id: 'today', label: 'Today', icon: TodayIcon },
-  { id: 'archive', label: 'Archive', icon: ArchiveIcon },
+  { id: 'today',    label: 'Today',    icon: TodayIcon },
+  { id: 'archive',  label: 'Archive',  icon: ArchiveIcon },
 ]
 
-function HomeIcon({ active }) {
+function HomeIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
@@ -78,7 +78,11 @@ export default function BottomNav({ active, onTabChange }) {
           <button
             key={tab.id}
             className={`nav-item ${isActive ? 'active' : ''}`}
-            style={{ color: isActive ? '#C4A0E8' : '#7B6A8C', background: 'none', border: 'none' }}
+            style={{
+              color: isActive ? 'var(--accent-amethyst)' : 'var(--text-ghost)',
+              background: 'none',
+              border: 'none',
+            }}
             onClick={() => onTabChange(tab.id)}
           >
             <Icon active={isActive} />

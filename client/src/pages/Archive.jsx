@@ -33,11 +33,7 @@ export default function Archive() {
 
   const backlog = useMemo(() => {
     let items = state.tasks.filter(t => t.status === 'Backlog')
-
-    if (search) {
-      items = items.filter(t => t.title.toLowerCase().includes(search.toLowerCase()))
-    }
-
+    if (search) items = items.filter(t => t.title.toLowerCase().includes(search.toLowerCase()))
     if (sort === 'Priority') {
       const pOrder = { High: 0, Normal: 1, Low: 2 }
       items = [...items].sort((a, b) => (pOrder[a.priority] || 1) - (pOrder[b.priority] || 1))
@@ -46,7 +42,6 @@ export default function Archive() {
     } else {
       items = [...items].sort((a, b) => (b.createdDate || '').localeCompare(a.createdDate || ''))
     }
-
     return items
   }, [state.tasks, search, sort])
 
@@ -72,23 +67,16 @@ export default function Archive() {
     showToast('Added to Archive')
   }
 
-  const handlePromote = (id) => {
-    dispatch({ type: 'PROMOTE_TASK', taskId: id })
-    showToast('Moved to Today')
-  }
-
-  const handleDelete = (id) => {
-    dispatch({ type: 'DELETE_TASK', taskId: id })
-    showToast('Deleted')
-  }
+  const handlePromote = (id) => { dispatch({ type: 'PROMOTE_TASK', taskId: id }); showToast('Moved to Today') }
+  const handleDelete = (id) => { dispatch({ type: 'DELETE_TASK', taskId: id }); showToast('Deleted') }
 
   return (
     <div className="page-content">
       <Toast message={toast} />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h1 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, fontWeight: 500, color: '#EAE0F8' }}>Archive</h1>
-        <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 11, color: '#7B6A8C' }}>{backlog.length} items</span>
+        <h1 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>Archive</h1>
+        <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 11, color: 'var(--text-muted)' }}>{backlog.length} items</span>
       </div>
 
       {/* Search */}
@@ -97,10 +85,10 @@ export default function Archive() {
           width="14" height="14"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#4A3560"
+          stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
-          style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }}
+          style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-ghost)' }}
         >
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
@@ -123,10 +111,10 @@ export default function Archive() {
               fontSize: 11,
               padding: '4px 10px',
               borderRadius: 8,
-              border: sort === s ? '1px solid #C4A0E8' : '1px solid #3A2A4A',
-              background: sort === s ? '#251B30' : 'transparent',
-              color: sort === s ? '#C4A0E8' : '#7B6A8C',
-              cursor: 'pointer'
+              border: sort === s ? '1px solid var(--accent-amethyst)' : '1px solid var(--border)',
+              background: sort === s ? 'var(--surface-raised)' : 'transparent',
+              color: sort === s ? 'var(--accent-amethyst)' : 'var(--text-muted)',
+              cursor: 'pointer',
             }}
           >
             {s}
@@ -135,7 +123,7 @@ export default function Archive() {
       </div>
 
       {backlog.length === 0 && !showAdd && (
-        <div className="card" style={{ color: '#4A3560', fontSize: 13 }}>
+        <div className="card" style={{ color: 'var(--text-ghost)', fontSize: 13 }}>
           {search ? 'No items match your search.' : 'Your archive is empty. Add items you want to do someday.'}
         </div>
       )}
@@ -177,10 +165,10 @@ export default function Archive() {
                   fontSize: 11,
                   padding: '4px 10px',
                   borderRadius: 8,
-                  border: newPriority === p ? '1px solid #C4A0E8' : '1px solid #3A2A4A',
-                  background: newPriority === p ? '#251B30' : 'transparent',
-                  color: newPriority === p ? '#C4A0E8' : '#7B6A8C',
-                  cursor: 'pointer'
+                  border: newPriority === p ? '1px solid var(--accent-amethyst)' : '1px solid var(--border)',
+                  background: newPriority === p ? 'var(--surface-raised)' : 'transparent',
+                  color: newPriority === p ? 'var(--accent-amethyst)' : 'var(--text-muted)',
+                  cursor: 'pointer',
                 }}
               >
                 {p}
@@ -190,13 +178,13 @@ export default function Archive() {
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={handleAdd}
-              style={{ flex: 1, background: '#C4A0E8', color: '#0D0B14', border: 'none', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+              style={{ flex: 1, background: 'var(--accent-amethyst)', color: 'var(--bg)', border: 'none', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
             >
               Add to Archive
             </button>
             <button
               onClick={() => { setShowAdd(false); setNewTitle(''); setNewNotes('') }}
-              style={{ padding: '10px 16px', background: '#251B30', color: '#9B8AB0', border: 'none', borderRadius: 10, fontSize: 13, cursor: 'pointer' }}
+              style={{ padding: '10px 16px', background: 'var(--surface-raised)', color: 'var(--text-secondary)', border: 'none', borderRadius: 10, fontSize: 13, cursor: 'pointer' }}
             >
               Cancel
             </button>
@@ -205,7 +193,7 @@ export default function Archive() {
       )}
 
       <button className="fab" onClick={() => setShowAdd(v => !v)}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0D0B14" strokeWidth="2.5" strokeLinecap="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ stroke: 'var(--bg)' }} strokeWidth="2.5" strokeLinecap="round">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
       </button>
@@ -222,35 +210,35 @@ function ArchiveItem({ task, onPromote, onDelete }) {
         style={{ display: 'flex', alignItems: 'flex-start', gap: 12, cursor: 'pointer' }}
         onClick={() => setShowActions(v => !v)}
       >
-        <div style={{ width: 8, height: 8, borderRadius: '50%', border: '1.5px solid #3A2A4A', marginTop: 4, flexShrink: 0 }} />
+        <div style={{ width: 8, height: 8, borderRadius: '50%', border: '1.5px solid var(--border)', marginTop: 4, flexShrink: 0 }} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, color: '#EAE0F8', display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+          <div style={{ fontSize: 13, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
             {task.title}
             <PriorityBadge priority={task.priority} />
             {task.source === 'Promoted' && (
-              <span style={{ fontSize: 10, color: '#7B6A8C', background: '#251B30', padding: '1px 6px', borderRadius: 8 }}>promoted</span>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', background: 'var(--surface-raised)', padding: '1px 6px', borderRadius: 8 }}>promoted</span>
             )}
           </div>
           {task.notes && (
-            <div style={{ fontSize: 12, color: '#7B6A8C', marginTop: 2 }}>{task.notes}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{task.notes}</div>
           )}
         </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4A3560" strokeWidth="2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-ghost)', flexShrink: 0 }}>
           <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
         </svg>
       </div>
 
       {showActions && (
-        <div style={{ display: 'flex', gap: 8, marginTop: 10, paddingTop: 10, borderTop: '0.5px solid #251B30' }}>
+        <div style={{ display: 'flex', gap: 8, marginTop: 10, paddingTop: 10, borderTop: '0.5px solid var(--border-subtle)' }}>
           <button
             onClick={() => { onPromote(); setShowActions(false) }}
-            style={{ flex: 1, fontSize: 11, color: '#4ECFA0', background: 'rgba(78,207,160,0.1)', border: 'none', borderRadius: 8, padding: '6px 8px', cursor: 'pointer' }}
+            style={{ flex: 1, fontSize: 11, color: 'var(--accent-sage)', background: 'var(--accent-sage-subtle)', border: 'none', borderRadius: 8, padding: '6px 8px', cursor: 'pointer' }}
           >
             → Send to Today
           </button>
           <button
             onClick={() => { onDelete(); setShowActions(false) }}
-            style={{ flex: 1, fontSize: 11, color: '#D4756B', background: 'rgba(212,117,107,0.1)', border: 'none', borderRadius: 8, padding: '6px 8px', cursor: 'pointer' }}
+            style={{ flex: 1, fontSize: 11, color: 'var(--accent-rose)', background: 'var(--accent-rose-subtle)', border: 'none', borderRadius: 8, padding: '6px 8px', cursor: 'pointer' }}
           >
             Delete
           </button>

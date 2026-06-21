@@ -56,10 +56,10 @@ export default function Rituals() {
 
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h1 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, fontWeight: 500, color: '#EAE0F8' }}>Rituals</h1>
+        <h1 style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>Rituals</h1>
         <button
           onClick={() => setEditMode(v => !v)}
-          style={{ background: 'none', border: 'none', color: editMode ? '#C4A0E8' : '#7B6A8C', fontSize: 12, cursor: 'pointer' }}
+          style={{ background: 'none', border: 'none', color: editMode ? 'var(--accent-amethyst)' : 'var(--text-muted)', fontSize: 12, cursor: 'pointer' }}
         >
           {editMode ? 'Done' : 'Edit'}
         </button>
@@ -80,7 +80,7 @@ export default function Rituals() {
 
       {/* Ritual items */}
       {items.length === 0 ? (
-        <div className="card" style={{ color: '#4A3560', fontSize: 13 }}>
+        <div className="card" style={{ color: 'var(--text-ghost)', fontSize: 13 }}>
           No rituals for {selectedDay}. Tap + to add one.
         </div>
       ) : (
@@ -93,17 +93,17 @@ export default function Rituals() {
               )}
               {editMode && (
                 <div style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4A3560" strokeWidth="2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--text-ghost)' }}>
                     <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
                   </svg>
                 </div>
               )}
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, color: done ? '#4A3560' : '#EAE0F8', textDecoration: done ? 'line-through' : 'none' }}>
+                <div style={{ fontSize: 13, color: done ? 'var(--text-ghost)' : 'var(--text-primary)', textDecoration: done ? 'line-through' : 'none' }}>
                   {item.title}
                 </div>
                 {item.time && (
-                  <div style={{ fontFamily: 'Space Mono, monospace', fontSize: 11, color: '#7B6A8C', marginTop: 2 }}>
+                  <div style={{ fontFamily: 'Space Mono, monospace', fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
                     {item.time}
                   </div>
                 )}
@@ -111,7 +111,7 @@ export default function Rituals() {
               {editMode && (
                 <button
                   onClick={() => handleRemove(item.id)}
-                  style={{ background: 'none', border: 'none', color: '#D4756B', cursor: 'pointer', padding: 4 }}
+                  style={{ background: 'none', border: 'none', color: 'var(--accent-rose)', cursor: 'pointer', padding: 4 }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                     <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
@@ -145,13 +145,13 @@ export default function Rituals() {
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={handleAdd}
-              style={{ flex: 1, background: '#C4A0E8', color: '#0D0B14', border: 'none', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+              style={{ flex: 1, background: 'var(--accent-amethyst)', color: 'var(--bg)', border: 'none', borderRadius: 10, padding: '10px', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
             >
               Add Ritual
             </button>
             <button
               onClick={() => { setShowAdd(false); setNewTitle(''); setNewTime('') }}
-              style={{ padding: '10px 16px', background: '#251B30', color: '#9B8AB0', border: 'none', borderRadius: 10, fontSize: 13, cursor: 'pointer' }}
+              style={{ padding: '10px 16px', background: 'var(--surface-raised)', color: 'var(--text-secondary)', border: 'none', borderRadius: 10, fontSize: 13, cursor: 'pointer' }}
             >
               Cancel
             </button>
@@ -161,7 +161,7 @@ export default function Rituals() {
 
       {/* FAB */}
       <button className="fab" onClick={() => setShowAdd(v => !v)}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0D0B14" strokeWidth="2.5" strokeLinecap="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ stroke: 'var(--bg)' }} strokeWidth="2.5" strokeLinecap="round">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
       </button>
