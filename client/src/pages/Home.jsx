@@ -63,7 +63,7 @@ export default function Home({ onTabChange }) {
   const seasonal = getSeasonalBadge()
   const quote = getDailyQuote()
 
-  const displayName = state.profile?.displayName || 'Kieran'
+  const displayName = state.profile?.displayName || ''
   const dateLabel = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 
   const handleStarTap = () => {
@@ -94,29 +94,32 @@ export default function Home({ onTabChange }) {
           {greeting}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-          <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 30, fontWeight: 300, color: 'var(--text-primary)' }}>
-            {displayName}
-          </span>
-          <button
-            onClick={handleStarTap}
-            style={{ background: 'none', border: 'none', color: 'var(--accent-amethyst)', fontSize: 18, cursor: 'pointer', padding: 0, lineHeight: 1 }}
-          >
-            ✦
-          </button>
+          {displayName ? (
+            <>
+              <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 30, fontWeight: 300, color: 'var(--text-primary)' }}>
+                {displayName}
+              </span>
+              <button
+                onClick={handleStarTap}
+                style={{ background: 'none', border: 'none', color: 'var(--accent-amethyst)', fontSize: 18, cursor: 'pointer', padding: 0, lineHeight: 1 }}
+              >
+                ✦
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => onTabChange('settings')}
+              style={{ background: 'none', border: 'none', fontFamily: 'Cormorant Garamond, serif', fontSize: 30, fontWeight: 300, color: 'var(--text-ghost)', cursor: 'pointer', padding: 0, lineHeight: 1.1, letterSpacing: '0.01em' }}
+            >
+              Set your name →
+            </button>
+          )}
         </div>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: seasonal ? 6 : 0 }}>
           {dateLabel}
         </div>
         {seasonal && (
           <span className="seasonal-badge">{seasonal}</span>
-        )}
-        {!state.profile?.displayName && (
-          <button
-            onClick={() => onTabChange('settings')}
-            style={{ marginTop: 6, background: 'none', border: 'none', fontSize: 11, color: 'var(--text-ghost)', cursor: 'pointer', padding: 0, textDecoration: 'underline', textUnderlineOffset: 3 }}
-          >
-            Set your name in Settings →
-          </button>
         )}
       </div>
 
