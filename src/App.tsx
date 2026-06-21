@@ -1,13 +1,15 @@
 /*
  * Kieran's LifeTrkr
  * ─────────────────
- * v0.1.0 — Kieran
+ * Built on Father's Day, Summer Solstice 2026.
+ * Jamie + Kieran Hill.
+ *
+ * v0.1.0 — Rylee (Kieran)
  * v2.0 — Jamie
- * v1.0 — Virgil
+ * v1.0 — Vyrle
  * v0.0 — Ralph
  *
- * Built with love on Father's Day, Summer Solstice 2026.
- * The fourth hill.
+ * The fourth Hill. Pay it forward.
  */
 
 import { HashRouter, Routes, Route } from 'react-router-dom'

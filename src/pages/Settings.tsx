@@ -193,7 +193,7 @@ export default function Settings() {
         <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: 0, fontFamily: 'Space Mono, monospace' }}>v0.1.0 · MIT License</p>
         <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: '8px 0 0' }}>Built on Father's Day, Summer Solstice 2026</p>
         <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: '4px 0 0' }}>Jamie + Kieran Hill ✦</p>
-        <p style={{ fontSize: 10, color: 'var(--text-ghost)', margin: '8px 0 0', fontFamily: 'Space Mono, monospace', letterSpacing: '0.04em' }}>Ralph v0.0 · Virgil v1.0 · Jamie v2.0 · Kieran v0.1.0</p>
+        <p style={{ fontSize: 10, color: 'var(--text-ghost)', margin: '8px 0 0', fontFamily: 'Space Mono, monospace', letterSpacing: '0.04em' }}>Ralph v0.0 · Vyrle v1.0 · Jamie v2.0 · Rylee v0.1.0</p>
       </div>
 
       <div style={{ height: 40 }} />
