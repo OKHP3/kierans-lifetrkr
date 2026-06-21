@@ -190,10 +190,10 @@ export default function Settings() {
       <p className="section-label" style={{ marginTop: 24 }}>ABOUT</p>
       <div className="card" style={{ textAlign: 'center' }}>
         <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 20, color: 'var(--text-primary)', margin: '0 0 4px' }}>Kieran's LifeTrkr</p>
-        <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: 0, fontFamily: 'Space Mono, monospace' }}>v3.0 · MIT License</p>
+        <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: 0, fontFamily: 'Space Mono, monospace' }}>v0.1.0 · MIT License</p>
         <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: '8px 0 0' }}>Built on Father's Day, Summer Solstice 2026</p>
         <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: '4px 0 0' }}>Jamie + Kieran Hill ✦</p>
-        <p style={{ fontSize: 10, color: 'var(--text-ghost)', margin: '8px 0 0', fontFamily: 'Space Mono, monospace', letterSpacing: '0.04em' }}>Ralph v0.0 · Virgil v1.0 · Jamie v2.0 · Kieran v3.0</p>
+        <p style={{ fontSize: 10, color: 'var(--text-ghost)', margin: '8px 0 0', fontFamily: 'Space Mono, monospace', letterSpacing: '0.04em' }}>Ralph v0.0 · Virgil v1.0 · Jamie v2.0 · Kieran v0.1.0</p>
       </div>
 
       <div style={{ height: 40 }} />

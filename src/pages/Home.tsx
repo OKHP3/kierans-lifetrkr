@@ -194,7 +194,7 @@ export default function Home() {
               <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 20, color: 'var(--text-primary)', marginBottom: 8 }}>
                 {EASTER_QUOTES[Math.floor(Math.random() * EASTER_QUOTES.length)]}
               </p>
-              <p style={{ fontSize: 11, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', letterSpacing: '0.06em' }}>Ralph v0.0 · Virgil v1.0 · Jamie v2.0 · Kieran v3.0</p>
+              <p style={{ fontSize: 11, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', letterSpacing: '0.06em' }}>Ralph v0.0 · Virgil v1.0 · Jamie v2.0 · Kieran v0.1.0</p>
               <button className="btn-primary" style={{ marginTop: 20, width: '100%' }} onClick={() => setShowEaster(false)}>Close</button>
             </div>
           </div>

@@ -1,7 +1,7 @@
 /*
  * Kieran's LifeTrkr
  * ─────────────────
- * v3.0 — Kieran
+ * v0.1.0 — Kieran
  * v2.0 — Jamie
  * v1.0 — Virgil
  * v0.0 — Ralph

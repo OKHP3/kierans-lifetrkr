@@ -74,7 +74,7 @@ export default function SideNav() {
         </div>
 
         <div style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: 'var(--text-ghost)', letterSpacing: '0.08em' }}>
-          v3.0 · the fourth hill
+          v0.1.0 · the fourth hill
         </div>
       </div>
     </nav>
