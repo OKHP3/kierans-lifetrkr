@@ -13,6 +13,7 @@ import React, { useState } from 'react'
 import { AppProvider } from './context/AppContext.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
 import BottomNav from './components/BottomNav.jsx'
+import SideNav from './components/SideNav.jsx'
 import ThemeToggle from './components/ThemeToggle.jsx'
 import Home from './pages/Home.jsx'
 import Rituals from './pages/Rituals.jsx'
@@ -41,9 +42,12 @@ export default function App() {
     <ThemeProvider>
       <AppProvider>
         <div className="app-container">
-          {activeTab !== 'settings' && <ThemeToggle />}
-          <PageComponent onTabChange={setActiveTab} />
-          <BottomNav active={activeTab} onTabChange={setActiveTab} />
+          <SideNav active={activeTab} onTabChange={setActiveTab} />
+          <div className="main-area">
+            {activeTab !== 'settings' && <ThemeToggle />}
+            <PageComponent onTabChange={setActiveTab} />
+            <BottomNav active={activeTab} onTabChange={setActiveTab} />
+          </div>
         </div>
       </AppProvider>
     </ThemeProvider>
