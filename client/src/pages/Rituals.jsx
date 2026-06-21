@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { useApp, DAYS, todayKey } from '../context/AppContext.jsx'
+import { useApp } from '../context/AppContext.jsx'
+import { DAYS, todayKey } from '../utils.js'
 import CheckCircle from '../components/CheckCircle.jsx'
 import Toast from '../components/Toast.jsx'
 import { useToast } from '../hooks/useToast.js'

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { useApp, todayKey, DAYS } from '../context/AppContext.jsx'
+import { useApp } from '../context/AppContext.jsx'
+import { todayKey, DAYS } from '../utils.js'
 import CheckCircle from '../components/CheckCircle.jsx'
 
 const quotes = [
@@ -62,6 +63,7 @@ export default function Home({ onTabChange }) {
   const seasonal = getSeasonalBadge()
   const quote = getDailyQuote()
 
+  const displayName = state.profile?.displayName || 'Kieran'
   const dateLabel = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 
   const handleStarTap = () => {
@@ -93,7 +95,7 @@ export default function Home({ onTabChange }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
           <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 30, fontWeight: 300, color: 'var(--text-primary)' }}>
-            Kieran
+            {displayName}
           </span>
           <button
             onClick={handleStarTap}
@@ -107,6 +109,14 @@ export default function Home({ onTabChange }) {
         </div>
         {seasonal && (
           <span className="seasonal-badge">{seasonal}</span>
+        )}
+        {!state.profile?.displayName && (
+          <button
+            onClick={() => onTabChange('settings')}
+            style={{ marginTop: 6, background: 'none', border: 'none', fontSize: 11, color: 'var(--text-ghost)', cursor: 'pointer', padding: 0, textDecoration: 'underline', textUnderlineOffset: 3 }}
+          >
+            Set your name in Settings →
+          </button>
         )}
       </div>
 
@@ -230,7 +240,7 @@ export default function Home({ onTabChange }) {
             <div className="modal-handle" />
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
               <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 22, fontWeight: 300, color: 'var(--text-primary)', marginBottom: 8 }}>
-                Kieran's LifeTrkr · v3.0
+                {displayName}'s LifeTrkr · v3.0
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>
                 The fourth generation.

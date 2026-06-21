@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
-import { useApp, todayKey } from '../context/AppContext.jsx'
+import { useApp } from '../context/AppContext.jsx'
+import { todayKey } from '../utils.js'
 import Toast from '../components/Toast.jsx'
 import { useToast } from '../hooks/useToast.js'
 

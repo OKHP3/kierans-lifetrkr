@@ -20,6 +20,7 @@ import Habits from './pages/Habits.jsx'
 import Calendar from './pages/Calendar.jsx'
 import Today from './pages/Today.jsx'
 import Archive from './pages/Archive.jsx'
+import Settings from './pages/Settings.jsx'
 
 const PAGES = {
   home: Home,
@@ -28,6 +29,7 @@ const PAGES = {
   calendar: Calendar,
   today: Today,
   archive: Archive,
+  settings: Settings,
 }
 
 export default function App() {
@@ -39,7 +41,7 @@ export default function App() {
     <ThemeProvider>
       <AppProvider>
         <div className="app-container">
-          <ThemeToggle />
+          {activeTab !== 'settings' && <ThemeToggle />}
           <PageComponent onTabChange={setActiveTab} />
           <BottomNav active={activeTab} onTabChange={setActiveTab} />
         </div>
