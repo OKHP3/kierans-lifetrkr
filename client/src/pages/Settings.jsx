@@ -239,7 +239,7 @@ export default function Settings() {
           v3.0 · the fourth hill
         </div>
         <div style={{ marginTop: 14, fontSize: 11, color: 'var(--text-ghost)', letterSpacing: '0.06em' }}>
-          Ralph · Virgil · Jamie · Kieran
+          Ralph · Vyrle · Jamie · Kieran
         </div>
       </div>
 

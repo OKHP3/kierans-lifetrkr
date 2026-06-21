@@ -246,7 +246,7 @@ export default function Home({ onTabChange }) {
                 The fourth generation.
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', letterSpacing: '0.08em', marginBottom: 20 }}>
-                Ralph · Virgil · Jamie · Kieran
+                Ralph · Vyrle · Jamie · Kieran
               </div>
               <div style={{ color: 'var(--accent-amethyst)', fontSize: 18 }}>Built with ✦</div>
             </div>
