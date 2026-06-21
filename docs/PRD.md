@@ -1,21 +1,21 @@
-# Rylee Life OS — Product Requirements Document
-**Version:** 1.0 Draft  
+# Kieran's LifeTrkr — Product Requirements Document
+**Version:** 1.1  
 **Date:** June 21, 2026  
-**Author:** Derived from Rylee's requirements via structured elicitation  
+**Author:** Derived from Kieran's requirements via structured elicitation  
 **Status:** Ready for development kickoff  
 
 ---
 
 ## Executive Summary
 
-- Personal life-organization web app for one user (Rylee), covering routines, habits, tasks, and calendar in a single dark-mode interface.
-- Six-tab bottom navigation: Home, Routines, Habits, Calendar, To-Do, Backlog.
-- Routines operate on day-of-week templates (Mon through Sun), not a single fixed list.
+- Personal life-organization web app for one user (Kieran), covering rituals, habits, tasks, and calendar in a single dark-mode interface.
+- Six-tab bottom navigation: Home, Rituals, Habits, Calendar, Today, Archive.
+- Rituals operate on day-of-week templates (Mon through Sun), not a single fixed list.
 - Calendar pulls real events from Google Calendar via API (read-only).
-- Backend: Notion free tier via Notion API, proxied through Vercel serverless functions.
-- Deployment: GitHub repo → Vercel (free tier). GitHub Pages is ruled out -- Notion API is CORS-blocked for direct browser calls.
-- v1 scope is intentionally lean: full UI shell + Notion-backed data + Google Calendar read integration. Auth, sharing, and notifications are post-v1.
-- Target build time for v1: 2 to 4 hours in a Replit-style environment with an AI agent driving code generation.
+- Backend: Notion free tier via Notion API, proxied through an Express.js server.
+- Deployment: GitHub repo → Replit Deployments. Notion API is CORS-blocked for direct browser calls, so all API routes go through the Express backend.
+- v1 scope is intentionally lean: full UI shell with localStorage. v1.5 adds Google Calendar OAuth. v2 adds Notion-backed data.
+- Target build time for v1: 2 to 4 hours in a Replit environment with an AI agent driving code generation.
 
 ---
 
@@ -23,28 +23,28 @@
 
 | Field | Value |
 |---|---|
-| App Name | Rylee Life OS (working title; rename at will) |
-| Primary User | Rylee (single-user, no auth required in v1) |
+| App Name | Kieran's LifeTrkr |
+| Primary User | Kieran (single-user, no auth required in v1) |
 | Platform | Mobile-first responsive web app (React SPA) |
-| Visual Mode | Dark mode, always on (no toggle required in v1) |
-| Aesthetic | Clean, calm dark UI -- not gamer-dark, not terminal-dark. Think Notion dark + soft contrast |
+| Visual Mode | Dark mode, always on (no toggle) |
+| Aesthetic | Moonlit Hearth — warm mystical dark, inspired by Stevie Nicks / celestial / velvet |
 
 ---
 
 ## 2. Core Navigation Architecture
 
-**Bottom navigation bar** with 6 tabs. Mobile-first means icons + short labels. Tab order:
+**Bottom navigation bar** with 6 tabs. Mobile-first: icons + short labels, max-width 480px centered. Tab order:
 
-| Position | Tab Label | Icon Suggestion |
+| Position | Tab Label | Icon |
 |---|---|---|
-| 1 | Home | House or sun (today-focused) |
-| 2 | Routines | Repeat / refresh cycle |
-| 3 | Habits | Checkmark streak or flame |
+| 1 | Home | House / sun |
+| 2 | Rituals | Repeat / refresh cycle |
+| 3 | Habits | Flame streak |
 | 4 | Calendar | Calendar grid |
-| 5 | To-Do | Checklist |
-| 6 | Backlog | Archive / inbox |
+| 5 | Today | Checklist |
+| 6 | Archive | Inbox / archive |
 
-Six tabs is at the upper edge of comfortable mobile nav. Consider using an icon-only bar with a tooltip label on tap if screen width is tight.
+Six tabs is at the upper edge of comfortable mobile nav. The nav uses icons + short labels; active tab highlighted in Accent Amethyst.
 
 ---
 
@@ -55,46 +55,48 @@ Six tabs is at the upper edge of comfortable mobile nav. Consider using an icon-
 **Purpose:** Morning glance screen. Show what matters right now, nothing else.
 
 **Primary widgets (always visible):**
-- Today's date + greeting (e.g., "Good morning, Rylee")
-- Today's routine checklist (pulled from the active day-of-week template; checkable inline)
+- Today's date + greeting (e.g., "Good morning, Kieran") — time-aware, uses Cormorant Garamond display font
+- Seasonal badge (solstices, equinoxes, celtic sabbats — auto-detected by date)
+- Today's ritual checklist (mirror of the Rituals tab for today's day; shared state)
 - Upcoming calendar events (next 3 to 5 events from Google Calendar, with time + title)
 
 **"More" section (collapsed by default, expandable on tap):**
 - Today's habits and completion status
-- Today's active to-do items
-- Streak / progress summary (total habits completed today, routine % done)
-- Motivational quote (static rotating list is fine for v1; no external API needed)
+- Today's active tasks
+- Streak / progress summary (total habits completed today, ritual % done)
+- Motivational quote (static rotating list; no external API needed)
 
 **Behavior notes:**
-- Routine checklist on the Home tab is a mirror of the Routines tab. Checking an item here marks it done there too (shared state, not a copy).
-- Tapping a calendar event opens the Google Calendar event directly (deep link in a new tab).
-- Home tab resets at midnight -- routine items uncheck, habit dots reset.
+- Ritual checklist on Home is a mirror of the Rituals tab. Checking an item here marks it done there too (shared state, not a copy).
+- Tapping a calendar event opens the Google Calendar event directly (deep link, new tab).
+- Home tab resets at midnight — ritual items uncheck, habit dots reset.
+- Easter egg: triple-tap on the greeting reveals a generational message (✦).
 
 ---
 
-### 3.2 Routines
+### 3.2 Rituals
 
-**Purpose:** Day-of-week routine templates. Set them once; use them every day.
+**Purpose:** Day-of-week ritual templates. Set them once; use them every day.
 
 **Structure:**
 - 7 templates: Sunday through Saturday.
-- Each template contains an ordered list of routine items (tasks, activities, time blocks).
-- The app automatically loads today's template as the active routine.
+- Each template contains an ordered list of ritual items (activities, time blocks).
+- The app automatically loads today's template as the active ritual list.
 
-**Routine item fields:**
+**Ritual item fields:**
 | Field | Type | Notes |
 |---|---|---|
 | Title | Text | Required |
-| Time (optional) | Time string | e.g., "7:00 AM" -- display only, no alarm in v1 |
+| Time (optional) | Time string | e.g., "7:00 AM" — display only, no alarm in v1 |
 | Order | Integer | Drag to reorder |
 | Completed today | Boolean | Resets at midnight |
 
 **Editing templates:**
 - Long press or edit icon on any day tab to enter edit mode.
 - Add, remove, reorder items within a day template.
-- Changes save to Notion immediately (no draft state needed in v1).
+- Changes save to localStorage (v1) / Notion (v2) immediately.
 
-**Navigation within Routines tab:**
+**Navigation within Rituals tab:**
 - Day-of-week pills across the top (Sun Mon Tue Wed Thu Fri Sat).
 - Today's day pre-selected on open.
 - Switching days shows that template for editing; does not affect the "active today" state.
@@ -110,33 +112,32 @@ Six tabs is at the upper edge of comfortable mobile nav. Consider using an icon-
 |---|---|---|
 | Habit Name | Text | Required |
 | Description | Text | Optional reminder of what "done" looks like |
-| Color Tag | Select | For visual grouping (6 to 8 preset dark-mode-safe colors) |
+| Color Tag | Select | For visual grouping (preset dark-mode-safe colors) |
 | Active | Boolean | Soft-delete; hide without losing history |
 | Created Date | Date | Auto |
 
 **Daily tracking:**
 - Each habit shows a tap-to-toggle completion circle for today.
-- Streak counter visible below each habit name (consecutive days completed).
-- Completion history stored in Notion as individual dated records (one row per habit per day).
+- Streak counter visible below each habit name (consecutive days completed). Displayed via Space Mono font.
+- Completion history stored as individual dated records (one row per habit per day).
 
 **Habit view options:**
 - List view (default): all habits, today's status, streak.
-- Weekly view: 7-day grid showing which days each habit was completed (like a mini GitHub contribution graph).
+- Weekly view: 7-day grid showing which days each habit was completed (mini contribution graph).
 
-**No habit scheduling by day-of-week in v1.** All habits are assumed to be daily. "Weekday only" habits can be a v2 feature.
+**No habit scheduling by day-of-week in v1.** All habits are assumed to be daily.
 
 ---
 
 ### 3.4 Calendar
 
-**Purpose:** Read-only view of Rylee's real Google Calendar events. No manual event entry in v1.
+**Purpose:** Read-only view of Kieran's real Google Calendar events. No manual event entry in v1.
 
 **Integration:** Google Calendar API (OAuth 2.0, read-only scope: `https://www.googleapis.com/auth/calendar.readonly`).
 
 **Views:**
 - Month view (default on tab open): grid with event dots.
 - Tap a day: expand to show that day's event list below the grid.
-- Week view (stretch goal for v1, can defer to v1.1).
 
 **Event display:**
 - Event title + start time.
@@ -144,18 +145,17 @@ Six tabs is at the upper edge of comfortable mobile nav. Consider using an icon-
 - All-day events shown at top of day list.
 
 **Authentication flow:**
-- First time user opens Calendar tab: "Connect Google Calendar" button.
+- First time Kieran opens Calendar tab: "Connect Google Calendar" button.
 - OAuth popup, user grants read-only access.
-- Token stored in browser localStorage for session persistence.
-- Refresh token handling handled by the Vercel serverless function (not exposed client-side).
+- Token stored server-side via Express session; refresh token not exposed client-side.
 
 **Important scope limitation:** Calendar tab is read-only in v1. Creating, editing, or deleting events is out of scope.
 
 ---
 
-### 3.5 To-Do / Task List
+### 3.5 Today / Task List
 
-**Purpose:** Today's active task list. The things Rylee has committed to doing today.
+**Purpose:** Today's active task list. The things Kieran has committed to doing today.
 
 **Task fields:**
 | Field | Type | Notes |
@@ -165,38 +165,38 @@ Six tabs is at the upper edge of comfortable mobile nav. Consider using an icon-
 | Priority | Select | High / Normal / Low |
 | Due Date | Date | Optional; today by default when added from this tab |
 | Status | Select | Today / Done |
-| Source | Auto | "Manual" or "Promoted from Backlog" |
+| Source | Auto | "Manual" or "Promoted from Archive" |
 
 **Interactions:**
 - Tap to complete (strike-through + move to done section at bottom).
 - Swipe left to delete (with undo toast).
-- Swipe right or long-press to promote back to Backlog.
-- "Add task" button (plus icon, floating action button or top bar).
+- Swipe right or long-press to demote back to Archive.
+- "Add task" button (FAB, bottom-right).
 - Completed tasks collapse into a "Done today" section, not removed from view.
 
 **Daily reset:**
-- Done tasks from previous days are archived in Notion but not shown in the active list.
+- Done tasks from previous days are archived but not shown in the active list.
 - Incomplete tasks from yesterday carry forward (do not auto-delete).
 
 ---
 
-### 3.6 Master Backlog
+### 3.6 Archive / Backlog
 
-**Purpose:** The "someday" holding tank. Everything Rylee wants to do eventually, without committing it to today.
+**Purpose:** The "someday" holding tank. Everything Kieran wants to do eventually, without committing it to today.
 
-**Same task schema as To-Do**, with these differences:
+**Same task schema as Today**, with these differences:
 - Status defaults to "Backlog."
 - No due date required.
-- Tasks here do NOT appear in Home or To-Do tabs unless promoted.
+- Tasks here do NOT appear in Home or Today tabs unless promoted.
 
 **Interactions:**
-- Tap + hold or swipe right to "Send to Today" (promotes task to To-Do tab with today's date).
+- Tap + hold or swipe right to "Send to Today" (promotes task to Today tab with today's date).
 - Search bar at top (filter by keyword).
 - Simple sort options: by priority, by date added, by title.
-- "Add to backlog" is the primary action here, not completion.
+- "Add to archive" is the primary action here, not completion.
 
-**Relationship to To-Do:**
-- Backlog and To-Do share the same Notion database. Status field drives which tab shows the item.
+**Relationship to Today:**
+- Archive and Today share the same tasks store. Status field drives which tab shows the item.
 
 ---
 
@@ -204,24 +204,26 @@ Six tabs is at the upper edge of comfortable mobile nav. Consider using an icon-
 
 ```
 ┌─────────────────────────────────────────────┐
-│           React SPA (Vite + React)           │
-│           Hosted on Vercel                   │
+│         React SPA (Vite + React)             │
+│         Hosted on Replit Deployments         │
 │                                              │
 │  Bottom Nav → 6 page components              │
-│  Shared state via Context + useReducer       │
-│  Tailwind CSS (dark mode, mobile-first)      │
+│  Shared state via AppContext + useReducer    │
+│  Tailwind CSS (Moonlit Hearth, mobile-first) │
 └────────────────┬────────────────────────────┘
                  │ fetch()
                  ▼
 ┌─────────────────────────────────────────────┐
-│        Vercel Serverless Functions           │
+│        Express.js Server (port 3001)         │
 │        /api/* routes                         │
 │                                              │
-│  /api/notion/routines     (CRUD)             │
+│  /api/notion/rituals      (CRUD)             │
 │  /api/notion/habits       (CRUD)             │
 │  /api/notion/completions  (CRUD)             │
 │  /api/notion/tasks        (CRUD)             │
-│  /api/google/calendar     (READ proxy)       │
+│  /api/google/auth         (OAuth initiation) │
+│  /api/google/callback     (OAuth callback)   │
+│  /api/google/events       (READ proxy)       │
 └──────────┬──────────────────────┬────────────┘
            │                      │
            ▼                      ▼
@@ -235,25 +237,27 @@ Six tabs is at the upper edge of comfortable mobile nav. Consider using an icon-
 **Stack decisions:**
 | Layer | Choice | Rationale |
 |---|---|---|
-| Framework | React (Vite) | Fast build, SPA routing, wide AI codegen support |
-| Styling | Tailwind CSS | Utility classes, dark mode via `dark:` prefix |
-| State | React Context + useReducer | No backend session; lightweight |
-| Deployment | Vercel (free tier) | Supports serverless functions; deploys from GitHub |
-| Source control | GitHub | Required; Vercel CI/CD pulls from here |
-| Database | Notion API (free tier) | No SQL server needed; free; GUI for Rylee to see data |
+| Framework | React 18 (Vite) | Fast build, SPA routing, wide AI codegen support |
+| Styling | Tailwind CSS | Utility classes, dark mode via arbitrary values |
+| State (v1) | AppContext + useReducer + localStorage | No backend session; lightweight |
+| State (v2) | Same context, swapped to /api/* calls | Minimal refactor path |
+| Backend | Express.js on port 3001 | Notion API CORS proxy; Google OAuth handler |
+| Deployment | Replit Deployments | Single-environment; no Vercel/serverless needed |
+| Source control | GitHub | Version history; backup |
+| Database (v2) | Notion API (free tier) | No SQL server; Kieran can see/edit data in Notion GUI |
 | Calendar | Google Calendar API | Read-only; OAuth 2.0 |
-| Package manager | npm | Default |
+| Dev runner | concurrently | Vite (port 5000) + Express (port 3001) in one command |
 
 ---
 
 ## 5. Notion Data Schema
 
-Five databases in Rylee's Notion workspace. All databases are private (not shared publicly).
+Five databases in Kieran's Notion workspace. All databases are private (not shared publicly).
 
 ### 5.1 Routine_Templates
 | Property | Type | Notes |
 |---|---|---|
-| Title | Title | Item name (e.g., "Brush teeth") |
+| Title | Title | Ritual item name (e.g., "Brew tea") |
 | Day_Of_Week | Select | Sun / Mon / Tue / Wed / Thu / Fri / Sat |
 | Time_Label | Text | Optional display time (e.g., "7:00 AM") |
 | Sort_Order | Number | Lower = appears first |
@@ -272,7 +276,7 @@ Five databases in Rylee's Notion workspace. All databases are private (not share
 |---|---|---|
 | Title | Title | Habit name |
 | Description | Text | Optional "done means..." note |
-| Color | Select | Preset color tokens |
+| Color | Select | Preset Moonlit Hearth color tokens |
 | Active | Checkbox | Soft-delete |
 | Created | Created time | Auto |
 
@@ -298,154 +302,165 @@ Five databases in Rylee's Notion workspace. All databases are private (not share
 
 ---
 
-## 6. UI / UX Design Spec
+## 6. UI / UX Design Spec — Moonlit Hearth
 
 ### 6.1 Color Tokens (Dark Mode)
 | Token | Hex | Usage |
 |---|---|---|
-| Background | #0F0F12 | App base layer |
-| Surface | #1A1A22 | Cards, bottom nav, modals |
-| Surface-Raised | #242432 | Input fields, hover states |
-| Border | #2E2E40 | Dividers, card borders |
-| Text-Primary | #E8E8F0 | Main readable text |
-| Text-Secondary | #8888A8 | Labels, secondary info |
-| Accent-Purple | #9B7FFF | Primary CTA, active nav tab, streak |
-| Accent-Green | #4ECFA0 | Completion states, habits done |
-| Accent-Red | #FF6B7A | High priority, delete confirmation |
-| Accent-Gold | #F5B942 | Motivational accents, quotes |
+| Background | #0D0B14 | App base layer (deep midnight purple-black) |
+| Surface | #1A1424 | Cards, bottom nav, modals |
+| Surface-Raised | #251B30 | Input fields, hover states |
+| Border | #3A2A4A | Dividers, card borders |
+| Text-Primary | #EAE0F8 | Main readable text |
+| Text-Secondary | #9A86B0 | Labels, secondary info |
+| Accent-Amethyst | #C4A0E8 | Active nav, CTAs, streaks |
+| Accent-Sage | #4ECFA0 | Completion states, habits done |
+| Accent-Rose | #D4756B | High priority, delete confirmation |
+| Accent-Gold | #E8B86D | Motivational accents, quotes, seasonal badges |
 
 ### 6.2 Typography
 | Role | Font | Weight | Size |
 |---|---|---|---|
-| Display / Greeting | Inter | 700 | 28px |
-| Section Headers | Inter | 600 | 18px |
-| Body / Item Labels | Inter | 400 | 15px |
-| Secondary Labels | Inter | 400 | 13px |
-| Time stamps / Meta | Inter Mono | 400 | 12px |
+| Display / Greeting | Cormorant Garamond | 600 | 28–32px |
+| Section Headers | DM Sans | 600 | 18px |
+| Body / Item Labels | DM Sans | 400 | 15px |
+| Secondary Labels | DM Sans | 400 | 13px |
+| Timestamps / Streaks | Space Mono | 400 | 12px |
 
-**Load via:** `https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Inter+Mono&display=swap`
+**Load via Google Fonts:**
+```
+https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@400;500;600&family=Space+Mono&display=swap
+```
 
 ### 6.3 Component Standards
-- **Cards:** `rounded-2xl`, `border border-[#2E2E40]`, `bg-[#1A1A22]`, 16px padding.
-- **Bottom Nav:** Fixed, 64px height, `bg-[#1A1A22]`, active tab icon in Accent-Purple, inactive in Text-Secondary.
-- **FAB (Floating Action Button):** 56px circle, Accent-Purple background, `+` icon, bottom-right corner above nav bar.
-- **Checkboxes:** Custom circular toggle (not default HTML checkbox). Unchecked: hollow circle in Border color. Checked: filled circle in Accent-Green with checkmark.
-- **Swipe gestures:** Left = delete (red background reveal). Right = promote/archive (purple background reveal).
-- **Streak badge:** Flame icon + number, Accent-Purple, shown on habit cards when streak >= 2.
+- **Cards:** `rounded-2xl`, `border border-[#3A2A4A]`, `bg-[#1A1424]`, 16px padding.
+- **Bottom Nav:** Fixed, 64px height, `bg-[#1A1424]`, active tab icon in Accent-Amethyst, inactive in Text-Secondary.
+- **FAB (Floating Action Button):** 56px circle, Accent-Amethyst background, `+` icon, bottom-right corner above nav bar.
+- **Check circles:** Custom circular toggle (not default HTML checkbox). Unchecked: hollow circle in Border color. Checked: filled circle in Accent-Sage with checkmark.
+- **Streak badge:** Flame icon + number, Accent-Amethyst, shown on habit cards when streak ≥ 2. Font: Space Mono.
+- **Seasonal badges:** Small pill in Accent-Gold. Auto-detected from date (solstices, equinoxes, and celtic sabbats).
 
 ---
 
 ## 7. Environment Variables Required
 
-| Variable | Source | Where stored |
-|---|---|---|
-| `NOTION_API_KEY` | Notion integration token | Vercel env vars |
-| `NOTION_ROUTINES_DB_ID` | Notion database URL | Vercel env vars |
-| `NOTION_HABITS_DB_ID` | Notion database URL | Vercel env vars |
-| `NOTION_HABIT_COMPLETIONS_DB_ID` | Notion database URL | Vercel env vars |
-| `NOTION_TASKS_DB_ID` | Notion database URL | Vercel env vars |
-| `NOTION_ROUTINE_COMPLETIONS_DB_ID` | Notion database URL | Vercel env vars |
-| `GOOGLE_CLIENT_ID` | Google Cloud Console | Vercel env vars |
-| `GOOGLE_CLIENT_SECRET` | Google Cloud Console | Vercel env vars |
+| Variable | Phase | Source | Where stored |
+|---|---|---|---|
+| `GOOGLE_CLIENT_ID` | 1.5 | Google Cloud Console | Replit Secrets |
+| `GOOGLE_CLIENT_SECRET` | 1.5 | Google Cloud Console | Replit Secrets |
+| `GOOGLE_REDIRECT_URI` | 1.5 | Your Replit deployment URL + `/api/google/callback` | Replit Secrets |
+| `SESSION_SECRET` | 1.5 | Random 32-char string | Replit Secrets |
+| `NOTION_API_KEY` | 2 | notion.so/my-integrations | Replit Secrets |
+| `NOTION_ROUTINE_TEMPLATES_DB_ID` | 2 | 32-char hex from Notion DB URL | Replit Secrets |
+| `NOTION_ROUTINE_COMPLETIONS_DB_ID` | 2 | 32-char hex from Notion DB URL | Replit Secrets |
+| `NOTION_HABITS_DB_ID` | 2 | 32-char hex from Notion DB URL | Replit Secrets |
+| `NOTION_HABIT_COMPLETIONS_DB_ID` | 2 | 32-char hex from Notion DB URL | Replit Secrets |
+| `NOTION_TASKS_DB_ID` | 2 | 32-char hex from Notion DB URL | Replit Secrets |
 
 ---
 
 ## 8. v1 Scope Boundary
 
-### In Scope (v1)
-- Full 6-tab UI shell with dark mode
-- Routines: 7-day templates, daily check-off, midnight reset
+### In Scope (v1 — UI Shell, complete)
+- Full 6-tab UI shell with Moonlit Hearth dark mode
+- Rituals: 7-day templates, daily check-off, midnight reset
 - Habits: daily tracking, streak counter, weekly grid view
-- Calendar: Google Calendar read-only integration
-- To-Do: daily task list, status management, carry-forward of incomplete items
-- Backlog: full CRUD, promote-to-today action, search + sort
-- Home dashboard: greeting, today's routine, upcoming calendar events, expandable "More" section
-- All data persisted to Notion via Vercel API routes
-- Deployed to Vercel from GitHub
+- Calendar: month grid with manual event CRUD (Google-ready structure)
+- Today: daily task list, status management, carry-forward of incomplete items
+- Archive: full CRUD, promote-to-today action, search + sort
+- Home dashboard: greeting, seasonal badge, today's ritual mirror, upcoming events, expandable "More" section
+- All data in localStorage (no API keys needed)
+- Deployed to Replit
 
-### Out of Scope (v1 -- move to v1.1 or v2)
-- User authentication / login (single user assumed)
+### In Scope (v1.5 — Google Calendar)
+- Google Calendar OAuth (read-only) via Express.js backend
+- Real events displayed in Calendar tab and Home dashboard
+- Deployed to Replit Deployments (first public URL)
+
+### In Scope (v2 — Notion Backend)
+- Replace localStorage with Notion-backed persistence
+- All 5 Notion databases wired to Express.js /api/* routes
+- localStorage → Notion data migration
+
+### Out of Scope (post-v2)
+- User authentication / login
 - Push notifications or reminders
 - Calendar event creation or editing
-- Habit scheduling by day-of-week (all habits assumed daily)
+- Habit scheduling by day-of-week (all habits assumed daily in v1)
 - Recurring tasks
 - Dark/light mode toggle
-- PWA / installable app behavior (add to home screen)
+- PWA / installable app (add to home screen)
 - Data export
 - Multiple users or sharing
 - Offline mode
 
 ---
 
-## 9. Setup Prerequisites (Before Writing One Line of Code)
+## 9. Setup Prerequisites (Before v1.5 / v2)
 
-Rylee and/or Jamie needs to complete these before the agent can build:
+Kieran and/or Jamie needs to complete these before the agent can build Phase 1.5 and Phase 2:
 
-1. **Notion setup:**
+1. **Notion setup (Phase 2):**
    - Create a free Notion account (or use existing).
    - Create a new Notion Integration at https://www.notion.so/my-integrations.
-   - Copy the API key.
-   - Create 5 empty databases (schemas above) and share each one with the integration.
-   - Copy each database ID from the URL (the 32-char hex string).
+   - Copy the API key → add to Replit Secrets as `NOTION_API_KEY`.
+   - Create 5 empty databases (schemas in Section 5) and share each one with the integration.
+   - Copy each database ID from the URL (the 32-char hex string) → add to Replit Secrets.
 
-2. **Google Cloud setup:**
+2. **Google Cloud setup (Phase 1.5):**
    - Go to https://console.cloud.google.com.
-   - Create a new project ("Rylee Life OS").
+   - Create a new project ("Kieran's LifeTrkr").
    - Enable Google Calendar API.
    - Create OAuth 2.0 credentials (Web Application type).
-   - Add `http://localhost:5173` and the Vercel deployment URL to authorized redirect URIs.
-   - Copy Client ID and Client Secret.
+   - Add the Replit deployment URL + `/api/google/callback` to authorized redirect URIs.
+   - Copy Client ID and Client Secret → add to Replit Secrets.
 
 3. **GitHub repo:**
-   - Create a new public or private repo (private recommended).
-   - Connect to Vercel via Vercel dashboard.
-
-4. **Vercel setup:**
-   - Create free account at https://vercel.com.
-   - Import the GitHub repo.
-   - Add all environment variables listed in Section 7.
+   - Repo at https://github.com/OKHP3/kierans-lifetrkr.
+   - Keep in sync with the Replit workspace.
 
 ---
 
-## 10. Open Questions for Next Session
+## 10. Open Questions
 
 | # | Question | Impact |
 |---|---|---|
-| 1 | What is the app's final name? | URL slug, page title, branding |
-| 2 | Does Rylee want to be able to add calendar events from the app in v1.1? | Scope planning |
-| 3 | Habit frequency -- should some habits be "weekday only" vs daily? | Data schema (can add Day_Mask field) |
-| 4 | Routine carry-forward: if Rylee doesn't complete a routine item, does it show as missed or just resets? | UX and data |
-| 5 | Does Rylee have a Google account she's comfortable connecting? | OAuth prerequisite |
+| 1 | Does Kieran want to add calendar events from the app in v1.5 or v2? | Scope planning |
+| 2 | Habit frequency — should some habits be "weekday only" vs daily? | Data schema (can add Day_Mask field) |
+| 3 | Ritual carry-forward: if Kieran doesn't complete a ritual item, does it show as missed or just reset? | UX and data |
+| 4 | Does Kieran have a Google account she's comfortable connecting? | OAuth prerequisite |
+| 5 | Final Notion workspace structure — shared with Jamie or Kieran-only from the start? | Phase 3 handoff planning |
 
 ---
 
 ## 11. Suggested Build Sequence (Agent-Friendly)
 
-Phase 1 -- Shell (30 min):
-- Scaffold Vite + React + Tailwind project
-- Build bottom nav with 6 tabs, dark theme tokens, all placeholder screens
+Phase 1 — Shell (complete ✅):
+- ✅ Vite + React + Tailwind project scaffold
+- ✅ Bottom nav with 6 tabs, Moonlit Hearth design tokens
+- ✅ AppContext + useReducer + localStorage persistence
+- ✅ All 6 tab pages (Home, Rituals, Habits, Calendar, Today, Archive)
+- ✅ Greeting, seasonal badge, easter egg, daily quote rotation
+- ✅ Midnight reset, toast notifications, empty states
 
-Phase 2 -- Notion API layer (45 min):
-- Create Vercel `/api/notion/*` routes
-- Wire up Tasks and Habits CRUD first (highest interaction density)
-- Wire up Routine_Templates
+Phase 1.5 — Google Calendar (next):
+- Express.js Google OAuth routes (/api/google/auth, /api/google/callback, /api/google/events)
+- Calendar tab updated to consume real events
+- Home dashboard updated for real upcoming events
+- Deploy to Replit Deployments
 
-Phase 3 -- Feature screens (60 min):
-- To-Do tab: full list, add, complete, swipe delete
-- Backlog tab: list, add, promote
-- Routines tab: day picker, checklist, edit mode
-- Habits tab: daily toggle, streak counter
+Phase 2 — Notion Backend:
+- Create 5 Notion databases + integration
+- Wire /api/notion/* routes in Express
+- Swap localStorage reads/writes for API calls in AppContext
+- Data migration: export localStorage JSON → import to Notion
 
-Phase 4 -- Home + Calendar (30 min):
-- Home dashboard assembly
-- Google Calendar OAuth + read proxy + month view
-
-Phase 5 -- Polish (15 min):
-- Midnight reset logic
-- Toast confirmations
-- Empty states for all tabs
-- Mobile viewport tuning
+Phase 3 — Handoff:
+- Transfer GitHub repo to Kieran's account
+- Fork Repl to Kieran's Replit account
+- Kieran creates new Notion integration + new OAuth credentials
+- Rotate all secrets in Kieran's Repl
 
 ---
 
-*PRD version 1.0 -- ready for agent handoff*
+*PRD version 1.1 — updated June 2026 for Kieran's LifeTrkr — Jamie Hill*
