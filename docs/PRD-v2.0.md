@@ -1,0 +1,1235 @@
+# Kieran's LifeTrkr — Product Requirements Document v2.0
+**Supersedes:** PRD v1.0, PRD Amendment 01, REPLIT_AGENT_PROMPT.md (Phase 1)
+**Date:** June 21, 2026 — Father's Day / Summer Solstice
+**Status:** Approved for agent handoff
+**Live URL:** https://okhp3.github.io/kierans-lifetrkr/
+**Repository:** https://github.com/OKHP3/kierans-lifetrkr
+
+---
+
+## 1. Executive Summary
+
+Kieran's LifeTrkr is a mobile-first, dark-mode personal life organization app that combines
+day-of-week routine templates, habit tracking, Google Calendar events, Google Tasks, a
+daily to-do list, and a master backlog in one focused interface.
+
+**The defining architectural decision of v2.0:**
+
+The app is entirely client-side. There is no server. There is no database owned or managed
+by the publisher. All data lives in the user's browser. Google authentication and calendar
+access happen directly between the user's browser and Google's servers. The publisher
+(Jamie Hill / OKHP3) never sees, stores, or is responsible for any user credentials, tokens,
+calendar events, or personal data.
+
+This is not a limitation. It is the design.
+
+**Key outcomes this achieves:**
+
+- Any user in the world can use the app with their own Google account
+- No user data crosses Jamie's infrastructure at any point
+- Zero server cost, zero server management, zero security exposure for the publisher
+- Deployed as a static site on GitHub Pages — free, fast, globally distributed
+- Google OAuth handshake happens between the user and Google only
+- Data portability: users own their data in their own browser; clearing the app means
+  clearing their own localStorage
+
+---
+
+## 2. Origin
+
+Started on Father's Day, June 21, 2026 — the Summer Solstice — as a build session between
+Jamie Hill and his daughter Kieran. The goal: teach by doing, ship something real, make it
+useful for more than just the person it was named after.
+
+Kieran is the fourth generation: Ralph v0.0 → Virgil v1.0 → Jamie v2.0 → Kieran v3.0.
+
+Published under MIT license. Sharing is caring.
+
+---
+
+## 3. The Architectural Decision — Why Client-Only
+
+### What "client-only" means
+
+Every computation, every data read, every API call originates from the user's browser.
+The GitHub repository serves static HTML, CSS, and JavaScript files to any browser that
+visits the URL. After those files load, the server is no longer involved in anything the
+app does.
+
+### How Google auth works without a server
+
+Google provides the **Google Identity Services (GIS) library** specifically for this pattern.
+It implements the **implicit token model** — the OAuth consent flow happens between the
+user's browser and Google's authorization server. The resulting access token is returned
+directly to the browser's JavaScript. It is never sent to any server the publisher controls.
+
+The only artifact the publisher needs in the code is a **Google OAuth Client ID**. This is
+intentionally public — it identifies the registered app to Google but contains no secret
+material. Embedding it in client-side JavaScript is expected and safe by design.
+
+### What this means for user data
+
+| Data type | Where it lives | Who can access it |
+|---|---|---|
+| Display name | localStorage | User only |
+| Email | localStorage | User only |
+| Google profile photo URL | localStorage | User only |
+| Routines, habits, tasks | localStorage | User only |
+| Google access token | sessionStorage (memory only) | User only, expires in 1 hour |
+| Google Calendar events | Fetched on demand, not stored | User only, in-memory |
+| Google Tasks | Fetched on demand, not stored | User only, in-memory |
+| Google user ID (sub) | localStorage (used as namespace key) | User only |
+
+The publisher (OKHP3/Jamie) has access to exactly nothing in this list.
+
+### Why this is viable for a multi-user public app
+
+Multiple users on separate devices each get their own independent localStorage namespace,
+scoped by their Google user sub ID. User A's routines on User A's laptop are invisible to
+User B on User B's phone. No user account system is needed. No passwords to manage.
+The user's Google identity IS their account.
+
+---
+
+## 4. Target Users
+
+**Primary (named):** Kieran Hill, 21, Denton TX. Needs a calm personal OS for daily routines,
+habits, and task management. Uses Google Calendar. Spiritual/intentional aesthetic.
+
+**Secondary (general public):** Anyone who wants a focused personal life dashboard that
+connects to their existing Google Calendar and Google Tasks without handing their data to
+another app company.
+
+**Non-target:** Teams, organizations, shared accounts, calendar editors. This is a personal
+tool. Read-only Google integration is intentional.
+
+---
+
+## 5. Core Principles
+
+1. **The publisher owns nothing.** No user data transits or rests on publisher infrastructure.
+2. **The browser is the database.** localStorage is the persistence layer. It is the user's
+   own machine.
+3. **Google is the identity provider.** No username/password system to build or maintain.
+4. **Read, don't write.** Google Calendar and Google Tasks are read-only sources. The app
+   never modifies the user's Google data.
+5. **One question answered fast.** What does today require from me?
+6. **Calm over feature-dense.** Every feature added is a trade against simplicity.
+7. **Portable forever.** Because the data lives in the browser, users can clear it, export it
+   (future feature), or walk away with no data left behind.
+
+---
+
+## 6. Technical Stack
+
+### Runtime
+
+| Layer | Choice | Justification |
+|---|---|---|
+| Framework | React 18 | Component model, wide tooling support, Replit agent familiarity |
+| Language | TypeScript | Type safety across localStorage schema and Google API responses |
+| Styling | Tailwind CSS v3 | Utility classes, dark mode via class strategy, mobile-first |
+| Routing | React Router v6 (HashRouter) | HashRouter required for GitHub Pages SPA — no server redirect rules |
+| State | React Context + useReducer | Sufficient for single-user client state; no Redux overhead |
+| Build | Vite | Fast HMR in Replit dev environment; clean static output for GitHub Pages |
+| Icons | Tabler Icons (outline, CDN) | 5800+ icons, outline style, consistent with design system |
+| Fonts | Google Fonts (Cormorant Garamond, DM Sans, Space Mono) | Moonlit Hearth design spec |
+
+### Google Integration
+
+| Service | Library | Version |
+|---|---|---|
+| Authentication | Google Identity Services (GIS) | accounts.google.com/gsi/client (CDN, always latest) |
+| Calendar API | Google APIs JS Client | apis.google.com/js/api.js (CDN, always latest) |
+| Tasks API | Google APIs JS Client | Same client, separate discovery doc |
+
+### Deployment
+
+| Layer | Choice |
+|---|---|
+| Host | GitHub Pages (static, free) |
+| Deploy method | gh-pages npm package via npm run deploy |
+| Branch | gh-pages (auto-managed by deploy script) |
+| Dev environment | Replit (build only, not hosting) |
+| Custom domain | Optional — configurable via CNAME file in repo |
+
+### Dependencies (package.json)
+
+```json
+{
+  "dependencies": {
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "react-router-dom": "^6.24.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "autoprefixer": "^10.4.19",
+    "gh-pages": "^6.1.1",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.1"
+  }
+}
+```
+
+No backend dependencies. No Express. No node-ical. No @notionhq/client.
+
+---
+
+## 7. Vite Configuration for GitHub Pages
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  base: '/kierans-lifetrkr/',  // REQUIRED — matches GitHub Pages repo path
+})
+```
+
+Without the `base` setting, all asset paths resolve to root and the deployed app
+loads a blank screen.
+
+### Deployment Commands (package.json scripts)
+
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && gh-pages -d dist"
+  }
+}
+```
+
+`npm run deploy` is the only command needed to ship an update to the live URL.
+
+### SPA Routing on GitHub Pages (404 Redirect Trick)
+
+GitHub Pages does not support server-side SPA routing. HashRouter handles this by
+appending routes as hash fragments (`/#/habits`) rather than path segments (`/habits`).
+No 404.html trick needed when using HashRouter.
+
+```typescript
+// App.tsx
+import { HashRouter, Routes, Route } from 'react-router-dom';
+
+export default function App() {
+  return (
+    <HashRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/rituals" element={<Rituals />} />
+        <Route path="/habits" element={<Habits />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/today" element={<Today />} />
+        <Route path="/archive" element={<Archive />} />
+        <Route path="/settings" element={<Settings />} />
+      </Routes>
+      <BottomNav />
+    </HashRouter>
+  );
+}
+```
+
+---
+
+## 8. Google Integration Architecture
+
+### 8.1 GCP Project Setup (One-Time, Publisher Does This)
+
+The publisher (Jamie) creates one GCP project. All users of the app share this single
+GCP project. Jamie never sees any user data as a result — the project is just the
+registration that tells Google "this app with this domain is allowed to request Calendar
+and Tasks access."
+
+**Steps:**
+
+1. console.cloud.google.com → New Project → "LifeTrkr"
+2. APIs & Services → Library → Enable: **Google Calendar API**, **Google Tasks API**
+3. APIs & Services → Credentials → Create Credentials → OAuth 2.0 Client ID
+   - Application type: **Web Application**
+   - Name: "LifeTrkr Web Client"
+   - Authorized JavaScript Origins (NOT redirect URIs — this is the token model):
+     ```
+     https://okhp3.github.io
+     http://localhost:5173
+     ```
+4. Copy the **Client ID** only. Discard/ignore the Client Secret — it is not needed.
+5. APIs & Services → OAuth Consent Screen:
+   - App name: "Kieran's LifeTrkr"
+   - User support email: Jamie's email
+   - Developer contact: Jamie's email
+   - Scopes to add: `calendar.readonly`, `tasks.readonly`
+   - Publishing status: **Testing** (initially)
+   - Add test users by Gmail address for initial rollout
+
+The Client ID is embedded in the app source code. This is correct and safe by design.
+
+### 8.2 OAuth Scopes Requested
+
+| Scope | API | What It Allows | What It Does NOT Allow |
+|---|---|---|---|
+| `https://www.googleapis.com/auth/calendar.readonly` | Calendar | Read events from all user calendars | Create, edit, delete events |
+| `https://www.googleapis.com/auth/tasks.readonly` | Tasks | Read task lists and tasks | Create, edit, delete tasks |
+| `openid` | Identity | Verify user identity | Any data access |
+| `profile` | Identity | Name and profile photo | Any data access |
+| `email` | Identity | Email address | Any data access |
+
+Both scopes requested in a single consent dialog. User approves once. Token covers both APIs.
+
+### 8.3 Authentication Flow
+
+```
+1. User clicks "Connect Google Account" on Settings or first-launch screen.
+
+2. GIS library opens Google consent popup:
+   "LifeTrkr wants to access your Google account
+    - View your calendar events
+    - View your tasks and task lists"
+   User clicks Allow.
+
+3. Google returns an access token directly to the browser's JavaScript callback.
+   Token is valid for 1 hour.
+   Token is stored in sessionStorage only (not localStorage — security best practice).
+   Token is never sent to any server.
+
+4. App immediately fetches user profile from:
+   GET https://www.googleapis.com/oauth2/v3/userinfo
+   Authorization: Bearer {access_token}
+   
+   Response includes: sub (unique user ID), name, email, picture.
+   sub is stored in localStorage as the namespace key for all user data.
+   name, email, picture stored in localStorage under the user's namespace.
+
+5. App fetches Calendar events and Tasks data.
+   These are held in React state (memory) — not stored in localStorage.
+   On page refresh, the data is re-fetched after token validation.
+
+6. Token expiry handling:
+   - App checks token expiry before each API call.
+   - If expired: show "Reconnect Google" button — one click re-authorizes silently
+     (if user already granted consent, Google skips the consent screen).
+   - Silent re-auth uses: prompt: 'none' in token client config.
+```
+
+### 8.4 GIS Library Integration
+
+Load in index.html `<head>` — no npm package needed:
+
+```html
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer></script>
+```
+
+Initialize in a React hook:
+
+```typescript
+// src/hooks/useGoogleAuth.ts
+import { useState, useCallback } from 'react';
+
+const CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
+const SCOPES = [
+  'https://www.googleapis.com/auth/calendar.readonly',
+  'https://www.googleapis.com/auth/tasks.readonly',
+  'openid',
+  'profile',
+  'email',
+].join(' ');
+
+export function useGoogleAuth() {
+  const [accessToken, setAccessToken] = useState<string | null>(
+    sessionStorage.getItem('gal_token')
+  );
+  const [tokenExpiry, setTokenExpiry] = useState<number | null>(
+    Number(sessionStorage.getItem('gal_expiry')) || null
+  );
+
+  const isTokenValid = useCallback(() => {
+    if (!accessToken || !tokenExpiry) return false;
+    return Date.now() < tokenExpiry;
+  }, [accessToken, tokenExpiry]);
+
+  const requestToken = useCallback((silent = false) => {
+    return new Promise<string>((resolve, reject) => {
+      const client = window.google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        prompt: silent ? 'none' : '',
+        callback: (response) => {
+          if (response.error) {
+            reject(response.error);
+            return;
+          }
+          const expiry = Date.now() + (response.expires_in * 1000);
+          sessionStorage.setItem('gal_token', response.access_token);
+          sessionStorage.setItem('gal_expiry', String(expiry));
+          setAccessToken(response.access_token);
+          setTokenExpiry(expiry);
+          resolve(response.access_token);
+        },
+      });
+      client.requestAccessToken();
+    });
+  }, []);
+
+  const getToken = useCallback(async (): Promise<string> => {
+    if (isTokenValid()) return accessToken!;
+    return requestToken(true).catch(() => requestToken(false));
+  }, [isTokenValid, accessToken, requestToken]);
+
+  const disconnect = useCallback(() => {
+    sessionStorage.removeItem('gal_token');
+    sessionStorage.removeItem('gal_expiry');
+    setAccessToken(null);
+    setTokenExpiry(null);
+  }, []);
+
+  return {
+    isConnected: isTokenValid(),
+    connect: () => requestToken(false),
+    getToken,
+    disconnect,
+  };
+}
+```
+
+### 8.5 Google Calendar API Integration
+
+```typescript
+// src/lib/googleCalendar.ts
+
+export async function fetchCalendarEvents(
+  token: string,
+  daysAhead: number = 30
+): Promise<CalendarEvent[]> {
+  const now = new Date().toISOString();
+  const cutoff = new Date(Date.now() + daysAhead * 86400000).toISOString();
+
+  const url = new URL('https://www.googleapis.com/calendar/v3/calendars/primary/events');
+  url.searchParams.set('timeMin', now);
+  url.searchParams.set('timeMax', cutoff);
+  url.searchParams.set('singleEvents', 'true');
+  url.searchParams.set('orderBy', 'startTime');
+  url.searchParams.set('maxResults', '50');
+
+  const res = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) throw new Error(`Calendar API error: ${res.status}`);
+
+  const data = await res.json();
+
+  return (data.items || []).map((item: any) => ({
+    id: item.id,
+    title: item.summary || '(no title)',
+    start: item.start.dateTime || item.start.date,
+    end: item.end?.dateTime || item.end?.date,
+    allDay: !item.start.dateTime,
+    location: item.location || null,
+    description: item.description || null,
+    colorId: item.colorId || null,
+    source: 'google' as const,
+  }));
+}
+```
+
+### 8.6 Google Tasks API Integration
+
+```typescript
+// src/lib/googleTasks.ts
+
+export async function fetchTaskLists(token: string): Promise<TaskList[]> {
+  const res = await fetch(
+    'https://tasks.googleapis.com/tasks/v1/users/@me/lists?maxResults=20',
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!res.ok) throw new Error(`Tasks API error: ${res.status}`);
+  const data = await res.json();
+  return (data.items || []).map((list: any) => ({
+    id: list.id,
+    title: list.title,
+  }));
+}
+
+export async function fetchTasks(
+  token: string,
+  taskListId: string = '@default'
+): Promise<GoogleTask[]> {
+  const url = new URL(
+    `https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks`
+  );
+  url.searchParams.set('showCompleted', 'false');
+  url.searchParams.set('showHidden', 'false');
+  url.searchParams.set('maxResults', '100');
+
+  const res = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`Tasks fetch error: ${res.status}`);
+  const data = await res.json();
+
+  return (data.items || []).map((task: any) => ({
+    id: task.id,
+    title: task.title,
+    notes: task.notes || null,
+    due: task.due || null,
+    status: task.status,
+    source: 'google_tasks' as const,
+  }));
+}
+```
+
+### 8.7 Google Reminders Clarification
+
+Google Reminders created via Google Assistant or the Google Calendar UI surface as
+calendar events of a special internal type within the Calendar API response. They are
+NOT available via a separate public Reminders API. There is no standalone Google
+Reminders API.
+
+**Practical impact:** fetching `calendars/primary/events` via the Calendar API will
+include Reminder-type events in the result set. No additional integration is needed.
+If Kieran creates reminders in Google Calendar, they appear automatically in the
+Calendar tab.
+
+**What is NOT accessible:** Reminders in the Google Tasks interface are separate from
+calendar reminders. These are handled via the Tasks API and appear as tasks with due
+dates, which is already covered by the `tasks.readonly` scope.
+
+---
+
+## 9. Multi-User Data Architecture (localStorage Namespacing)
+
+Because multiple Google accounts may be used on the same device (family members, etc.),
+all localStorage keys are namespaced by the Google user `sub` ID.
+
+```typescript
+// src/lib/storage.ts
+
+const APP_PREFIX = 'lifetrkr';
+
+function getUserId(): string {
+  // Falls back to 'guest' if not authenticated — allows use before sign-in
+  const profile = localStorage.getItem(`${APP_PREFIX}:profile`);
+  if (!profile) return 'guest';
+  return JSON.parse(profile).sub || 'guest';
+}
+
+function key(entity: string): string {
+  return `${APP_PREFIX}:${getUserId()}:${entity}`;
+}
+
+export const storage = {
+  get<T>(entity: string): T | null {
+    const raw = localStorage.getItem(key(entity));
+    if (!raw) return null;
+    try { return JSON.parse(raw) as T; }
+    catch { return null; }
+  },
+  set<T>(entity: string, value: T): void {
+    localStorage.setItem(key(entity), JSON.stringify(value));
+  },
+  remove(entity: string): void {
+    localStorage.removeItem(key(entity));
+  },
+  clear(): void {
+    const uid = getUserId();
+    Object.keys(localStorage)
+      .filter(k => k.startsWith(`${APP_PREFIX}:${uid}:`))
+      .forEach(k => localStorage.removeItem(k));
+  },
+};
+```
+
+localStorage key structure:
+```
+lifetrkr:profile                     ← not namespaced (needed to derive namespace)
+lifetrkr:{sub}:routines              ← RoutineTemplate[]
+lifetrkr:{sub}:routine_completions   ← RoutineCompletion[]
+lifetrkr:{sub}:habits                ← Habit[]
+lifetrkr:{sub}:habit_completions     ← HabitCompletion[]
+lifetrkr:{sub}:tasks                 ← Task[]
+lifetrkr:{sub}:calendar_events       ← NOT stored — fetched fresh each session
+lifetrkr:{sub}:google_tasks          ← NOT stored — fetched fresh each session
+lifetrkr:{sub}:settings              ← UserSettings
+lifetrkr:{sub}:selected_task_lists   ← string[] (which Google Task lists to show)
+```
+
+---
+
+## 10. TypeScript Type Definitions (types.ts)
+
+```typescript
+// ─── Identity ──────────────────────────────────────────────────────────────
+
+export type GoogleProfile = {
+  sub: string;          // unique user ID — used as localStorage namespace key
+  name: string;
+  email: string;
+  picture: string;      // profile photo URL
+};
+
+export type UserSettings = {
+  displayName: string;          // pre-filled from Google, user-overridable
+  email: string;                // from Google, display only
+  timezone: string;             // auto-detected, user-overridable
+  googleConnected: boolean;
+  calendarDaysAhead: number;    // default 14
+  selectedTaskLists: string[];  // Google Task list IDs to show
+  showGoogleTasks: boolean;     // toggle Tasks integration
+  showCompletedTasks: boolean;  // show/hide done tasks in Today tab
+};
+
+// ─── Routines ──────────────────────────────────────────────────────────────
+
+export type DayOfWeek =
+  | 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday'
+  | 'Thursday' | 'Friday' | 'Saturday';
+
+export type RoutineItem = {
+  id: string;
+  title: string;
+  optional?: boolean;
+  sortOrder: number;
+};
+
+export type RoutineTemplate = {
+  id: string;
+  dayOfWeek: DayOfWeek;
+  name: string;
+  items: RoutineItem[];
+};
+
+export type RoutineCompletion = {
+  date: string;                  // YYYY-MM-DD
+  routineTemplateId: string;
+  completedItemIds: string[];
+};
+
+// ─── Habits ────────────────────────────────────────────────────────────────
+
+export type Habit = {
+  id: string;
+  name: string;
+  description?: string;
+  colorTag?: string;
+  active: boolean;
+  createdAt: string;
+};
+
+export type HabitCompletion = {
+  habitId: string;
+  date: string;                  // YYYY-MM-DD
+};
+
+// ─── Tasks ─────────────────────────────────────────────────────────────────
+
+export type TaskStatus = 'backlog' | 'today' | 'done';
+export type TaskPriority = 'low' | 'medium' | 'high';
+export type TaskSource = 'manual' | 'google_tasks';
+
+export type Task = {
+  id: string;
+  title: string;
+  notes?: string;
+  status: TaskStatus;
+  priority?: TaskPriority;
+  category?: string;
+  dueDate?: string;
+  createdAt: string;
+  completedAt?: string;
+  source: TaskSource;
+  googleTaskId?: string;         // reference if promoted from Google Tasks
+  googleTaskListId?: string;
+};
+
+// ─── Google Tasks (read-only source) ───────────────────────────────────────
+
+export type TaskList = {
+  id: string;
+  title: string;
+};
+
+export type GoogleTask = {
+  id: string;
+  title: string;
+  notes: string | null;
+  due: string | null;           // RFC 3339 datetime
+  status: 'needsAction' | 'completed';
+  source: 'google_tasks';
+};
+
+// ─── Calendar ──────────────────────────────────────────────────────────────
+
+export type CalendarEvent = {
+  id: string;
+  title: string;
+  start: string;                // ISO datetime or YYYY-MM-DD for all-day
+  end?: string;
+  allDay: boolean;
+  location: string | null;
+  description: string | null;
+  colorId: string | null;
+  source: 'google' | 'manual';
+};
+
+// ─── App State ─────────────────────────────────────────────────────────────
+
+export type AppState = {
+  profile: GoogleProfile | null;
+  settings: UserSettings;
+  routineTemplates: RoutineTemplate[];
+  routineCompletions: RoutineCompletion[];
+  habits: Habit[];
+  habitCompletions: HabitCompletion[];
+  tasks: Task[];
+  calendarEvents: CalendarEvent[];         // in-memory only
+  googleTasks: GoogleTask[];               // in-memory only
+  taskLists: TaskList[];                   // in-memory only
+  isGoogleConnected: boolean;
+  isLoadingCalendar: boolean;
+  isLoadingTasks: boolean;
+  lastGoogleSync: string | null;           // ISO datetime
+};
+```
+
+---
+
+## 11. Project Structure
+
+```
+kierans-lifetrkr/
+├── public/
+│   └── favicon.ico
+├── src/
+│   ├── pages/
+│   │   ├── Home.tsx          # Dashboard
+│   │   ├── Rituals.tsx       # Day-of-week routine templates
+│   │   ├── Habits.tsx        # Habit tracking
+│   │   ├── Calendar.tsx      # Google Calendar events
+│   │   ├── Today.tsx         # Daily task list
+│   │   ├── Archive.tsx       # Backlog
+│   │   └── Settings.tsx      # User profile + Google connection
+│   ├── components/
+│   │   ├── BottomNav.tsx
+│   │   ├── Card.tsx
+│   │   ├── Checklist.tsx
+│   │   ├── MoreSection.tsx
+│   │   ├── GoogleConnectButton.tsx
+│   │   ├── CalendarEventCard.tsx
+│   │   ├── GoogleTaskCard.tsx
+│   │   └── TokenExpiryBanner.tsx
+│   ├── context/
+│   │   ├── AppContext.tsx
+│   │   └── AppReducer.ts
+│   ├── hooks/
+│   │   ├── useGoogleAuth.ts
+│   │   ├── useCalendarEvents.ts
+│   │   └── useGoogleTasks.ts
+│   ├── lib/
+│   │   ├── storage.ts         # Namespaced localStorage abstraction
+│   │   ├── date.ts            # Date utils + seasonal badge logic
+│   │   ├── googleCalendar.ts  # Calendar API fetch functions
+│   │   └── googleTasks.ts     # Tasks API fetch functions
+│   ├── types.ts
+│   ├── constants.ts           # CLIENT_ID, SCOPES, COLOR_TOKENS
+│   ├── App.tsx
+│   └── main.tsx
+├── index.html                 # Loads GIS + GAPI scripts in <head>
+├── vite.config.ts             # base: '/kierans-lifetrkr/' — REQUIRED
+├── tailwind.config.ts         # Moonlit Hearth color tokens
+├── tsconfig.json
+├── package.json
+├── .gitignore
+├── .env.example               # CLIENT_ID only — no secrets
+├── docs/
+│   ├── PRD.md
+│   ├── DESIGN.md
+│   ├── HANDOFF.md
+│   └── ROADMAP.md
+└── README.md
+```
+
+---
+
+## 12. Feature Specifications
+
+### 12.1 First Launch Experience
+
+On first visit (no localStorage data, no Google session):
+
+1. Full-screen welcome: "Kieran's LifeTrkr" in Cormorant Garamond
+2. Brief tagline: "Your day. Your rituals. Your rules."
+3. Two options:
+   - **"Connect Google Account"** — primary CTA (accentAmethyst)
+   - **"Use without Google"** — secondary (textSecondary, smaller)
+
+"Use without Google" allows full app functionality except Calendar and Tasks tabs,
+which show a "Connect Google to see your events" placeholder.
+
+Settings page is always accessible to connect Google later.
+
+### 12.2 Settings Tab (New in v2.0)
+
+Accessible via a gear icon in the top-right corner of the Home screen AND as a
+7th destination (not in bottom nav — accessed from Home header).
+
+**Sections:**
+
+**Profile**
+- Avatar: Google profile photo (circular, 64px) or initials fallback
+- Display Name: editable text field (pre-filled from Google)
+- Email: read-only display (from Google)
+
+**Google Account**
+- Connection status badge: "Connected" (accentSage) or "Not connected" (textSecondary)
+- Connected state: shows Google account email + "Disconnect" button
+- Disconnected state: "Connect Google Account" button (runs OAuth flow)
+- Token status: "Synced just now" / "Sync expires in X minutes" / "Reconnect" CTA
+- Last synced timestamp (Space Mono, small)
+
+**Google Calendar**
+- Toggle: "Show Google Calendar events" (default: on when connected)
+- Days ahead: slider 7 / 14 / 30 / 60 (default: 14)
+- "Refresh Calendar" manual sync button
+
+**Google Tasks**
+- Toggle: "Show Google Tasks" (default: on when connected)
+- Task list selector: shows all the user's Google Task lists with checkboxes
+  (allows showing tasks from "Personal" but not "Work", etc.)
+- Toggle: "Show tasks due today in Today tab" (default: on)
+
+**App**
+- Time zone: auto-detected, user-overridable dropdown
+- "Clear all app data" — danger zone, confirmation required
+  - Clears all localStorage for this user's namespace
+  - Does NOT disconnect Google (no server state to clear)
+  - Does NOT affect any Google data (Tasks, Calendar — read-only)
+
+**About**
+- "Kieran's LifeTrkr · MIT License"
+- "Built on Father's Day, Summer Solstice 2026"
+- "Jamie + Kieran Hill"
+- Link: overkillhill.com/manifesto/
+
+### 12.3 Home / Dashboard
+
+**Primary content (always visible):**
+- Time-aware greeting: "Good [morning/afternoon/evening]" in textMuted (small caps)
+- Display name in Cormorant Garamond 300 (from settings, defaults to "Friend")
+- Star glyph ✦ after name in accentAmethyst
+- Today's date: "Monday, June 21" in textSecondary
+- Seasonal badge (auto, date-triggered — see Design System doc for full list)
+- Today's ritual checklist (RoutineTemplate for current DayOfWeek, checkable inline)
+- Upcoming events strip (next 3 events from Google Calendar or manual if not connected)
+
+**"More" section (collapsed, tap ∿ more ∿ to expand):**
+- Today's habit completion summary: "3 of 5 today"
+- Today's active task count: "2 tasks remaining"
+- Google Tasks due today (if connected and enabled in settings)
+- Motivational quote (rotating daily, hardcoded pool of 12)
+
+**Connection state on Home:**
+- If not connected to Google: upcoming events section shows
+  "✦ Connect Google to see your calendar" — tappable, routes to Settings
+- If token expired: banner at top "Google sync paused · Tap to reconnect"
+
+### 12.4 Rituals (formerly Routines)
+
+No change from v1.0 spec. Day-of-week templates, checklist, edit mode, midnight reset.
+Data stored in localStorage. Not connected to Google.
+
+Label change from v1.0: tab label is "Rituals," page header is "Rituals."
+
+### 12.5 Habits
+
+No change from v1.0 spec. Daily toggle, 7-day grid, moon-streak counter.
+Data stored in localStorage. Not connected to Google.
+
+### 12.6 Calendar
+
+**Tab behavior:**
+- Month grid view (default)
+- Tap a day to expand event list below grid
+- Events shown as accent-colored dots on grid days
+
+**Event sources:**
+- Google Calendar events (if connected) — marked with Google color
+- Manual events (always available, even without Google) — marked with accentAmethyst
+
+**Google event display:**
+- Source badge: small "G" dot on event card
+- Read-only: no edit or delete controls for Google events
+- Edit/delete controls shown only for `source: 'manual'` events
+
+**Manual event CRUD:**
+- Available regardless of Google connection
+- Fields: title, date, start time, end time, all-day toggle, location
+- Stored in localStorage under tasks with `source: 'manual'` and a calendar flag
+
+**No-connection state:**
+- Calendar tab is fully functional with manual events
+- Shows banner: "Connect Google in Settings to see your Google Calendar events"
+
+**Refresh behavior:**
+- Calendar events are fetched once per app session (on first tab visit)
+- Manual "Refresh" button in tab header re-fetches
+- Token expiry triggers reconnect banner rather than silent failure
+
+### 12.7 Today Tab (formerly To-Do)
+
+**Local tasks** (status: 'today'):
+- Same as v1.0 spec: add, complete, delete, priority badges
+
+**Google Tasks integration (new in v2.0):**
+- Tasks from selected Google Task lists with due date = today are shown in a
+  separate "From Google Tasks" subsection
+- These are read-only: no edit or delete controls
+- "Add to My List" action: copies the Google Task into local tasks as a manual task
+  (does not modify the original Google Task)
+- Google Tasks section is hidden if: not connected, or "Show tasks due today" is off
+  in Settings
+
+**Section layout:**
+```
+TODAY
+─────────────────────────
+My Tasks
+  [ ] Reply to that message    [high]
+  [ ] Review calendar for week
+  ✓   Morning check-in         [done]
+
+─────────────────────────
+From Google Tasks (due today)
+  [ ] Submit timesheet    [+ Add to My List]
+  [ ] Call the vet        [+ Add to My List]
+
+─────────────────────────
+Done (2)  ▾
+  ✓ Morning check-in
+  ✓ Brush teeth
+```
+
+### 12.8 Archive Tab (formerly Backlog)
+
+No change from v1.0 spec for local tasks.
+
+**Google Tasks integration (new in v2.0):**
+- Optional: show Google Tasks without a due date in a "From Google Tasks" subsection
+  at the bottom of Archive (controlled by Settings toggle)
+- Same "Add to My List" pattern as Today tab
+- Search bar searches both local and Google Tasks (if loaded)
+
+### 12.9 Token Expiry Banner
+
+Global banner shown at top of all screens when Google token is expired:
+
+```
+[↻] Google sync paused — tap to reconnect   [×]
+```
+
+- Tapping the banner triggers silent re-auth (no popup if user already consented)
+- If silent re-auth fails, triggers full consent popup
+- [×] dismisses banner for current session only
+
+---
+
+## 13. Google Verification Path (Publisher Responsibility)
+
+### Testing Mode (Ship Now)
+- Up to 100 test users
+- Users must be manually added to GCP Console by Gmail address
+- Users see: "This app hasn't been verified by Google" warning screen with
+  "Advanced → Go to LifeTrkr (unsafe)" option
+- Acceptable for a known beta audience
+
+### Production Mode (Required for Open Public Release)
+When ready to remove the 100-user cap and the warning screen:
+
+1. OAuth Consent Screen in GCP → Publish App
+2. Google initiates verification review
+3. Required before submission:
+   - Privacy policy page (live URL)
+   - Homepage URL (live URL — GitHub Pages URL is acceptable)
+   - App description explaining why calendar/task access is needed
+4. Sensitive scopes (`calendar.readonly`, `tasks.readonly`) trigger
+   Google's sensitive scope review — typically 1 to 4 weeks
+5. Upon approval: unlimited users, no warning screen
+
+**Privacy policy minimum content required by Google:**
+- What data the app accesses (calendar events, tasks, profile)
+- Where data is stored (user's own browser — localStorage only)
+- Explicit statement: no data is transmitted to the publisher's servers
+- Contact information
+
+A simple one-page HTML file at a stable URL is sufficient. GitHub Pages can host it.
+
+---
+
+## 14. Environment Variables
+
+The v2.0 architecture has exactly **one value** to configure, and it is not a secret.
+
+```bash
+# .env (for local Replit development only — never committed)
+VITE_GOOGLE_CLIENT_ID=YOUR_CLIENT_ID.apps.googleusercontent.com
+```
+
+Access in code: `import.meta.env.VITE_GOOGLE_CLIENT_ID`
+
+Alternatively, store it directly in `src/constants.ts`:
+
+```typescript
+export const GOOGLE_CLIENT_ID = '1234567890-abc.apps.googleusercontent.com';
+```
+
+This is acceptable and standard practice. Client IDs are designed to be public.
+The `.env` approach is cleaner for easy rotation without code changes.
+
+No NOTION_API_KEY. No GOOGLE_CLIENT_SECRET. No SESSION_SECRET.
+Notion is fully removed from the v2.0 architecture.
+
+---
+
+## 15. Design System
+
+Unchanged from the Moonlit Hearth spec (docs/DESIGN.md).
+Full token reference, typography spec, component standards, and seasonal badge list
+are in that document. The revised agent prompt should reference it by filename.
+
+Tab labels confirmed for v2.0:
+
+| Tab | Label | Icon | Notes |
+|---|---|---|---|
+| 1 | Home | ti-home | Dashboard |
+| 2 | Rituals | ti-repeat | Day-of-week templates |
+| 3 | Habits | ti-moon | Moon-streak counter |
+| 4 | Calendar | ti-calendar | Google Calendar + manual |
+| 5 | Today | ti-feather | Tasks + Google Tasks due today |
+| 6 | Archive | ti-scroll | Backlog + Google Tasks (optional) |
+
+Settings accessible from Home header (gear icon), not a 7th bottom nav tab.
+
+---
+
+## 16. Phase Roadmap
+
+### Phase 1 — Full UI + Local Data + Google Auth Shell
+**Deliverables:**
+- All 6 tabs functional with localStorage
+- Settings tab: profile, display name, timezone, clear data, About
+- Google Connect button wired to GIS library — auth flow completes
+- Google profile (name, email, photo) stored and displayed in Settings
+- Token expiry banner component (wired but calendar/tasks fetch is placeholder)
+- Starter seed data on first launch
+- Seasonal badge logic in date.ts
+- Moonlit Hearth design system applied throughout
+- HashRouter for GitHub Pages
+- vite.config.ts base path set
+- gh-pages deployment: npm run deploy → live at okhp3.github.io/kierans-lifetrkr/
+- App.tsx generational comment block
+- AGENTS.md or REPLIT_AGENT_PROMPT.md in repo root
+
+**NOT included in Phase 1:**
+- Actual Calendar API fetch
+- Actual Tasks API fetch
+- Manual calendar events are shown via seed data only
+
+### Phase 1.5 — Google Calendar Live Integration
+**Deliverables:**
+- googleCalendar.ts fetch function wired to Calendar tab
+- useCalendarEvents hook with loading states
+- CalendarEventCard component (Google vs manual visual distinction)
+- Home dashboard upcoming events pulling real data
+- Refresh button in Calendar tab header
+- Token expiry triggers reconnect banner
+
+### Phase 1.6 — Google Tasks Live Integration
+**Deliverables:**
+- googleTasks.ts fetch functions wired
+- Task list selector in Settings
+- "From Google Tasks" subsections in Today and Archive tabs
+- "Add to My List" action on Google Task cards
+- useGoogleTasks hook with loading states
+
+### Phase 2 — Polish + Public Prep
+**Deliverables:**
+- Privacy policy page (hosted on GitHub Pages)
+- Submit for Google OAuth verification
+- Token silent re-auth (prompt: 'none') fully tested
+- Empty states for all tabs
+- Offline handling (if network unavailable, show last-session data from localStorage)
+- README and Settings About section updated with privacy policy link
+- Custom domain (optional — kieranslifetrkr.com or lifetrkr.app)
+
+### Phase 3 — Handoff
+See docs/HANDOFF.md. GCP project can be transferred or duplicated under Kieran's
+Google account. Client ID updates accordingly.
+
+---
+
+## 17. Out of Scope (All Phases)
+
+- Writing to Google Calendar (creating/editing/deleting events)
+- Writing to Google Tasks (creating/editing/completing tasks from within the app)
+- Apple Calendar / iCloud integration (future consideration)
+- Microsoft Outlook / M365 Calendar integration (future consideration)
+- Server-side database of any kind
+- User-to-user features, sharing, collaboration
+- Push notifications (not available in static web apps without a service worker + push
+  server — possible future addition via web push, but significant scope)
+- Native mobile app (React Native port is a future option)
+- AI-generated schedule or habit suggestions
+- Data sync across devices (fundamental limitation of localStorage architecture;
+  addressable in a future server-optional version)
+
+---
+
+## 18. Future Calendar Platform Considerations
+
+When expanding beyond Google Calendar, the same client-side token model applies to:
+
+| Platform | Auth Protocol | API | Scope Required |
+|---|---|---|---|
+| Apple Calendar / iCloud | OAuth 2.0 or iCloud API | Apple CalDAV | TBD — Apple's developer program required |
+| Microsoft Outlook | OAuth 2.0 via MSAL | Microsoft Graph API | Calendars.Read |
+| Fastmail | OAuth 2.0 | CalDAV | calendar:read |
+| Proton Calendar | Not publicly available yet | Proton API | N/A (private API) |
+
+Microsoft Outlook via Microsoft Graph is the most mature next candidate. MSAL
+(Microsoft Authentication Library) is the Microsoft equivalent of GIS — designed
+for client-side browser apps. No server required.
+
+A "Connect Outlook" button in Settings using MSAL follows the exact same pattern
+as the Google integration. Both tokens live in sessionStorage. Calendar events from
+both sources merge into the same CalendarEvent[] array with different source fields.
+
+---
+
+## 19. Agent Handoff Instructions
+
+Feed the Replit agent this document plus docs/DESIGN.md in the same prompt session.
+
+**Build sequence for Phase 1:**
+
+Step 1 — Scaffold (15 min):
+```
+Initialize Vite + React + TypeScript + Tailwind.
+Set base: '/kierans-lifetrkr/' in vite.config.ts.
+Install: react-router-dom gh-pages.
+Configure HashRouter in App.tsx.
+Configure tailwind.config.ts with Moonlit Hearth color tokens from docs/DESIGN.md.
+Add Google Fonts link and GIS + GAPI script tags to index.html.
+Add npm run deploy script to package.json.
+Verify npm run dev serves the app.
+```
+
+Step 2 — Shell (20 min):
+```
+Build BottomNav.tsx with 6 tabs (Home, Rituals, Habits, Calendar, Today, Archive).
+Build all 6 page components as stubs returning a page title in the correct style.
+Confirm tab routing works.
+```
+
+Step 3 — Context and Storage (20 min):
+```
+Build types.ts with all types in Section 10.
+Build storage.ts with namespaced localStorage abstraction from Section 9.
+Build AppContext.tsx and AppReducer.ts.
+Build date.ts with getDayOfWeek(), getTodayISO(), getSeasonalBadge() functions.
+```
+
+Step 4 — Constants and Auth Shell (15 min):
+```
+Build constants.ts with GOOGLE_CLIENT_ID placeholder, SCOPES, COLOR_TOKENS.
+Build useGoogleAuth.ts hook from Section 8.4.
+Build GoogleConnectButton.tsx component.
+Build TokenExpiryBanner.tsx component (visible when token is expired).
+Build Settings.tsx page with all sections from Section 12.2.
+Wire GoogleConnectButton to auth hook. Confirm consent popup fires.
+Confirm Google profile (name, email, photo) is stored and displayed.
+```
+
+Step 5 — Seed Data and Home (20 min):
+```
+Add seed data initialization in storage.ts (runs once on first launch).
+Build Home.tsx with greeting, date, ritual checklist, upcoming events strip,
+More section, and seasonal badge.
+Calendar upcoming strip uses seed data for Phase 1.
+```
+
+Step 6 — Rituals (20 min):
+```
+Build Rituals.tsx: day picker, checklist, edit mode, midnight reset logic.
+Wire to AppContext. Confirm completion state persists across tab switches.
+```
+
+Step 7 — Habits (20 min):
+```
+Build Habits.tsx: toggle, 7-day grid, moon-streak counter, add/deactivate.
+Wire to AppContext.
+```
+
+Step 8 — Today and Archive (25 min):
+```
+Build Today.tsx: local tasks, complete/delete/priority, FAB, done section.
+Build Archive.tsx: backlog, promote-to-today, search, sort, FAB.
+Wire both to AppContext. Confirm status transitions persist.
+Google Tasks subsections are placeholder "Connect Google to see tasks" state for Phase 1.
+```
+
+Step 9 — Calendar (15 min):
+```
+Build Calendar.tsx: month grid, day expansion, manual event CRUD.
+Wire to AppContext.
+Google events section is placeholder for Phase 1.
+CalendarEventCard.tsx: displays source badge (G vs manual).
+```
+
+Step 10 — Polish and Deploy (20 min):
+```
+Empty states for all tabs.
+First-launch welcome screen.
+App.tsx generational comment block per docs/DESIGN.md Easter egg spec.
+Confirm npm run deploy pushes to gh-pages branch.
+Confirm live URL resolves: https://okhp3.github.io/kierans-lifetrkr/
+```
+
+**Total Phase 1 estimated build time: 3 to 3.5 hours in a focused Replit agent session.**
+
+---
+
+## 20. Success Criteria
+
+Phase 1 is complete when:
+- App loads at https://okhp3.github.io/kierans-lifetrkr/ on a mobile browser
+- Google Connect button completes OAuth flow, stores profile, shows name in Settings
+- All 6 tabs render with correct Moonlit Hearth styling
+- Ritual checklist loads the correct day-of-week template
+- Habit completion persists across tab switches
+- Task status transitions (backlog → today → done) persist across sessions
+- App looks and feels intentional on a phone screen
+
+Phase 1.5 is complete when:
+- Real Google Calendar events appear in Calendar tab
+- Home upcoming events strip shows real next 3 events
+- Token expiry banner appears and reconnect flow works without data loss
+
+Phase 1.6 is complete when:
+- Google Tasks due today appear in Today tab
+- Task list selector in Settings filters which lists are shown
+
+---
+
+*PRD v2.0 — Kieran's LifeTrkr*
+*Father's Day / Summer Solstice 2026*
+*Prepared by Jamie Hill (OKHP3) with Claude (Anthropic)*
+*MIT License — free to build on*
