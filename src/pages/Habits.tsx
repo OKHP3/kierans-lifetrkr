@@ -46,10 +46,68 @@ function getLast7(habitId: string, completions: { habitId: string; date: string 
   return result
 }
 
-// Sort by recurrence frequency (daily = most frequent = soonest due next)
-const FREQ_ORDER: Record<string, number> = { daily: 0, weekly: 1, monthly: 2, yearly: 3, custom: 4, none: 5 }
+type SortKey = 'name' | 'progress' | 'next-due' | 'category'
 
-type SortKey = 'name' | 'progress' | 'frequency' | 'category'
+const DOW_NUM: Record<string, number> = {
+  sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6,
+}
+
+function computeNextDue(habit: Habit, completions: { habitId: string; date: string }[]): string {
+  const rec = habit.recurrence
+  if (!rec || rec.frequency === 'none') return '9999-12-31'
+
+  const todayDate = new Date()
+  todayDate.setHours(0, 0, 0, 0)
+  const todayStr = todayDate.toISOString().split('T')[0]
+
+  const habDates = completions
+    .filter(c => c.habitId === habit.id)
+    .map(c => c.date)
+    .sort()
+  const lastDone = habDates.length > 0 ? habDates[habDates.length - 1] : null
+
+  // Helper: advance a Date by the interval and return its ISO date string
+  function advance(base: Date): string {
+    const d = new Date(base)
+    const n = rec.interval || 1
+    if (rec.frequency === 'daily') d.setDate(d.getDate() + n)
+    else if (rec.frequency === 'weekly') d.setDate(d.getDate() + 7 * n)
+    else if (rec.frequency === 'monthly') d.setMonth(d.getMonth() + n)
+    else if (rec.frequency === 'yearly') d.setFullYear(d.getFullYear() + n)
+    return d.toISOString().split('T')[0]
+  }
+
+  // If done today, next due is one interval from today
+  if (lastDone === todayStr) return advance(todayDate)
+
+  // For weekly with specific days of week, find the next scheduled day
+  if (rec.frequency === 'weekly' && rec.daysOfWeek && rec.daysOfWeek.length > 0) {
+    const scheduled = new Set(rec.daysOfWeek.map(d => DOW_NUM[d] ?? -1))
+    for (let i = 0; i <= 7; i++) {
+      const check = new Date(todayDate)
+      check.setDate(todayDate.getDate() + i)
+      if (scheduled.has(check.getDay())) return check.toISOString().split('T')[0]
+    }
+  }
+
+  // Compute next due from last completion (or start date / createdAt)
+  const baseStr = lastDone ?? rec.startDate ?? habit.createdAt ?? todayStr
+  const base = new Date(baseStr)
+  base.setHours(0, 0, 0, 0)
+
+  let next = new Date(base)
+  // Advance until we get a date >= today
+  let guard = 0
+  while (next < todayDate && guard < 1000) {
+    next = new Date(next)
+    const nStr = advance(next)
+    next = new Date(nStr)
+    guard++
+  }
+
+  const nextStr = next.toISOString().split('T')[0]
+  return nextStr < todayStr ? todayStr : nextStr
+}
 
 type HabitForm = {
   name: string
@@ -130,11 +188,11 @@ export default function Habits() {
     visibleHabits = [...visibleHabits].sort((a, b) => a.name.localeCompare(b.name))
   else if (sortBy === 'progress')
     visibleHabits = [...visibleHabits].sort((a, b) => getStreak(b.id, state.habitCompletions) - getStreak(a.id, state.habitCompletions))
-  else if (sortBy === 'frequency')
+  else if (sortBy === 'next-due')
     visibleHabits = [...visibleHabits].sort((a, b) => {
-      const fa = FREQ_ORDER[a.recurrence?.frequency ?? 'none'] ?? 5
-      const fb = FREQ_ORDER[b.recurrence?.frequency ?? 'none'] ?? 5
-      return fa !== fb ? fa - fb : a.name.localeCompare(b.name)
+      const da = computeNextDue(a, state.habitCompletions)
+      const db = computeNextDue(b, state.habitCompletions)
+      return da !== db ? da.localeCompare(db) : a.name.localeCompare(b.name)
     })
   else if (sortBy === 'category')
     visibleHabits = [...visibleHabits].sort((a, b) => (a.categoryId ?? 'zzz').localeCompare(b.categoryId ?? 'zzz'))
@@ -230,7 +288,7 @@ export default function Habits() {
         chips={[
           { label: 'name', value: 'name', active: sortBy === 'name' },
           { label: 'progress', value: 'progress', active: sortBy === 'progress' },
-          { label: 'frequency', value: 'frequency', active: sortBy === 'frequency' },
+          { label: 'next due', value: 'next-due', active: sortBy === 'next-due' },
           { label: 'category', value: 'category', active: sortBy === 'category' },
         ]}
         onChange={(val) => setSortBy(val as SortKey)}
