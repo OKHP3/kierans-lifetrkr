@@ -32,9 +32,13 @@ export type UserSettings = {
 
 // ─── Routines ──────────────────────────────────────────────────────────────
 
-export type DayOfWeek =
+/** Uppercase day-of-week used by RoutineTemplate (legacy shape). */
+export type RoutineDayOfWeek =
   | 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday'
   | 'Thursday' | 'Friday' | 'Saturday'
+
+/** @deprecated Use RoutineDayOfWeek for routines, DayOfWeek for recurrence. */
+export type DayOfWeek = RoutineDayOfWeek
 
 export type RoutineItem = {
   id: string
@@ -46,7 +50,7 @@ export type RoutineItem = {
 
 export type RoutineTemplate = {
   id: string
-  dayOfWeek: DayOfWeek
+  dayOfWeek: RoutineDayOfWeek
   name: string
   items: RoutineItem[]
 }
@@ -164,7 +168,8 @@ export type RecurrenceFrequency =
   | 'yearly'
   | 'custom'
 
-export type RecurrenceDayOfWeek =
+/** Lowercase day-of-week used by RecurrenceRule. */
+export type DayOfWeekRecurrence =
   | 'monday'
   | 'tuesday'
   | 'wednesday'
@@ -181,7 +186,7 @@ export type RecurrenceEnd =
 export type RecurrenceRule = {
   frequency: RecurrenceFrequency
   interval: number
-  daysOfWeek?: RecurrenceDayOfWeek[]
+  daysOfWeek?: DayOfWeekRecurrence[]
   dayOfMonth?: number | null
   startDate: string
   end: RecurrenceEnd
@@ -225,9 +230,9 @@ export type Ritual = {
   steps?: RoutineItem[]
   startTime?: string | null
   endTime?: string | null
-  recurrence: RecurrenceRule
+  recurrence?: RecurrenceRule
   categoryId?: string
-  tags: string[]
+  tags?: string[]
   active: boolean
   createdAt: string
   updatedAt: string

@@ -46,21 +46,40 @@ export const storage = {
   clearProfile(): void {
     localStorage.removeItem(`${APP_PREFIX}:profile`)
   },
+
+  /**
+   * Read an array of records and automatically fill any missing keys using
+   * the provided defaults. Safe for legacy localStorage data that predates
+   * new optional fields (recurrence, tags, description, etc.).
+   */
+  getList<T extends object>(entity: string, defaults: T): T[] {
+    const raw = localStorage.getItem(key(entity))
+    if (!raw) return []
+    try {
+      const parsed: unknown = JSON.parse(raw)
+      if (!Array.isArray(parsed)) return []
+      return (parsed as Partial<T>[]).map(record => ({ ...defaults, ...record }) as T)
+    } catch {
+      return []
+    }
+  },
 }
 
 /**
- * Fills any missing keys on a stored record so old localStorage data
- * is not broken by new required fields. Works on a single record or
- * an array of records.
+ * Fill any missing keys on a single stored record so old localStorage data
+ * is not broken by new required fields. Shallow merge: defaults win only
+ * for keys absent in `record`.
  */
 export function migrateRecord<T extends object>(
   record: Partial<T>,
   defaults: T,
 ): T {
-  const result = { ...defaults, ...record } as T
-  return result
+  return { ...defaults, ...record } as T
 }
 
+/**
+ * Apply migrateRecord to every item in an array of stored records.
+ */
 export function migrateArray<T extends object>(
   records: Partial<T>[],
   defaults: T,
