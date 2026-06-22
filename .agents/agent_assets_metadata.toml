@@ -36,6 +36,12 @@ uri = "file://attached_assets/generated_images/banner_b.png"
 type = "image"
 title = "banner B velvet crystal cat journal candlelight"
 
+[[generated]]
+id = "CPKz7tPsry4EITS69wY41"
+uri = "file://src/assets/images/social-preview.png"
+type = "image"
+title = "lifetrkr social preview banner"
+
 [[outputs]]
 id = "f2m-FVn7SxPZhIQwwod1e"
 uri = "file://attached_assets/generated_images/logo_a.png"
@@ -71,3 +77,9 @@ id = "YcrOaS1WM41wjD_eafpUO"
 uri = "file://attached_assets/generated_images/banner_b.png"
 type = "image"
 title = "Banner B — Velvet Crystal Ball + Cat + Journal"
+
+[[outputs]]
+id = "UrtfKs2upNCLz-FeUJCva"
+uri = "file://src/assets/images/social-preview.png"
+type = "image"
+title = "Kieran's LifeTrkr — GitHub Social Preview (1280×640)"
