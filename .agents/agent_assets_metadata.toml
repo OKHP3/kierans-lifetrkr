@@ -1,0 +1,73 @@
+uploads = []
+
+[[generated]]
+id = "DvBi_1FtY1azacqHuHMDh"
+uri = "file://attached_assets/generated_images/logo_a.png"
+type = "image"
+title = "logo option A black cat crescent jewels"
+
+[[generated]]
+id = "0NujqrpOut7Q2qfmhxAde"
+uri = "file://attached_assets/generated_images/logo_b.png"
+type = "image"
+title = "logo option B cat grimoire tarot jewels"
+
+[[generated]]
+id = "kl1hKVnLNziQvIR2iQtAd"
+uri = "file://attached_assets/generated_images/background_a.png"
+type = "image"
+title = "background A midnight jewel nebula cat moon"
+
+[[generated]]
+id = "docU3pB--yeb9ekJasPwc"
+uri = "file://attached_assets/generated_images/background_b.png"
+type = "image"
+title = "background B velvet gothic tarot pattern cat"
+
+[[generated]]
+id = "vB28hpFuLoddHQWL2wUOf"
+uri = "file://attached_assets/generated_images/banner_a.png"
+type = "image"
+title = "banner A black cat moonlit window jewel sky"
+
+[[generated]]
+id = "DgcI6P1wp6FLu-ocDwQ_J"
+uri = "file://attached_assets/generated_images/banner_b.png"
+type = "image"
+title = "banner B velvet crystal cat journal candlelight"
+
+[[outputs]]
+id = "f2m-FVn7SxPZhIQwwod1e"
+uri = "file://attached_assets/generated_images/logo_a.png"
+type = "image"
+title = "Logo A — Black Cat + Crescent Moon + Jewels"
+
+[[outputs]]
+id = "qxkeibTdjTfZkQOWRFYjj"
+uri = "file://attached_assets/generated_images/logo_b.png"
+type = "image"
+title = "Logo B — Cat on Grimoire + Tarot Cards"
+
+[[outputs]]
+id = "KtV-nWfg7sPhKqgu7cDE6"
+uri = "file://attached_assets/generated_images/background_a.png"
+type = "image"
+title = "Background A — Midnight Nebula + Cat Silhouette"
+
+[[outputs]]
+id = "6FzFxBFuA9FiBI1VvvCn_"
+uri = "file://attached_assets/generated_images/background_b.png"
+type = "image"
+title = "Background B — Velvet Gothic Pattern + Cat"
+
+[[outputs]]
+id = "ch2Wlf0vtbiskED0dzXNR"
+uri = "file://attached_assets/generated_images/banner_a.png"
+type = "image"
+title = "Banner A — Cat on Moonlit Window Ledge"
+
+[[outputs]]
+id = "YcrOaS1WM41wjD_eafpUO"
+uri = "file://attached_assets/generated_images/banner_b.png"
+type = "image"
+title = "Banner B — Velvet Crystal Ball + Cat + Journal"

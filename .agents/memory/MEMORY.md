@@ -1,0 +1,2 @@
+- [v3.0 architecture](v3-architecture.md) — HashRouter + client-side GIS auth; no Express; gh-pages deploy; src/ at root (not client/src/)
+- [Data schema v3](data-schema-v3.md) — routineTemplates[] array (not object), completions as arrays, task status lowercase, namespaced storage lifetrkr:{sub}:entity

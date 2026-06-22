@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "ai-social-media-content": {
+      "source": "skill-zero/s",
+      "sourceType": "github",
+      "skillPath": "guides/social/ai-social-media-content/SKILL.md",
+      "computedHash": "787bcf30e11d05f1d6258463c6d9dac736d27a3b71b848d8a9034e79d41a5ce9"
+    },
     "find-skills": {
       "source": "vercel-labs/skills",
       "sourceType": "github",
