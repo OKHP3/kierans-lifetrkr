@@ -558,6 +558,41 @@ select:focus {
   letter-spacing: 0.08em;
 }
 
+.mobile-header-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mobile-header-theme-toggle {
+  display: flex;
+  align-items: center;
+  background: var(--surface-raised);
+  border: 0.5px solid var(--border);
+  border-radius: 20px;
+  padding: 2px;
+  gap: 1px;
+}
+
+.mobile-header-theme-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-ghost);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.mobile-header-theme-btn.active {
+  background: var(--accent-amethyst);
+  color: var(--bg);
+}
+
 .mobile-header-gear {
   background: none;
   border: none;
@@ -585,9 +620,9 @@ select:focus {
   display: none;
 }
 
-/* Floating theme toggle: visible on mobile, hidden on desktop */
+/* Floating theme toggle: hidden everywhere — mobile header has inline toggle, desktop has SideNav */
 .theme-toggle-float {
-  display: flex;
+  display: none;
 }
 
 /* ─── Desktop layout ≥ 768px ─────────────────────────────────── */
