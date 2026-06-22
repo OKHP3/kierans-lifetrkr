@@ -60,6 +60,8 @@ type Action =
   | { type: 'UPDATE_SETTINGS'; payload: Partial<UserSettings> }
   | { type: 'SET_GOOGLE_CONNECTED'; payload: boolean }
   | { type: 'SET_CALENDAR_EVENTS'; payload: CalendarEvent[] }
+  | { type: 'ADD_CALENDAR_EVENT'; payload: CalendarEvent }
+  | { type: 'DELETE_CALENDAR_EVENT'; payload: string }
   | { type: 'SET_GOOGLE_TASKS'; payload: GoogleTask[] }
   | { type: 'SET_TASK_LISTS'; payload: TaskList[] }
   | { type: 'SET_LOADING_CALENDAR'; payload: boolean }
@@ -126,7 +128,21 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, isGoogleConnected: action.payload }
 
     case 'SET_CALENDAR_EVENTS':
-      return { ...state, calendarEvents: action.payload, isLoadingCalendar: false }
+      // Preserve manual events; replace google/mock events from the incoming payload
+      return {
+        ...state,
+        calendarEvents: [
+          ...state.calendarEvents.filter(e => e.source === 'manual'),
+          ...action.payload.filter(e => e.source !== 'manual'),
+        ],
+        isLoadingCalendar: false,
+      }
+
+    case 'ADD_CALENDAR_EVENT':
+      return { ...state, calendarEvents: [...state.calendarEvents, action.payload] }
+
+    case 'DELETE_CALENDAR_EVENT':
+      return { ...state, calendarEvents: state.calendarEvents.filter(e => e.id !== action.payload) }
 
     case 'SET_GOOGLE_TASKS':
       return { ...state, googleTasks: action.payload, isLoadingTasks: false }
@@ -300,7 +316,7 @@ const AppContext = createContext<AppCtx | null>(null)
 
 const PERSIST_KEYS: Array<keyof AppState> = [
   'settings', 'routineTemplates', 'routineCompletions',
-  'habits', 'habitCompletions', 'tasks',
+  'habits', 'habitCompletions', 'tasks', 'calendarEvents',
 ]
 
 const HABIT_DEFAULTS: Habit = {
@@ -314,6 +330,14 @@ const ROUTINE_TEMPLATE_DEFAULTS: RoutineTemplate = {
   description: undefined, categoryId: undefined, tags: [], recurrence: undefined,
 }
 
+const CALENDAR_EVENT_DEFAULTS: CalendarEvent = {
+  id: '', title: '', start: '', allDay: false,
+  location: null, description: null, colorId: null,
+  source: 'manual',
+  recurrence: undefined, categoryId: undefined, tags: [],
+  createdAt: undefined, updatedAt: undefined,
+}
+
 function loadPersistedState(): Partial<AppState> {
   const result: Partial<AppState> = {}
   for (const key of PERSIST_KEYS) {
@@ -323,6 +347,11 @@ function loadPersistedState(): Partial<AppState> {
     } else if (key === 'routineTemplates') {
       const templates = storage.getList<RoutineTemplate>(key, ROUTINE_TEMPLATE_DEFAULTS)
       if (templates.length > 0) result.routineTemplates = templates
+    } else if (key === 'calendarEvents') {
+      // Only restore persisted manual events; Google events are fetched fresh each session
+      const events = storage.getList<CalendarEvent>(key, CALENDAR_EVENT_DEFAULTS)
+        .filter(e => e.source === 'manual')
+      if (events.length > 0) result.calendarEvents = events
     } else {
       const val = storage.get<unknown>(key)
       if (val !== null) (result as Record<string, unknown>)[key] = val
@@ -335,7 +364,12 @@ function loadPersistedState(): Partial<AppState> {
 
 function persistState(state: AppState) {
   for (const key of PERSIST_KEYS) {
-    storage.set(key, state[key])
+    if (key === 'calendarEvents') {
+      // Only persist manual events; Google events come from the API each session
+      storage.set(key, (state.calendarEvents as CalendarEvent[]).filter(e => e.source === 'manual'))
+    } else {
+      storage.set(key, state[key])
+    }
   }
 }
 
