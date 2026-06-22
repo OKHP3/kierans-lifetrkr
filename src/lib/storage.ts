@@ -47,3 +47,23 @@ export const storage = {
     localStorage.removeItem(`${APP_PREFIX}:profile`)
   },
 }
+
+/**
+ * Fills any missing keys on a stored record so old localStorage data
+ * is not broken by new required fields. Works on a single record or
+ * an array of records.
+ */
+export function migrateRecord<T extends object>(
+  record: Partial<T>,
+  defaults: T,
+): T {
+  const result = { ...defaults, ...record } as T
+  return result
+}
+
+export function migrateArray<T extends object>(
+  records: Partial<T>[],
+  defaults: T,
+): T[] {
+  return records.map(r => migrateRecord(r, defaults))
+}

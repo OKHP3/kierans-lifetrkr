@@ -66,6 +66,11 @@ export type Habit = {
   colorTag?: string
   active: boolean
   createdAt: string
+  // v2 fields (optional for backward compat)
+  recurrence?: RecurrenceRule
+  categoryId?: string
+  tags?: string[]
+  updatedAt?: string
 }
 
 export type HabitCompletion = {
@@ -121,7 +126,13 @@ export type CalendarEvent = {
   location: string | null
   description: string | null
   colorId: string | null
-  source: 'google' | 'manual'
+  source: 'google' | 'manual' | 'mock' | 'cosmic'
+  // v2 fields (optional for backward compat)
+  recurrence?: RecurrenceRule
+  categoryId?: string
+  tags?: string[]
+  createdAt?: string
+  updatedAt?: string
 }
 
 // ─── App State ─────────────────────────────────────────────────────────────
@@ -141,4 +152,97 @@ export type AppState = {
   isLoadingCalendar: boolean
   isLoadingTasks: boolean
   lastGoogleSync: string | null
+}
+
+// ─── Recurrence ────────────────────────────────────────────────────────────
+
+export type RecurrenceFrequency =
+  | 'none'
+  | 'daily'
+  | 'weekly'
+  | 'monthly'
+  | 'yearly'
+  | 'custom'
+
+export type RecurrenceDayOfWeek =
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday'
+  | 'sunday'
+
+export type RecurrenceEnd =
+  | { mode: 'never' }
+  | { mode: 'onDate'; date: string }
+  | { mode: 'afterCount'; count: number }
+
+export type RecurrenceRule = {
+  frequency: RecurrenceFrequency
+  interval: number
+  daysOfWeek?: RecurrenceDayOfWeek[]
+  dayOfMonth?: number | null
+  startDate: string
+  end: RecurrenceEnd
+  exceptions?: string[]
+}
+
+// ─── Categories & Tags ─────────────────────────────────────────────────────
+
+export type CategoryRealm =
+  | 'body'
+  | 'mind'
+  | 'home'
+  | 'school'
+  | 'social'
+  | 'health'
+  | 'magic'
+  | 'creative'
+  | 'calendar'
+  | 'other'
+
+export type LifeTrkrCategory = {
+  id: string
+  label: string
+  emoji: string
+  realm: CategoryRealm
+  description?: string
+}
+
+export type TaggedMetadata = {
+  description?: string
+  categoryId?: string
+  tags: string[]
+}
+
+// ─── Ritual (v2 shape) ─────────────────────────────────────────────────────
+
+export type Ritual = {
+  id: string
+  title: string
+  description?: string
+  steps?: RoutineItem[]
+  startTime?: string | null
+  endTime?: string | null
+  recurrence: RecurrenceRule
+  categoryId?: string
+  tags: string[]
+  active: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+// ─── Cosmic Events ─────────────────────────────────────────────────────────
+
+export type CosmicEventType = 'moon_phase' | 'seasonal' | 'daily_card' | 'daily_wisdom'
+
+export type CosmicEvent = {
+  id: string
+  title: string
+  description?: string
+  date: string
+  type: CosmicEventType
+  emoji?: string
+  source: 'local' | 'external'
 }
