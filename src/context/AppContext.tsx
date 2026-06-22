@@ -309,12 +309,20 @@ const HABIT_DEFAULTS: Habit = {
   categoryId: undefined, recurrence: undefined, updatedAt: undefined,
 }
 
+const ROUTINE_TEMPLATE_DEFAULTS: RoutineTemplate = {
+  id: '', dayOfWeek: 'Sunday', name: '', items: [],
+  description: undefined, categoryId: undefined, tags: [], recurrence: undefined,
+}
+
 function loadPersistedState(): Partial<AppState> {
   const result: Partial<AppState> = {}
   for (const key of PERSIST_KEYS) {
     if (key === 'habits') {
       const habits = storage.getList<Habit>(key, HABIT_DEFAULTS)
       if (habits.length > 0) result.habits = habits
+    } else if (key === 'routineTemplates') {
+      const templates = storage.getList<RoutineTemplate>(key, ROUTINE_TEMPLATE_DEFAULTS)
+      if (templates.length > 0) result.routineTemplates = templates
     } else {
       const val = storage.get<unknown>(key)
       if (val !== null) (result as Record<string, unknown>)[key] = val

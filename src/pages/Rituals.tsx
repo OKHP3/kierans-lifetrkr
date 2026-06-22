@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useApp, genId } from '../context/AppContext'
 import CheckCircle from '../components/CheckCircle'
-import FilterBar from '../components/FilterBar'
 import CategoryPicker from '../components/CategoryPicker'
 import TagInput from '../components/TagInput'
 import DescriptionField from '../components/DescriptionField'
@@ -9,6 +8,20 @@ import RecurrenceEditor from '../components/RecurrenceEditor'
 import { getTodayISO, getDayOfWeek } from '../lib/date'
 import { DAYS_OF_WEEK, DAYS_SHORT, DEFAULT_CATEGORIES, makeDefaultRecurrence } from '../constants'
 import type { RoutineDayOfWeek, RecurrenceRule } from '../types'
+
+const DAY_NUM: Record<RoutineDayOfWeek, number> = {
+  Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6,
+}
+
+function chipSt(active: boolean): React.CSSProperties {
+  return {
+    fontSize: 11, padding: '2px 8px', borderRadius: 12, cursor: 'pointer',
+    background: active ? 'var(--surface-raised)' : 'transparent',
+    border: `0.5px solid ${active ? 'var(--accent-amethyst)' : 'var(--border)'}`,
+    color: active ? 'var(--accent-amethyst)' : 'var(--text-muted)',
+    fontFamily: 'Space Mono, monospace', flexShrink: 0,
+  }
+}
 
 export default function Rituals() {
   const { state, dispatch } = useApp()
@@ -19,7 +32,14 @@ export default function Rituals() {
   const [newTitle, setNewTitle] = useState('')
   const [newTime, setNewTime] = useState('')
 
-  const [activeFilter, setActiveFilter] = useState('all')
+  // Filter state
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
+  const [tagFilter, setTagFilter] = useState<string | null>(null)
+  const [freqFilter, setFreqFilter] = useState<string | null>(null)
+  const [sortBy, setSortBy] = useState<'default' | 'title' | 'next-occ' | 'category'>('default')
+
+  // Metadata edit state
   const [showMeta, setShowMeta] = useState(false)
   const [metaDesc, setMetaDesc] = useState('')
   const [metaCategoryId, setMetaCategoryId] = useState<string | undefined>()
@@ -47,28 +67,42 @@ export default function Rituals() {
     setShowMeta(false)
   }, [selectedDay]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const usedCategoryIds = [...new Set(
-    state.routineTemplates.filter(t => t.categoryId).map(t => t.categoryId!)
+  // Derive unique filter options from all templates
+  const usedCategoryIds = [...new Set(state.routineTemplates.filter(t => t.categoryId).map(t => t.categoryId!))]
+  const allTemplateTags = [...new Set(state.routineTemplates.flatMap(t => t.tags ?? []))]
+  const usedFreqs = [...new Set(
+    state.routineTemplates
+      .filter(t => t.recurrence && t.recurrence.frequency !== 'none')
+      .map(t => t.recurrence!.frequency)
   )]
 
-  const filterChips = [
-    { label: 'All', value: 'all', active: activeFilter === 'all' },
-    { label: 'Has items', value: 'has-items', active: activeFilter === 'has-items' },
-    ...usedCategoryIds.map(id => {
-      const cat = DEFAULT_CATEGORIES.find(c => c.id === id)
-      return { label: `${cat?.emoji ?? ''} ${cat?.label ?? id}`, value: id, active: activeFilter === id }
-    }),
-  ]
-
-  const orderedDays = [...DAYS_OF_WEEK] as RoutineDayOfWeek[]
-  const filteredDays = orderedDays.filter(day => {
+  // Build the sorted + filtered day list
+  let filteredDays = ([...DAYS_OF_WEEK] as RoutineDayOfWeek[]).filter(day => {
     const t = state.routineTemplates.find(t2 => t2.dayOfWeek === day)
-    if (activeFilter === 'all') return true
-    if (activeFilter === 'has-items') return (t?.items?.length ?? 0) > 0
-    return t?.categoryId === activeFilter
+    if (statusFilter === 'active' && (t?.items?.length ?? 0) === 0) return false
+    if (statusFilter === 'inactive' && (t?.items?.length ?? 0) > 0) return false
+    if (categoryFilter && t?.categoryId !== categoryFilter) return false
+    if (tagFilter && !(t?.tags ?? []).includes(tagFilter)) return false
+    if (freqFilter && t?.recurrence?.frequency !== freqFilter) return false
+    return true
   })
 
-  const allTemplateTags = [...new Set(state.routineTemplates.flatMap(t => t.tags ?? []))]
+  const todayNum = new Date().getDay()
+  if (sortBy === 'title') {
+    filteredDays = [...filteredDays].sort((a, b) => a.localeCompare(b))
+  } else if (sortBy === 'next-occ') {
+    filteredDays = [...filteredDays].sort((a, b) => {
+      const da = (DAY_NUM[a] - todayNum + 7) % 7
+      const db = (DAY_NUM[b] - todayNum + 7) % 7
+      return da - db
+    })
+  } else if (sortBy === 'category') {
+    filteredDays = [...filteredDays].sort((a, b) => {
+      const ta = state.routineTemplates.find(t => t.dayOfWeek === a)
+      const tb = state.routineTemplates.find(t => t.dayOfWeek === b)
+      return (ta?.categoryId ?? 'zzz').localeCompare(tb?.categoryId ?? 'zzz')
+    })
+  }
 
   function saveMeta() {
     if (!template) return
@@ -111,6 +145,7 @@ export default function Rituals() {
 
   return (
     <div className="page-content">
+      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <h1 className="page-title">Rituals</h1>
         <button className="btn-ghost" onClick={() => { setEditMode(e => !e); setShowAdd(false); setShowMeta(false) }}>
@@ -118,7 +153,55 @@ export default function Rituals() {
         </button>
       </div>
 
-      <FilterBar chips={filterChips} onChange={(val) => setActiveFilter(val)} className="mb-4" />
+      {/* Status filter chips */}
+      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 8, scrollbarWidth: 'none' }}>
+        {([['all', 'All'], ['active', 'Has items'], ['inactive', 'Empty']] as const).map(([v, label]) => (
+          <button key={v} type="button" onClick={() => setStatusFilter(v)} style={chipSt(statusFilter === v)}>{label}</button>
+        ))}
+      </div>
+
+      {/* Category chips */}
+      {usedCategoryIds.length > 0 && (
+        <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 8, scrollbarWidth: 'none', alignItems: 'center' }}>
+          <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>cat:</span>
+          {usedCategoryIds.map(id => {
+            const cat = DEFAULT_CATEGORIES.find(c => c.id === id)
+            return (
+              <button key={id} type="button" onClick={() => setCategoryFilter(c => c === id ? null : id)} style={chipSt(categoryFilter === id)}>
+                {cat?.emoji} {cat?.label ?? id}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Tag chips */}
+      {allTemplateTags.length > 0 && (
+        <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 8, scrollbarWidth: 'none', alignItems: 'center' }}>
+          <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>tag:</span>
+          {allTemplateTags.map(tag => (
+            <button key={tag} type="button" onClick={() => setTagFilter(t => t === tag ? null : tag)} style={chipSt(tagFilter === tag)}>{tag}</button>
+          ))}
+        </div>
+      )}
+
+      {/* Frequency chips */}
+      {usedFreqs.length > 0 && (
+        <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 8, scrollbarWidth: 'none', alignItems: 'center' }}>
+          <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>freq:</span>
+          {usedFreqs.map(f => (
+            <button key={f} type="button" onClick={() => setFreqFilter(ff => ff === f ? null : f)} style={chipSt(freqFilter === f)}>{f}</button>
+          ))}
+        </div>
+      )}
+
+      {/* Sort row */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 14, alignItems: 'center' }}>
+        <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>sort:</span>
+        {([['default', 'day'], ['title', 'title'], ['next-occ', 'next'], ['category', 'category']] as const).map(([v, label]) => (
+          <button key={v} type="button" onClick={() => setSortBy(v)} style={chipSt(sortBy === v)}>{label}</button>
+        ))}
+      </div>
 
       {/* Day pills */}
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4, marginBottom: 16, scrollbarWidth: 'none' }}>
@@ -133,19 +216,12 @@ export default function Rituals() {
               key={day}
               onClick={() => { setSelectedDay(day); setEditMode(false); setShowAdd(false) }}
               style={{
-                flexShrink: 0,
-                padding: '5px 12px',
-                borderRadius: 20,
+                flexShrink: 0, padding: '5px 12px', borderRadius: 20,
                 border: isSelected ? 'none' : '0.5px solid var(--border)',
                 background: isSelected ? 'var(--accent-amethyst)' : 'transparent',
                 color: isSelected ? 'var(--bg)' : isCurrentDay ? 'var(--accent-amethyst)' : 'var(--text-muted)',
-                fontSize: 12,
-                fontWeight: isSelected ? 500 : 400,
-                cursor: 'pointer',
-                fontFamily: 'DM Sans, sans-serif',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 3,
+                fontSize: 12, fontWeight: isSelected ? 500 : 400, cursor: 'pointer',
+                fontFamily: 'DM Sans, sans-serif', display: 'flex', alignItems: 'center', gap: 3,
               }}
             >
               {emoji && <span style={{ fontSize: 10 }}>{emoji}</span>}

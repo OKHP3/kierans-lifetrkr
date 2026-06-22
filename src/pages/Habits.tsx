@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import { useApp, genId } from '../context/AppContext'
 import CheckCircle from '../components/CheckCircle'
-import FilterBar from '../components/FilterBar'
 import CategoryPicker from '../components/CategoryPicker'
 import TagInput from '../components/TagInput'
 import DescriptionField from '../components/DescriptionField'
 import RecurrenceEditor from '../components/RecurrenceEditor'
 import { getTodayISO } from '../lib/date'
 import { DEFAULT_CATEGORIES, makeDefaultRecurrence } from '../constants'
-import type { RecurrenceRule } from '../types'
+import type { Habit, RecurrenceRule } from '../types'
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function getStreak(habitId: string, completions: { habitId: string; date: string }[]): number {
   let streak = 0
@@ -44,93 +45,151 @@ function getLast7(habitId: string, completions: { habitId: string; date: string 
   return days
 }
 
-function makeNewRecurrence(): RecurrenceRule {
-  return { ...makeDefaultRecurrence(), frequency: 'daily' }
+const FREQ_ORDER: Record<string, number> = { daily: 0, weekly: 1, monthly: 2, yearly: 3, custom: 4, none: 5 }
+
+type HabitForm = {
+  name: string
+  desc: string
+  categoryId?: string
+  tags: string[]
+  recurrence: RecurrenceRule
+  showDetails: boolean
+  showRecurrence: boolean
 }
+
+function freshForm(): HabitForm {
+  return {
+    name: '', desc: '', categoryId: undefined, tags: [],
+    recurrence: { ...makeDefaultRecurrence(), frequency: 'daily' },
+    showDetails: false, showRecurrence: false,
+  }
+}
+
+function habitToForm(h: Habit): HabitForm {
+  return {
+    name: h.name,
+    desc: h.description ?? '',
+    categoryId: h.categoryId,
+    tags: h.tags ?? [],
+    recurrence: h.recurrence ?? { ...makeDefaultRecurrence(), frequency: 'daily' },
+    showDetails: !!(h.categoryId || (h.tags ?? []).length > 0 || h.description),
+    showRecurrence: !!h.recurrence && h.recurrence.frequency !== 'none',
+  }
+}
+
+function chipSt(active: boolean): React.CSSProperties {
+  return {
+    fontSize: 11, padding: '2px 8px', borderRadius: 12, cursor: 'pointer',
+    background: active ? 'var(--surface-raised)' : 'transparent',
+    border: `0.5px solid ${active ? 'var(--accent-amethyst)' : 'var(--border)'}`,
+    color: active ? 'var(--accent-amethyst)' : 'var(--text-muted)',
+    fontFamily: 'Space Mono, monospace', flexShrink: 0,
+  }
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Habits() {
   const { state, dispatch } = useApp()
   const today = getTodayISO()
 
-  const [showAdd, setShowAdd] = useState(false)
-  const [newName, setNewName] = useState('')
-  const [newDesc, setNewDesc] = useState('')
-  const [newCategoryId, setNewCategoryId] = useState<string | undefined>()
-  const [newTags, setNewTags] = useState<string[]>([])
-  const [newRecurrence, setNewRecurrence] = useState<RecurrenceRule>(makeNewRecurrence())
-  const [showDetails, setShowDetails] = useState(false)
-  const [showRecurrence, setShowRecurrence] = useState(false)
+  // Add / edit forms
+  const [addForm, setAddForm] = useState<HabitForm | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState<HabitForm | null>(null)
 
-  const [activeFilter, setActiveFilter] = useState('all')
-  const [sortBy, setSortBy] = useState<'name' | 'streak' | 'category'>('name')
+  // Filter state
+  const [statusFilter, setStatusFilter] = useState('all')   // 'all' | 'done' | 'not-done'
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
+  const [tagFilter, setTagFilter] = useState<string | null>(null)
+  const [freqFilter, setFreqFilter] = useState<string | null>(null)
+  const [sortBy, setSortBy] = useState<'name' | 'progress' | 'next-due' | 'category'>('name')
 
   const activeHabits = state.habits.filter(h => h.active)
   const doneToday = activeHabits.filter(h =>
     state.habitCompletions.some(c => c.habitId === h.id && c.date === today)
   ).length
 
+  // Derive filter options
   const usedCategoryIds = [...new Set(activeHabits.filter(h => h.categoryId).map(h => h.categoryId!))]
+  const allTags = [...new Set(activeHabits.flatMap(h => h.tags ?? []))]
   const allHabitTags = [...new Set(state.habits.flatMap(h => h.tags ?? []))]
+  const usedFreqs = [...new Set(
+    activeHabits.filter(h => h.recurrence && h.recurrence.frequency !== 'none').map(h => h.recurrence!.frequency)
+  )]
 
-  const filterChips = [
-    { label: 'All', value: 'all', active: activeFilter === 'all' },
-    { label: 'Done today', value: 'done', active: activeFilter === 'done' },
-    { label: 'Not done', value: 'not-done', active: activeFilter === 'not-done' },
-    ...usedCategoryIds.map(id => {
-      const cat = DEFAULT_CATEGORIES.find(c => c.id === id)
-      return { label: `${cat?.emoji ?? ''} ${cat?.label ?? id}`, value: id, active: activeFilter === id }
-    }),
-  ]
-
+  // Apply filters
   let visibleHabits = [...activeHabits]
-  if (activeFilter === 'done') {
+  if (statusFilter === 'done')
     visibleHabits = visibleHabits.filter(h => state.habitCompletions.some(c => c.habitId === h.id && c.date === today))
-  } else if (activeFilter === 'not-done') {
+  if (statusFilter === 'not-done')
     visibleHabits = visibleHabits.filter(h => !state.habitCompletions.some(c => c.habitId === h.id && c.date === today))
-  } else if (activeFilter !== 'all') {
-    visibleHabits = visibleHabits.filter(h => h.categoryId === activeFilter)
-  }
+  if (categoryFilter)
+    visibleHabits = visibleHabits.filter(h => h.categoryId === categoryFilter)
+  if (tagFilter)
+    visibleHabits = visibleHabits.filter(h => (h.tags ?? []).includes(tagFilter!))
+  if (freqFilter)
+    visibleHabits = visibleHabits.filter(h => h.recurrence?.frequency === freqFilter)
 
-  if (sortBy === 'name') {
-    visibleHabits = visibleHabits.sort((a, b) => a.name.localeCompare(b.name))
-  } else if (sortBy === 'streak') {
-    visibleHabits = visibleHabits.sort((a, b) => getStreak(b.id, state.habitCompletions) - getStreak(a.id, state.habitCompletions))
-  } else if (sortBy === 'category') {
-    visibleHabits = visibleHabits.sort((a, b) => (a.categoryId ?? 'zzz').localeCompare(b.categoryId ?? 'zzz'))
-  }
+  // Apply sort
+  if (sortBy === 'name')
+    visibleHabits = [...visibleHabits].sort((a, b) => a.name.localeCompare(b.name))
+  else if (sortBy === 'progress')
+    visibleHabits = [...visibleHabits].sort((a, b) => getStreak(b.id, state.habitCompletions) - getStreak(a.id, state.habitCompletions))
+  else if (sortBy === 'next-due')
+    visibleHabits = [...visibleHabits].sort((a, b) => {
+      const fa = FREQ_ORDER[a.recurrence?.frequency ?? 'none'] ?? 5
+      const fb = FREQ_ORDER[b.recurrence?.frequency ?? 'none'] ?? 5
+      return fa !== fb ? fa - fb : a.name.localeCompare(b.name)
+    })
+  else if (sortBy === 'category')
+    visibleHabits = [...visibleHabits].sort((a, b) => (a.categoryId ?? 'zzz').localeCompare(b.categoryId ?? 'zzz'))
 
-  function resetForm() {
-    setNewName('')
-    setNewDesc('')
-    setNewCategoryId(undefined)
-    setNewTags([])
-    setNewRecurrence(makeNewRecurrence())
-    setShowDetails(false)
-    setShowRecurrence(false)
-  }
-
-  function addHabit() {
-    if (!newName.trim()) return
+  // Add form actions
+  function patchAdd(patch: Partial<HabitForm>) { setAddForm(f => f ? { ...f, ...patch } : null) }
+  function saveAdd() {
+    if (!addForm || !addForm.name.trim()) return
     dispatch({
       type: 'ADD_HABIT',
       payload: {
-        id: genId(),
-        name: newName.trim(),
-        description: newDesc.trim() || undefined,
-        categoryId: newCategoryId,
-        tags: newTags,
-        recurrence: newRecurrence,
-        active: true,
-        createdAt: today,
+        id: genId(), name: addForm.name.trim(),
+        description: addForm.desc.trim() || undefined,
+        categoryId: addForm.categoryId, tags: addForm.tags,
+        recurrence: addForm.recurrence,
+        active: true, createdAt: today, updatedAt: today,
+      },
+    })
+    setAddForm(null)
+  }
+
+  // Edit form actions
+  function startEdit(habit: Habit) {
+    setEditingId(habit.id)
+    setEditForm(habitToForm(habit))
+  }
+  function cancelEdit() { setEditingId(null); setEditForm(null) }
+  function patchEdit(patch: Partial<HabitForm>) { setEditForm(f => f ? { ...f, ...patch } : null) }
+  function saveEdit(habit: Habit) {
+    if (!editForm) return
+    dispatch({
+      type: 'UPDATE_HABIT',
+      payload: {
+        ...habit,
+        name: editForm.name.trim() || habit.name,
+        description: editForm.desc.trim() || undefined,
+        categoryId: editForm.categoryId,
+        tags: editForm.tags,
+        recurrence: editForm.recurrence,
         updatedAt: today,
       },
     })
-    resetForm()
-    setShowAdd(false)
+    setEditingId(null)
+    setEditForm(null)
   }
 
   return (
     <div className="page-content">
+      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
         <h1 className="page-title">Habits</h1>
         <span style={{ fontSize: 12, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>
@@ -138,32 +197,61 @@ export default function Habits() {
         </span>
       </div>
 
-      <FilterBar chips={filterChips} onChange={(val) => setActiveFilter(val)} className="mb-3" />
-
-      {/* Sort row */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 16, alignItems: 'center' }}>
-        <span style={{ fontSize: 11, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>Sort:</span>
-        {(['name', 'streak', 'category'] as const).map(s => (
-          <button
-            key={s}
-            onClick={() => setSortBy(s)}
-            style={{
-              fontSize: 11, padding: '2px 8px', borderRadius: 12,
-              background: sortBy === s ? 'var(--surface-raised)' : 'transparent',
-              border: `0.5px solid ${sortBy === s ? 'var(--accent-amethyst)' : 'var(--border)'}`,
-              color: sortBy === s ? 'var(--accent-amethyst)' : 'var(--text-muted)',
-              cursor: 'pointer', fontFamily: 'Space Mono, monospace',
-            }}
-          >
-            {s}
-          </button>
+      {/* Status filter chips */}
+      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 8, scrollbarWidth: 'none' }}>
+        {([['all', 'All'], ['done', 'Done today'], ['not-done', 'Not done']] as const).map(([v, label]) => (
+          <button key={v} type="button" onClick={() => setStatusFilter(v)} style={chipSt(statusFilter === v)}>{label}</button>
         ))}
       </div>
 
-      {activeHabits.length === 0 && !showAdd && (
+      {/* Category chips */}
+      {usedCategoryIds.length > 0 && (
+        <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 8, scrollbarWidth: 'none', alignItems: 'center' }}>
+          <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>cat:</span>
+          {usedCategoryIds.map(id => {
+            const cat = DEFAULT_CATEGORIES.find(c => c.id === id)
+            return (
+              <button key={id} type="button" onClick={() => setCategoryFilter(c => c === id ? null : id)} style={chipSt(categoryFilter === id)}>
+                {cat?.emoji} {cat?.label ?? id}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Tag filter chips */}
+      {allTags.length > 0 && (
+        <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 8, scrollbarWidth: 'none', alignItems: 'center' }}>
+          <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>tag:</span>
+          {allTags.map(tag => (
+            <button key={tag} type="button" onClick={() => setTagFilter(t => t === tag ? null : tag)} style={chipSt(tagFilter === tag)}>{tag}</button>
+          ))}
+        </div>
+      )}
+
+      {/* Frequency filter chips */}
+      {usedFreqs.length > 0 && (
+        <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 8, scrollbarWidth: 'none', alignItems: 'center' }}>
+          <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>freq:</span>
+          {usedFreqs.map(f => (
+            <button key={f} type="button" onClick={() => setFreqFilter(ff => ff === f ? null : f)} style={chipSt(freqFilter === f)}>{f}</button>
+          ))}
+        </div>
+      )}
+
+      {/* Sort row */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 16, alignItems: 'center' }}>
+        <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>sort:</span>
+        {([['name', 'name'], ['progress', 'progress'], ['next-due', 'next due'], ['category', 'category']] as const).map(([v, label]) => (
+          <button key={v} type="button" onClick={() => setSortBy(v)} style={chipSt(sortBy === v)}>{label}</button>
+        ))}
+      </div>
+
+      {/* Empty state */}
+      {activeHabits.length === 0 && !addForm && (
         <div className="card" style={{ textAlign: 'center', padding: '32px 20px' }}>
           <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: '0 0 12px' }}>No habits yet.</p>
-          <button className="btn-primary" onClick={() => setShowAdd(true)}>Add your first habit</button>
+          <button className="btn-primary" onClick={() => setAddForm(freshForm())}>Add your first habit</button>
         </div>
       )}
 
@@ -175,6 +263,8 @@ export default function Habits() {
           const last7 = getLast7(habit.id, state.habitCompletions)
           const cat = habit.categoryId ? DEFAULT_CATEGORIES.find(c => c.id === habit.categoryId) : undefined
           const dotColor = habit.colorTag ?? 'var(--accent-amethyst)'
+          const isEditing = editingId === habit.id
+
           return (
             <div key={habit.id} className="card">
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
@@ -186,7 +276,7 @@ export default function Habits() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden' }}>
                       {cat && <span style={{ fontSize: 16, flexShrink: 0 }}>{cat.emoji}</span>}
-                      <span style={{ fontSize: 15, color: done ? 'var(--text-ghost)' : 'var(--text-primary)', textDecoration: done ? 'line-through' : 'none', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontSize: 15, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: done ? 'var(--text-ghost)' : 'var(--text-primary)', textDecoration: done ? 'line-through' : 'none' }}>
                         {habit.name}
                       </span>
                     </div>
@@ -196,18 +286,17 @@ export default function Habits() {
                           <MoonIcon /> {streak}
                         </span>
                       )}
-                      <button
-                        onClick={() => dispatch({ type: 'REMOVE_HABIT', payload: habit.id })}
-                        style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: 16, padding: '0 2px', lineHeight: 1 }}
-                      >×</button>
+                      <button onClick={() => isEditing ? cancelEdit() : startEdit(habit)} style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: 11, padding: '1px 4px' }}>
+                        {isEditing ? 'cancel' : 'edit'}
+                      </button>
+                      <button onClick={() => dispatch({ type: 'REMOVE_HABIT', payload: habit.id })} style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: 16, padding: '0 2px', lineHeight: 1 }}>×</button>
                     </div>
                   </div>
 
-                  {habit.description && (
+                  {!isEditing && habit.description && (
                     <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: '3px 0 0' }}>{habit.description}</p>
                   )}
-
-                  {(habit.tags ?? []).length > 0 && (
+                  {!isEditing && (habit.tags ?? []).length > 0 && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 5 }}>
                       {(habit.tags ?? []).map(tag => (
                         <span key={tag} style={{ fontSize: 10, padding: '1px 7px', borderRadius: 12, background: 'var(--surface-raised)', color: 'var(--text-secondary)', border: '0.5px solid var(--border)' }}>
@@ -217,86 +306,119 @@ export default function Habits() {
                     </div>
                   )}
 
-                  <div style={{ display: 'flex', gap: 4, marginTop: 10 }}>
-                    {last7.map((day, i) => (
-                      <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, flex: 1 }}>
-                        <div style={{
-                          width: 10, height: 10, borderRadius: '50%',
-                          background: day.done ? dotColor : 'var(--surface-raised)',
-                          border: day.done ? 'none' : '0.5px solid var(--border)',
-                        }} />
-                        <span style={{ fontSize: 8, color: 'var(--text-ghost)' }}>{day.label}</span>
-                      </div>
-                    ))}
-                  </div>
+                  {!isEditing && (
+                    <div style={{ display: 'flex', gap: 4, marginTop: 10 }}>
+                      {last7.map((day, i) => (
+                        <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, flex: 1 }}>
+                          <div style={{ width: 10, height: 10, borderRadius: '50%', background: day.done ? dotColor : 'var(--surface-raised)', border: day.done ? 'none' : '0.5px solid var(--border)' }} />
+                          <span style={{ fontSize: 8, color: 'var(--text-ghost)' }}>{day.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* Inline edit form */}
+              {isEditing && editForm && (
+                <div style={{ marginTop: 14, paddingTop: 14, borderTop: '0.5px solid var(--border)' }}>
+                  <input className="input-field" value={editForm.name} onChange={e => patchEdit({ name: e.target.value })} placeholder="Habit name" />
+                  <div style={{ marginTop: 8 }}>
+                    <DescriptionField value={editForm.desc} onChange={desc => patchEdit({ desc })} rows={2} />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => patchEdit({ showDetails: !editForm.showDetails })}
+                    style={{ background: 'none', border: 'none', color: 'var(--accent-amethyst)', cursor: 'pointer', fontSize: 12, padding: '8px 0 0', display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
+                    <span style={{ fontSize: 10 }}>{editForm.showDetails ? '▾' : '▸'}</span> Category &amp; tags
+                  </button>
+                  {editForm.showDetails && (
+                    <div style={{ marginTop: 10, paddingTop: 10, borderTop: '0.5px solid var(--border)' }}>
+                      <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '0 0 6px' }}>Category</p>
+                      <CategoryPicker categoryId={editForm.categoryId} onChange={categoryId => patchEdit({ categoryId })} />
+                      <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '14px 0 6px' }}>Tags</p>
+                      <TagInput tags={editForm.tags} onChange={tags => patchEdit({ tags })} suggestions={allHabitTags} />
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => patchEdit({ showRecurrence: !editForm.showRecurrence })}
+                    style={{ background: 'none', border: 'none', color: 'var(--accent-amethyst)', cursor: 'pointer', fontSize: 12, padding: '8px 0 0', display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
+                    <span style={{ fontSize: 10 }}>{editForm.showRecurrence ? '▾' : '▸'}</span> Recurrence
+                    {!editForm.showRecurrence && editForm.recurrence.frequency !== 'none' && (
+                      <span style={{ fontSize: 11, color: 'var(--text-secondary)', marginLeft: 4 }}>({editForm.recurrence.frequency})</span>
+                    )}
+                  </button>
+                  {editForm.showRecurrence && (
+                    <div style={{ marginTop: 10, paddingTop: 10, borderTop: '0.5px solid var(--border)' }}>
+                      <RecurrenceEditor value={editForm.recurrence} onChange={recurrence => patchEdit({ recurrence })} />
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                    <button className="btn-primary" style={{ flex: 1 }} onClick={() => saveEdit(habit)}>Save</button>
+                    <button className="btn-ghost" onClick={cancelEdit}>Cancel</button>
+                  </div>
+                </div>
+              )}
             </div>
           )
         })}
       </div>
 
       {/* Add form */}
-      {showAdd && (
+      {addForm && (
         <div className="card" style={{ marginTop: 12 }}>
           <input
             className="input-field"
             placeholder="Habit name"
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && !showDetails && !showRecurrence && addHabit()}
+            value={addForm.name}
+            onChange={e => patchAdd({ name: e.target.value })}
             autoFocus
           />
-
           <div style={{ marginTop: 8 }}>
-            <DescriptionField value={newDesc} onChange={setNewDesc} rows={2} />
+            <DescriptionField value={addForm.desc} onChange={desc => patchAdd({ desc })} rows={2} />
           </div>
-
-          {/* Category & tags section */}
           <button
             type="button"
-            onClick={() => setShowDetails(d => !d)}
+            onClick={() => patchAdd({ showDetails: !addForm.showDetails })}
             style={{ background: 'none', border: 'none', color: 'var(--accent-amethyst)', cursor: 'pointer', fontSize: 12, padding: '8px 0 0', display: 'flex', alignItems: 'center', gap: 4 }}
           >
-            <span style={{ fontSize: 10 }}>{showDetails ? '▾' : '▸'}</span> Category &amp; tags
+            <span style={{ fontSize: 10 }}>{addForm.showDetails ? '▾' : '▸'}</span> Category &amp; tags
           </button>
-
-          {showDetails && (
+          {addForm.showDetails && (
             <div style={{ marginTop: 10, paddingTop: 10, borderTop: '0.5px solid var(--border)' }}>
               <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '0 0 6px' }}>Category</p>
-              <CategoryPicker categoryId={newCategoryId} onChange={setNewCategoryId} />
+              <CategoryPicker categoryId={addForm.categoryId} onChange={categoryId => patchAdd({ categoryId })} />
               <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '14px 0 6px' }}>Tags</p>
-              <TagInput tags={newTags} onChange={setNewTags} suggestions={allHabitTags} />
+              <TagInput tags={addForm.tags} onChange={tags => patchAdd({ tags })} suggestions={allHabitTags} />
             </div>
           )}
-
-          {/* Recurrence section */}
           <button
             type="button"
-            onClick={() => setShowRecurrence(r => !r)}
+            onClick={() => patchAdd({ showRecurrence: !addForm.showRecurrence })}
             style={{ background: 'none', border: 'none', color: 'var(--accent-amethyst)', cursor: 'pointer', fontSize: 12, padding: '8px 0 0', display: 'flex', alignItems: 'center', gap: 4 }}
           >
-            <span style={{ fontSize: 10 }}>{showRecurrence ? '▾' : '▸'}</span> Recurrence
-            {!showRecurrence && newRecurrence.frequency !== 'none' && (
-              <span style={{ fontSize: 11, color: 'var(--text-secondary)', marginLeft: 4 }}>({newRecurrence.frequency})</span>
+            <span style={{ fontSize: 10 }}>{addForm.showRecurrence ? '▾' : '▸'}</span> Recurrence
+            {!addForm.showRecurrence && addForm.recurrence.frequency !== 'none' && (
+              <span style={{ fontSize: 11, color: 'var(--text-secondary)', marginLeft: 4 }}>({addForm.recurrence.frequency})</span>
             )}
           </button>
-
-          {showRecurrence && (
+          {addForm.showRecurrence && (
             <div style={{ marginTop: 10, paddingTop: 10, borderTop: '0.5px solid var(--border)' }}>
-              <RecurrenceEditor value={newRecurrence} onChange={setNewRecurrence} />
+              <RecurrenceEditor value={addForm.recurrence} onChange={recurrence => patchAdd({ recurrence })} />
             </div>
           )}
-
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-            <button className="btn-primary" style={{ flex: 1 }} onClick={addHabit}>Add habit</button>
-            <button className="btn-ghost" onClick={() => { setShowAdd(false); resetForm() }}>Cancel</button>
+            <button className="btn-primary" style={{ flex: 1 }} onClick={saveAdd}>Add habit</button>
+            <button className="btn-ghost" onClick={() => setAddForm(null)}>Cancel</button>
           </div>
         </div>
       )}
 
-      {!showAdd && activeHabits.length > 0 && (
-        <button className="fab" onClick={() => setShowAdd(true)}>+</button>
+      {!addForm && activeHabits.length > 0 && (
+        <button className="fab" onClick={() => setAddForm(freshForm())}>+</button>
       )}
     </div>
   )
