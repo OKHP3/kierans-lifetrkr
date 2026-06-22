@@ -1,0 +1,71 @@
+{
+  "name": "Kieran's LifeTrkr",
+  "short_name": "LifeTrkr",
+  "description": "Personal life-ops hub for rituals, habits, tasks, and scheduling. Track your daily routines, build streaks, manage your calendar, and reflect — all in one dark-mode mobile-first app.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0D0B14",
+  "theme_color": "#C4A0E8",
+  "categories": ["productivity", "lifestyle", "utilities"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-192.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./og-image.png",
+      "sizes": "1280x640",
+      "type": "image/png",
+      "label": "Kieran's LifeTrkr — Track. Reflect. Grow."
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Today",
+      "short_name": "Today",
+      "description": "Jump to today's tasks and habits",
+      "url": "./#/today",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Rituals",
+      "short_name": "Rituals",
+      "description": "View and complete your daily rituals",
+      "url": "./#/rituals",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Habits",
+      "short_name": "Habits",
+      "description": "Track your habit streaks",
+      "url": "./#/habits",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
