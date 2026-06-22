@@ -25,7 +25,7 @@
 Started on Father's Day, June 21, 2026 — the Summer Solstice — as a father-daughter build session between Jamie Hill (OverKill Hill P³) and his daughter Kieran (Rylee Ann Hill, 21, Denton TX). The goal: teach by doing, ship something real, hand it over when it's done.
 
 Kieran is the fourth generation of the Hill family operating system:  
-Ralph v0.0 → Virgil v1.0 → Jamie v2.0 → Kieran v3.0
+Ralph v0.0 → Vyrle v1.0 → Jamie v2.0 → Kieran v3.0
 
 These version numbers reference family generations, not software releases.
 
@@ -43,13 +43,17 @@ Published under MIT license. Sharing is caring.
 | v0.1.x | Phase 1 patches | Active | Bug fixes, UI corrections from live review |
 | v0.2.0 | Phase 2 | NEXT | Google Calendar + Tasks live integration |
 | v0.2.x | Phase 2 patches | Planned | Token handling, edge cases |
-| v0.3.0 | Phase 3 | Planned | Recurrence + Categories + Celestial Engine + Oracle |
+| v0.3.0 | Phase 3 | SHIPPED EARLY (see PRD-v4.0.md) | Recurrence + Categories + Celestial Engine + Oracle |
 | v0.3.x | Phase 3 patches | Planned | Tuning celestial data, oracle quality |
 | v0.4.0 | Phase 4 | Planned | Brand assets, PWA manifest, polish, empty states |
 | v0.4.x | Phase 4 patches | Planned | Performance, accessibility, mobile tuning |
 | v0.5.0 | Phase 5 | Planned | Privacy policy, Google OAuth verification submission |
 | v0.6.0 | Phase 6 | Planned | Account handoff to Kieran |
 | v1.0.0 | Production | Reserved | First stable public release, Google-verified, Kieran-owned |
+
+> Note (June 22, 2026): The v0.3.0 feature set (RecurrenceEditor, CategoryPicker, celestial engine,
+> oracle stack) was pulled forward and shipped in v0.1.1–v0.1.8 during the second build session.
+> See PRD-v4.0.md for the updated versioning alignment and current state audit.
 
 Minor bumps (0.x.0) represent completed phase milestones. Patch bumps (0.x.y) are iterative fixes within a phase. No feature from a later phase ships in an earlier version.
 
@@ -1563,7 +1567,7 @@ npm run deploy        # tsc && vite build && gh-pages -d dist
  *
  * v3.0 — Kieran
  * v2.0 — Jamie
- * v1.0 — Virgil
+ * v1.0 — Vyrle
  * v0.0 — Ralph
  *
  * The fourth Hill. Pay it forward.
@@ -1579,7 +1583,7 @@ If the ✦ glyph on the Home screen is tapped 3 times within 2 seconds, display 
 │  Kieran's LifeTrkr  ·  v0.x.x  │
 │                                │
 │  The fourth generation.        │
-│  Ralph · Virgil · Jamie · Kieran│
+│  Ralph · Vyrle · Jamie · Kieran│
 │                                │
 │  Built with ✦                  │
 │  Father's Day, June 21, 2026   │

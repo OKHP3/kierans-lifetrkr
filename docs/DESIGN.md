@@ -200,7 +200,7 @@ Add this as a comment block at the top of App.tsx:
  * ─────────────────
  * v3.0 — Kieran
  * v2.0 — Jamie
- * v1.0 — Virgil
+ * v1.0 — Vyrle
  * v0.0 — Ralph
  *
  * Built with love. The fourth Hill.
@@ -212,7 +212,7 @@ Optionally: add a hidden "About" easter egg. If the user taps the ✦ star next 
 Kieran's LifeTrkr  ·  v3.0
 
 The fourth generation.
-Ralph · Virgil · Jamie · Kieran
+Ralph · Vyrle · Jamie · Kieran
 
 Built with ✦
 ```

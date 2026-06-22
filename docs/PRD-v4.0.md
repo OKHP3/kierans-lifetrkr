@@ -26,6 +26,7 @@ A full three-source review (live app + GitHub + Notion) was conducted June 22, 2
 
 | Gap | Severity | Session |
 |---|---|---|
+| Vyrle vs Virgil | RESOLVED — June 22, 2026. Jamie confirmed correct spelling is VYRLE. All docs corrected. Home.tsx already had Vyrle. No further action needed. | None |
 | React source NOT in GitHub main branch — only in Replit + gh-pages build | CRITICAL | A |
 | README describes PRD v1.0 architecture (Notion, Express, Replit hosting) | HIGH | A |
 | PRD-v3.0.md not committed to docs/ | HIGH | A |
