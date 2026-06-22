@@ -1,0 +1,688 @@
+# @Replit Prompt Addendum — Recurrence, Tags, Descriptions, and Cosmic Overlay
+
+You are continuing work on **Kieran’s LifeTrkr** in the `OKHP3/kierans-lifetrkr` repository.
+
+This is an alignment pass for the existing client-only V1 app. Do not rewrite the project from scratch. Inspect the current routes and components first, especially:
+
+* `/rituals`
+* `/habits`
+* `/calendar`
+
+The current issue is that Rituals, Habits, and Calendar items behave too much like one-time appointments. Rituals and habits are semantically recurring by default, and calendar events also need recurrence support.
+
+Implement a shared recurrence and metadata model that can be reused across all three areas.
+
+---
+
+# 1. Product direction
+
+Keep the current V1 architecture:
+
+* client-only;
+* local/browser persistence;
+* no backend for this pass;
+* no Notion runtime database;
+* no secrets in frontend code;
+* no required external API dependency for this pass.
+
+Notion remains the project hub/artifact ledger, not the app database.
+
+---
+
+# 2. Core problem to solve
+
+Currently, adding a Ritual, Habit, or Calendar item appears to support only basic fields such as:
+
+* title/name;
+* date;
+* start time;
+* end time;
+* location in Calendar.
+
+That is insufficient.
+
+Add support for:
+
+1. recurrence;
+2. frequency;
+3. recurrence end conditions;
+4. description;
+5. category;
+6. emoji-style tags;
+7. filtering/sorting by category, tag, recurrence, and date;
+8. optional cosmic/lunar/daily-wisdom overlay.
+
+---
+
+# 3. Domain clarification
+
+Use these domain meanings:
+
+## Ritual
+
+A ritual is a recurring routine, usually made of one or more steps.
+
+Examples:
+
+* morning ritual;
+* evening wind-down;
+* medication routine;
+* Sunday reset;
+* card reading ritual;
+* moon ritual;
+* homework/study ritual.
+
+A ritual should support recurrence and completion tracking by date.
+
+## Habit
+
+A habit is a recurring behavior tracked over time.
+
+Examples:
+
+* drink water;
+* take medication;
+* meditate;
+* read;
+* sleep routine;
+* clean room;
+* journal;
+* stretch.
+
+A habit should support recurrence, completion history, and simple progress.
+
+## Calendar Event
+
+A calendar event is a scheduled item that may be one-time or recurring.
+
+Examples:
+
+* appointment;
+* class;
+* work shift;
+* family event;
+* recurring reminder;
+* medication window;
+* moon phase event;
+* daily card prompt.
+
+Calendar items should support recurrence when user-created.
+
+## Cosmic Overlay
+
+Cosmic/lunar/astrological items should be read-only contextual events. They should not be mixed directly with user-created calendar events in the data model.
+
+Examples:
+
+* full moon;
+* new moon;
+* moon phase;
+* seasonal marker;
+* daily card;
+* daily word of wisdom.
+
+---
+
+# 4. Shared recurrence model
+
+Create or align toward a shared recurrence type.
+
+Use TypeScript-style structure if the project is TypeScript. If the project is JavaScript, use the same shape in plain JS.
+
+```ts
+type RecurrenceFrequency =
+  | "none"
+  | "daily"
+  | "weekly"
+  | "monthly"
+  | "yearly"
+  | "custom";
+
+type DayOfWeek =
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday";
+
+type RecurrenceEnd =
+  | { mode: "never" }
+  | { mode: "onDate"; date: string }
+  | { mode: "afterCount"; count: number };
+
+type RecurrenceRule = {
+  frequency: RecurrenceFrequency;
+  interval: number;
+  daysOfWeek?: DayOfWeek[];
+  dayOfMonth?: number | null;
+  startDate: string;
+  end: RecurrenceEnd;
+  exceptions?: string[];
+};
+```
+
+Default recurrence:
+
+```ts
+{
+  frequency: "none",
+  interval: 1,
+  startDate: today,
+  end: { mode: "never" },
+  exceptions: []
+}
+```
+
+Do not overbuild advanced recurrence yet. V1 should support:
+
+* does not repeat;
+* daily;
+* weekly;
+* monthly;
+* custom weekly days;
+* ends never;
+* ends on date;
+* ends after N occurrences.
+
+---
+
+# 5. Shared metadata model
+
+Add shared metadata across Rituals, Habits, and Calendar Events.
+
+```ts
+type LifeTrkrCategory = {
+  id: string;
+  label: string;
+  emoji: string;
+  realm:
+    | "body"
+    | "mind"
+    | "home"
+    | "school"
+    | "social"
+    | "health"
+    | "magic"
+    | "creative"
+    | "calendar"
+    | "other";
+  description?: string;
+};
+
+type TaggedMetadata = {
+  description?: string;
+  categoryId?: string;
+  tags: string[];
+};
+```
+
+Every Ritual, Habit, and Calendar Event should support:
+
+* description;
+* category;
+* tags.
+
+---
+
+# 6. Suggested category picker
+
+Create a small category/tag picker with emoji labels.
+
+Use a mix of practical real-world categories and soft witchy/flavor categories.
+
+Recommended default categories:
+
+```ts
+const DEFAULT_CATEGORIES = [
+  { id: "medication", label: "Medication", emoji: "💊", realm: "health" },
+  { id: "sleep", label: "Sleep", emoji: "😴", realm: "body" },
+  { id: "rest", label: "Rest", emoji: "🛌", realm: "body" },
+  { id: "meditation", label: "Meditation", emoji: "🧘", realm: "mind" },
+  { id: "hydration", label: "Hydration", emoji: "💧", realm: "body" },
+  { id: "movement", label: "Movement", emoji: "🚶", realm: "body" },
+  { id: "study", label: "Study", emoji: "📚", realm: "school" },
+  { id: "chores", label: "Chores", emoji: "🧺", realm: "home" },
+  { id: "room-reset", label: "Room Reset", emoji: "🧹", realm: "home" },
+  { id: "mood-check", label: "Mood Check", emoji: "🧠", realm: "mind" },
+  { id: "journaling", label: "Journaling", emoji: "📓", realm: "creative" },
+  { id: "music", label: "Music", emoji: "🎧", realm: "creative" },
+  { id: "friends", label: "Friends", emoji: "👥", realm: "social" },
+
+  { id: "moon-work", label: "Moon Work", emoji: "🌙", realm: "magic" },
+  { id: "card-reading", label: "Card Reading", emoji: "🃏", realm: "magic" },
+  { id: "spellcasting", label: "Spellcasting", emoji: "🕯️", realm: "magic" },
+  { id: "intention", label: "Intention", emoji: "✨", realm: "magic" },
+  { id: "reflection", label: "Reflection", emoji: "🔮", realm: "mind" },
+  { id: "black-cat", label: "Black Cat", emoji: "🐈‍⬛", realm: "magic" },
+  { id: "crystals", label: "Crystals", emoji: "💎", realm: "magic" },
+  { id: "herbs", label: "Herbs", emoji: "🌿", realm: "magic" }
+];
+```
+
+Keep the tone playful and aesthetic. Do not make the app feel religious, occult-heavy, scary, goth, or overly serious.
+
+---
+
+# 7. UI components to add or refactor
+
+Create reusable components if the project structure supports it.
+
+Recommended components:
+
+```text
+RecurrenceEditor
+CategoryPicker
+TagInput
+DescriptionField
+ScheduleFields
+FilterBar
+```
+
+## RecurrenceEditor should expose
+
+* Repeats:
+
+  * Does not repeat
+  * Daily
+  * Weekly
+  * Monthly
+  * Custom
+
+* Every:
+
+  * number input
+  * unit label
+
+* On:
+
+  * weekday picker for weekly/custom recurrence
+
+* Ends:
+
+  * Never
+  * On date
+  * After number of times
+
+Example UI copy:
+
+```text
+Repeats: Weekly
+Every: 1 week
+On: Mon, Wed, Fri
+Ends: After 12 times
+```
+
+## CategoryPicker should expose
+
+* emoji;
+* label;
+* optional realm grouping;
+* searchable list if easy.
+
+## TagInput should allow
+
+* selecting existing tags;
+* adding lightweight custom tags;
+* removing tags.
+
+Do not let tags become the primary UI burden. Category should be the first-class picker; tags are secondary.
+
+---
+
+# 8. Data model alignment
+
+Align existing entities toward these shapes without destructive migration.
+
+## Ritual
+
+```ts
+type Ritual = {
+  id: string;
+  title: string;
+  description?: string;
+  steps?: RitualStep[];
+  startTime?: string | null;
+  endTime?: string | null;
+  recurrence: RecurrenceRule;
+  categoryId?: string;
+  tags: string[];
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+```
+
+## Habit
+
+```ts
+type Habit = {
+  id: string;
+  title: string;
+  description?: string;
+  recurrence: RecurrenceRule;
+  categoryId?: string;
+  tags: string[];
+  completedDates: string[];
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+```
+
+## Calendar Event
+
+```ts
+type CalendarEvent = {
+  id: string;
+  title: string;
+  description?: string;
+  startDate: string;
+  startTime?: string | null;
+  endTime?: string | null;
+  location?: string;
+  recurrence: RecurrenceRule;
+  categoryId?: string;
+  tags: string[];
+  source: "user" | "mock" | "google" | "cosmic";
+  createdAt: string;
+  updatedAt: string;
+};
+```
+
+## Cosmic Event
+
+```ts
+type CosmicEvent = {
+  id: string;
+  title: string;
+  description?: string;
+  date: string;
+  type: "moon_phase" | "seasonal" | "daily_card" | "daily_wisdom";
+  emoji?: string;
+  source: "local" | "external";
+};
+```
+
+Existing records should migrate safely:
+
+* missing recurrence becomes `frequency: "none"`;
+* missing description becomes empty;
+* missing category becomes undefined or `uncategorized`;
+* missing tags becomes `[]`.
+
+Do not wipe existing user data in localStorage.
+
+---
+
+# 9. Filtering and sorting
+
+Add filtering/sorting where practical.
+
+At minimum:
+
+## Rituals
+
+Filter by:
+
+* category;
+* tag;
+* recurrence frequency;
+* active/inactive.
+
+Sort by:
+
+* title;
+* next occurrence;
+* category.
+
+## Habits
+
+Filter by:
+
+* category;
+* tag;
+* recurrence frequency;
+* completed today / not completed today.
+
+Sort by:
+
+* title;
+* progress;
+* next due;
+* category.
+
+## Calendar
+
+Filter by:
+
+* source;
+* category;
+* tag;
+* date range;
+* recurring / one-time.
+
+Sort by:
+
+* date/time ascending.
+
+---
+
+# 10. Cosmic/lunar/daily-wisdom layer
+
+Add a lightweight V1 cosmic overlay, but do not make the app dependent on external services.
+
+Preferred V1 implementation:
+
+1. local deterministic moon phase calculation if simple;
+2. local seeded daily card/wisdom generator;
+3. optional placeholder adapter for future external APIs.
+
+Do not add required API keys.
+
+Do not add secrets.
+
+Do not block the app if cosmic data fails.
+
+The cosmic layer should provide:
+
+```ts
+getMoonPhaseForDate(date: string): CosmicEvent | null
+getDailyCard(date: string): CosmicEvent
+getDailyWisdom(date: string): CosmicEvent
+getCosmicEventsForDateRange(startDate: string, endDate: string): CosmicEvent[]
+```
+
+Daily card/wisdom should be deterministic per date. It should not change every time the user refreshes the page.
+
+Use a date-seeded selection from a local list.
+
+Example tone:
+
+```text
+Card of the Day: The Lantern
+A small step still counts as movement. Pick one thing that makes the room feel lighter.
+```
+
+Keep this framed as reflection, encouragement, or mood-setting. Do not present it as factual fortune-telling.
+
+---
+
+# 11. Suggested local daily wisdom deck
+
+Add a small local deck of cards/messages.
+
+Examples:
+
+```ts
+const DAILY_WISDOM_DECK = [
+  {
+    id: "lantern",
+    title: "The Lantern",
+    emoji: "🏮",
+    message: "Choose one small thing that makes the day easier to see."
+  },
+  {
+    id: "black-cat",
+    title: "The Black Cat",
+    emoji: "🐈‍⬛",
+    message: "Move quietly. Protect your peace. Notice what follows you."
+  },
+  {
+    id: "moon-bowl",
+    title: "The Moon Bowl",
+    emoji: "🌙",
+    message: "Let one feeling have a name before you try to fix it."
+  },
+  {
+    id: "key",
+    title: "The Key",
+    emoji: "🗝️",
+    message: "The locked door may only need a smaller question."
+  },
+  {
+    id: "thread",
+    title: "The Thread",
+    emoji: "🧵",
+    message: "Follow the next thread, not the whole knot."
+  },
+  {
+    id: "candle",
+    title: "The Candle",
+    emoji: "🕯️",
+    message: "One steady flame is enough for the next step."
+  }
+];
+```
+
+This should appear on Home and optionally Calendar as a read-only daily item.
+
+---
+
+# 12. Calendar behavior
+
+Calendar should show:
+
+1. user-created calendar events;
+2. recurring generated occurrences;
+3. optional mock Google Calendar events if already present;
+4. cosmic overlay events if enabled.
+
+Distinguish the source visually:
+
+* user event;
+* recurring event;
+* cosmic event;
+* mock/google event.
+
+Do not allow editing cosmic events as if they were user events.
+
+---
+
+# 13. Home page integration
+
+Update Home so it can show:
+
+* today’s rituals;
+* today’s habits;
+* today’s user calendar items;
+* today’s cosmic/lunar note;
+* today’s card or wisdom message.
+
+Keep this subtle. The cosmic layer should feel like a small atmospheric accent, not the whole app.
+
+Suggested labels:
+
+```text
+Today’s Orbit
+Daily Card
+Moon Note
+A Little Wisdom
+```
+
+---
+
+# 14. Documentation updates
+
+Update or create documentation for:
+
+```text
+docs/RECURRENCE_MODEL.md
+docs/TAXONOMY.md
+docs/COSMIC_OVERLAY.md
+```
+
+Also update:
+
+```text
+README.md
+docs/PRD.md
+docs/DATA_MODEL.md
+docs/ROADMAP.md
+docs/HANDOFF.md
+docs/ARTIFACT_LEDGER.md
+```
+
+## RECURRENCE_MODEL.md should document
+
+* recurrence fields;
+* supported V1 patterns;
+* unsupported advanced patterns;
+* how generated occurrences are calculated;
+* migration behavior for existing records.
+
+## TAXONOMY.md should document
+
+* default categories;
+* category realms;
+* tag behavior;
+* tone guidance.
+
+## COSMIC_OVERLAY.md should document
+
+* local V1 behavior;
+* daily card/wisdom generation;
+* future external-source adapter idea;
+* no-secrets/no-required-API rule;
+* fallback behavior.
+
+---
+
+# 15. Acceptance criteria
+
+This pass is complete when:
+
+1. Rituals support recurrence.
+2. Habits support recurrence.
+3. Calendar events support recurrence.
+4. Rituals, Habits, and Calendar all support description.
+5. Rituals, Habits, and Calendar all support category selection.
+6. Rituals, Habits, and Calendar all support tags.
+7. Existing local data is not wiped.
+8. Existing records are migrated safely with default recurrence/category/tag values.
+9. Filters exist for category/tag at minimum.
+10. Calendar can render generated recurring occurrences.
+11. Home can surface today’s recurring rituals/habits/events.
+12. A local daily wisdom/card feature exists.
+13. Cosmic/lunar events are read-only and visually distinct.
+14. No external API is required for the app to function.
+15. No API keys or secrets are introduced.
+16. Documentation is updated.
+
+---
+
+# 16. Report back after completion
+
+After making changes, report:
+
+1. files changed;
+2. data model changes;
+3. migration behavior;
+4. recurrence patterns supported;
+5. category/tag behavior;
+6. cosmic/daily-wisdom behavior;
+7. any build errors or warnings;
+8. anything deferred.
+
+Do not proceed to backend implementation, Notion sync, Google OAuth, paid APIs, or account systems without a separate explicit prompt.
