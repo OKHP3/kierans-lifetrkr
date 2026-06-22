@@ -1,173 +1,144 @@
 # Kieran's LifeTrkr
 
-> A dark-mode personal life OS. Rituals, habits, calendar, tasks, and archive — one interface, zero noise.
+> A mobile-first, dark-mode personal life OS. Rituals, habits, calendar, tasks,
+> and a daily oracle — one interface, no noise.
 
-**Version:** v0.1.0  
-**Status:** Phase 1 — UI Shell (live)  
-**Stack:** React 18 · Vite 5 · TypeScript · Tailwind CSS  
-**Aesthetic:** Moonlit Hearth — warmly mystical dark mode
-
----
-
-## What It Does
-
-Kieran's LifeTrkr is a mobile-first personal organization app built around one question:
-
-**What does today require from me?**
-
-Six tabs. One user. No corporate productivity overhead.
-
-| Tab | Purpose |
-|---|---|
-| Home | Today's rituals, upcoming events, at-a-glance dashboard |
-| Rituals | Day-of-week routine templates (Sun through Sat) |
-| Habits | Daily practice tracking with moon-streak counter |
-| Calendar | Google Calendar sync (Phase 1.5) |
-| Today | Committed tasks for the current day |
-| Archive | Master backlog — the someday list |
-
----
-
-## Stack
-
-| Layer | Choice | Notes |
-|---|---|---|
-| Framework | React 18 + Vite 5 | SPA, fast HMR |
-| Language | TypeScript | Strict typing throughout |
-| Styling | Tailwind CSS | Moonlit Hearth tokens, mobile-first |
-| State | React Context + useReducer | localStorage in Phase 1 |
-| Router | HashRouter | Required for GitHub Pages SPA |
-| Calendar | Google Calendar API (read-only) | Client-side GIS token flow |
-| Hosting | GitHub Pages | Auto-deploys via GitHub Actions on push to main |
-| Icons | Tabler Icons (outline) | ti-moon, ti-feather, ti-scroll, etc. |
-| Fonts | Cormorant Garamond · DM Sans · Space Mono | Google Fonts |
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 20 or higher
-- npm
-
-### Local Development
-
-```bash
-# Clone
-git clone https://github.com/OKHP3/kierans-lifetrkr.git
-cd kierans-lifetrkr
-
-# Install
-npm install
-
-# Run
-npm run dev
-# App runs at http://localhost:5000
-```
-
-No environment variables are required for Phase 1. The app runs fully on localStorage.
-
-To enable Google Calendar and Tasks sync, set one value:
-
-```bash
-# .env (not committed — see .env.example)
-VITE_GOOGLE_CLIENT_ID=YOUR_CLIENT_ID.apps.googleusercontent.com
-```
-
----
-
-## Project Structure
-
-```
-kierans-lifetrkr/
-├── src/
-│   ├── context/             # AppContext (useReducer + localStorage), ThemeContext
-│   ├── components/          # BottomNav, SideNav, ThemeToggle, CheckCircle,
-│   │                        #   Toast, GoogleConnectButton, TokenExpiryBanner
-│   ├── hooks/               # useGoogleAuth, useToast
-│   ├── lib/                 # storage.ts, date.ts, googleCalendar.ts, googleTasks.ts
-│   ├── pages/               # Home, Rituals, Habits, Calendar, Today, Archive, Settings
-│   ├── types.ts             # All TypeScript types
-│   ├── constants.ts         # APP_VERSION, GOOGLE_CLIENT_ID, quotes, seasonal dates
-│   ├── App.tsx              # HashRouter + Routes
-│   └── main.tsx             # Entry point
-├── docs/                    # PRD, Architecture, Design System, Roadmap, Handoff
-├── .github/workflows/       # static.yml — builds and deploys to GitHub Pages on push
-├── index.html               # Vite entry point
-├── vite.config.ts           # host 0.0.0.0:5000, base /kierans-lifetrkr/ in production
-├── tailwind.config.js       # Moonlit Hearth color tokens
-├── tsconfig.json
-└── package.json
-```
-
----
-
-## Phase Roadmap
-
-| Version | Phase | Scope |
-|---|---|---|
-| **v0.1.0** | UI Shell | React + localStorage + all 6 tabs + Google Auth shell |
-| **v0.2.0** | Calendar | Google Calendar live sync (client-side GIS) |
-| **v0.3.0** | Tasks | Google Tasks live sync |
-| **v0.4–0.9** | Polish | Public prep, OAuth verification, real-user testing |
-| **v1.0.0** | Production | Google-verified, battle-tested, Kieran owns it |
-
----
-
-## Design System
-
-**Moonlit Hearth** — warmly mystical dark mode. Stevie Nicks, not goth.
-
-| Token | Hex | Usage |
-|---|---|---|
-| bg | #0D0B14 | Base background — deep midnight purple-black |
-| surface | #1A1424 | Cards, nav, modals |
-| accentAmethyst | #C4A0E8 | Primary CTA, active nav, streaks |
-| accentGold | #E8B86D | Calendar events, 30-day milestone |
-| accentSage | #4ECFA0 | Completion states |
-| textPrimary | #EAE0F8 | Warm moonstone white |
-
-Display: Cormorant Garamond (greeting only) · Body: DM Sans · Mono: Space Mono
-
-See `docs/DESIGN.md` for the full token and component spec.
-
----
-
-## Deployment
-
-Pushes to `main` auto-deploy to GitHub Pages via `.github/workflows/static.yml`.
-
-Live at: **https://okhp3.github.io/kierans-lifetrkr/**
-
----
-
-## Environment Variables
-
-Only one value needed, and it's not a secret:
-
-```
-VITE_GOOGLE_CLIENT_ID=YOUR_CLIENT_ID.apps.googleusercontent.com
-```
-
-See `.env.example` for setup instructions.
+**Live:** https://okhp3.github.io/kierans-lifetrkr/#/
+**Status:** v0.1.x deployed · v0.2.0 (Google Calendar + Tasks) in progress
+**License:** MIT — free to use, fork, and build on
 
 ---
 
 ## Origin
 
-Started on Father's Day, June 21, 2026 — the Summer Solstice — as a build session between Jamie Hill and his daughter Rylee (Kieran).
+Started on Father's Day, June 21, 2026 — the Summer Solstice — as a build session
+between Jamie Hill (OverKill Hill P³) and his daughter Kieran.
 
-The goal: teach by doing, ship something real, hand it to her when it's done.
+Ralph v0.0 → Vyrle v1.0 → Jamie v2.0 → Kieran v3.0.
 
-```
-Ralph v0.0 → Vyrle v1.0 → Jamie v2.0 → Kieran v3.0
-```
-
-The fourth Hill. Pay it forward.
+If this sparked something for you, a nod to where it came from is appreciated.
 
 ---
 
-## License
+## What It Does
 
-MIT — free to use, fork, and build on.
+One question, answered fast: **What does today require from me?**
+
+| Tab | Purpose |
+|---|---|
+| Home | Dashboard: today's ritual, upcoming events, daily oracle |
+| Rituals | Day-of-week templates with recurrence and category tags |
+| Habits | Daily tracking with moon-streak counter |
+| Calendar | Google Calendar sync + lunar phase calendar layer |
+| Today | Committed tasks + Google Tasks due today |
+| Archive | Master backlog + someday list |
+
+---
+
+## Architecture
+
+**Entirely client-side. No server. No publisher-managed database.**
+
+The OAuth handshake between the user and Google happens in the user's browser
+via the Google Identity Services (GIS) library. The publisher never sees,
+stores, or touches any user credential or calendar data.
+
+All user data lives in the user's own browser (localStorage, namespaced by
+Google sub ID). Any user can visit the URL, connect their Google account, and
+the app is theirs.
+
+```
+User's Browser
+├── React app (served from GitHub Pages — static files only)
+├── localStorage: rituals, habits, tasks, settings (keyed by Google sub ID)
+└── sessionStorage: Google access token (1hr expiry, never sent to any server)
+         ↕                              ↕
+  Google Identity Services       Google Calendar API
+  (consent popup, token grant)   Google Tasks API
+                                 Anthropic Claude API (via Cloudflare Worker)
+                                 tarotapi.dev
+                                 freehoroscopeapi.com
+```
+
+---
+
+## Stack
+
+| Layer | Choice |
+|---|---|
+| Framework | React 18 + Vite |
+| Language | TypeScript |
+| Styling | Tailwind CSS v3 (dark mode, mobile-first) |
+| Routing | React Router v6 — HashRouter (required for GitHub Pages) |
+| Auth | Google Identity Services (GIS) — token model, Client ID only |
+| Calendar | Google Calendar API v3 (browser fetch, read-only) |
+| Tasks | Google Tasks API v1 (browser fetch, read-only) |
+| Oracle | claude-sonnet-4-6 via Cloudflare Worker proxy (holds API key server-side) |
+| Tarot | tarotapi.dev (free, no auth, CORS-enabled) |
+| Horoscope | freehoroscopeapi.com (free, no auth) |
+| Moon data | Client-side Julian date math — no API required |
+| Deploy | gh-pages npm package → GitHub Pages |
+
+---
+
+## Development
+
+```bash
+npm install
+npm run dev       # http://localhost:5173
+npm run deploy    # build → push to gh-pages → live
+```
+
+One environment variable required. It is a Client ID, not a secret, and is
+safe to embed in the built JavaScript:
+
+```
+VITE_GOOGLE_CLIENT_ID=your_gcp_client_id.apps.googleusercontent.com
+```
+
+See `.env.example` for the full list.
+
+---
+
+## Design System
+
+**Moonlit Hearth** — warmly mystical dark mode. Jewel tones: amethyst · gold ·
+sage · ruby · sapphire. Black cat energy. Stevie Nicks adjacent. Not goth.
+Not OKHP3-branded.
+
+Full spec in `docs/DESIGN.md`.
+
+---
+
+## Pre-1.0 Versioning
+
+v1.0.0 is not a placeholder — it is earned.
+
+| Version | Status | Description |
+|---|---|---|
+| v0.1.x | LIVE | UI shell, localStorage, Google auth button |
+| v0.2.0 | In progress | Google Calendar + Tasks live integration |
+| v0.3.0 | Planned | Recurrence + Categories + Celestial + Oracle |
+| v0.4.0 | Planned | Brand assets, PWA, polish |
+| v0.5.0 | Planned | Privacy policy, Google OAuth verification |
+| v1.0.0 | Reserved | Google-verified, Kieran-owned, public stable release |
+
+---
+
+## Docs
+
+| File | Contents |
+|---|---|
+| `docs/PRD-v4.0.md` | Current agent build brief — drives v0.2.0 + v0.3.0 |
+| `docs/PRD-v3.0.md` | Complete product vision and TypeScript type definitions |
+| `docs/DESIGN.md` | Moonlit Hearth design system — full color, type, component spec |
+| `docs/HANDOFF.md` | Jamie → Kieran ownership transfer checklist |
+| `docs/ARCHITECTURE.md` | Client-only architecture decisions and rationale |
+
+---
+
+## Ownership
+
+Stewarded by Jamie Hill during development.
+Intended for transfer to Kieran when stable.
+See `docs/HANDOFF.md` for the complete transfer checklist and timing.
