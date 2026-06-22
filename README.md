@@ -4,7 +4,7 @@
 > and a daily oracle — one interface, no noise.
 
 **Live:** https://okhp3.github.io/kierans-lifetrkr/#/
-**Status:** v0.1.x deployed · v0.2.0 (Google Calendar + Tasks) in progress
+**Status:** v0.1.8 deployed · v0.2.0 (Google Calendar + Tasks) next
 **License:** MIT — free to use, fork, and build on
 
 ---
@@ -78,6 +78,55 @@ User's Browser
 | Horoscope | freehoroscopeapi.com (free, no auth) |
 | Moon data | Client-side Julian date math — no API required |
 | Deploy | gh-pages npm package → GitHub Pages |
+
+---
+
+## Project Structure
+
+```
+src/
+├── context/
+│   ├── AppContext.tsx          # useReducer state + localStorage persistence
+│   └── ThemeContext.tsx        # dark / light / system theme
+├── components/
+│   ├── BottomNav.tsx           # Mobile tab bar (6 tabs, ≤767px)
+│   ├── CategoryPicker.tsx      # 31-category picker (Spiritual + Daily groups)
+│   ├── CheckCircle.tsx         # Animated completion toggle
+│   ├── DescriptionField.tsx    # Multi-line description input
+│   ├── FilterBar.tsx           # Horizontal scrollable filter chips
+│   ├── GoogleConnectButton.tsx # GIS OAuth initiation + connection status
+│   ├── MobileHeader.tsx        # Mobile page header with back nav
+│   ├── OracleCard.tsx          # Daily oracle display (tarot + moon + Claude msg)
+│   ├── RecurrenceEditor.tsx    # Full recurrence rule UI
+│   ├── SideNav.tsx             # Desktop sidebar (7 items, ≥768px)
+│   ├── TagInput.tsx            # Chip-based tag input with kebab normalization
+│   ├── ThemeToggle.tsx         # Dark / Light / Auto switcher
+│   ├── Toast.tsx               # Toast notification with undo
+│   └── TokenExpiryBanner.tsx   # Global Google token expiry warning
+├── hooks/
+│   ├── useGoogleAuth.ts        # GIS token flow, sessionStorage, expiry tracking
+│   ├── useOracle.ts            # Oracle fetch orchestration (once per day)
+│   └── useToast.ts             # Toast queue and auto-dismiss
+├── lib/
+│   ├── celestial.ts            # Moon phase math, astro seasons, Mercury Rx calendar
+│   ├── cosmic.ts               # Deterministic daily cards and wisdom
+│   ├── date.ts                 # Date helpers, greeting, seasonal badge, quote
+│   ├── googleCalendar.ts       # Google Calendar API v3 fetch
+│   ├── googleTasks.ts          # Google Tasks API v1 fetch
+│   ├── oracle.ts               # Three-layer oracle stack (tarot / horoscope / Claude)
+│   └── storage.ts              # localStorage abstraction, namespaced by sub
+├── pages/
+│   ├── Home.tsx                # Dashboard: rituals, oracle, upcoming, habits, tasks
+│   ├── Rituals.tsx             # Day-of-week ritual template editor
+│   ├── Habits.tsx              # Habit list with 7-day grid and streak counter
+│   ├── Calendar.tsx            # Month grid + Google Calendar + moon phases + oracle
+│   ├── Today.tsx               # Committed tasks (status=today) + Google Tasks
+│   ├── Archive.tsx             # Backlog (status=backlog), search, sort, promote
+│   └── Settings.tsx            # Profile, Google, oracle/celestial, theme, social
+├── types.ts                    # All TypeScript types (source of truth)
+├── constants.ts                # GOOGLE_CLIENT_ID, SCOPES, APP_VERSION, categories
+└── App.tsx                     # HashRouter + 7 routes
+```
 
 ---
 

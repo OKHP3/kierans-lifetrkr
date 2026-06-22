@@ -145,7 +145,7 @@ The Settings page has an About card but it shows a hardcoded `v0.1.0`. Update it
 
 **5.5 Settings — Regenerate today's oracle**
 Add a "Regenerate today's oracle" button in the Oracle & Celestial settings section. On tap:
-1. Remove `lifetrkr:{sub}:oracle:{today}` from localStorage
+1. Remove `lifetrkr:{sub}:oracle:{today}` and `lifetrkr:{sub}:tarot:{today}` from localStorage
 2. Dispatch `SET_ORACLE` with `null`
 3. `useOracle.ts` will re-trigger and fetch fresh data
 
@@ -214,7 +214,7 @@ This section is the canonical reference for the oracle system as designed and im
 - Endpoint: `GET https://tarotapi.dev/api/v1/cards/random?n=1`
 - Response: `{ cards: [TarotCard] }` where TarotCard has `name`, `name_short`, `type`, `suit`, `value`, `meaning_up`, `meaning_rev`, `desc`
 - CORS-enabled, no auth, free
-- Cache key: embedded in `OracleReading` object cached at `lifetrkr:{sub}:oracle:{YYYY-MM-DD}`
+- Cache key: `lifetrkr:{sub}:tarot:{YYYY-MM-DD}` — persists all day; no re-fetch on reload
 - Fallback: deterministic card from MAJOR_ARCANA array using `dayOfYear % 22` — card is different each day but consistent within a day
 - Code location: `src/lib/oracle.ts` → `fetchTarotCard()`
 
@@ -286,30 +286,20 @@ The following deviates from or extends PRD-v3.0 Section 9:
 ```
 lifetrkr:profile                          ← GoogleProfile | null
 lifetrkr:{sub}:settings                   ← UserSettings
-lifetrkr:{sub}:routineTemplates           ← RoutineTemplate[]
-lifetrkr:{sub}:routineCompletions         ← RoutineCompletion[]
+lifetrkr:{sub}:routineTemplates           ← RitualTemplate[]
+lifetrkr:{sub}:routineCompletions         ← RitualCompletion[]
 lifetrkr:{sub}:habits                     ← Habit[]
 lifetrkr:{sub}:habitCompletions           ← HabitCompletion[]
 lifetrkr:{sub}:tasks                      ← Task[]
 lifetrkr:{sub}:oracle:{YYYY-MM-DD}        ← string (Claude message, daily cache)
+lifetrkr:{sub}:tarot:{YYYY-MM-DD}         ← NOT YET IMPLEMENTED as separate key
+                                          (tarot card is embedded in OracleReading)
 ```
 
-Note: The PRD-v3.0 specified `lifetrkr:{sub}:tarot:{date}` as a separate key, but the current implementation embeds the tarot card inside the `OracleReading` object. The Claude message string is cached at `oracle:{date}`. If a separate tarot cache key is desired for the "Regenerate" button to selectively clear only the message (not the card), it should be added as part of the v0.3.0 settings work.
+Note: The PRD-v3.0 specified `lifetrkr:{sub}:tarot:{date}` as a separate key, but the current `useOracle.ts` and `oracle.ts` implementation embeds the tarot card inside the `OracleReading` object and caches the Claude message string at `oracle:{date}`. If a separate tarot cache key is desired for the "Regenerate" button to selectively clear only the message (not the card), it should be added as part of the v0.3.0 settings work.
 
 **RecurrenceRule type (actual implementation — differs from PRD-v3.0):**
-The shipped `types.ts` uses `RecurrenceRule` with:
-```typescript
-type RecurrenceRule = {
-  frequency: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom'
-  interval: number
-  daysOfWeek?: DayOfWeek[]           // lowercase: 'monday', 'tuesday', etc.
-  dayOfMonth?: number | null
-  startDate: string
-  end: { mode: 'never' } | { mode: 'onDate'; date: string } | { mode: 'afterCount'; count: number }
-  exceptions?: string[]
-}
-```
-PRD-v3.0 specified `RecurrencePattern` with `{ frequency, interval, daysOfWeek, timesPerDay, end: { type: ... } }`. The implementation diverged. Use the actual `src/types.ts` as the source of truth for all type definitions — never PRD-v3.0 types.ts listings when they conflict.
+The shipped `types.ts` uses `RecurrenceRule` with `{ frequency, interval, startDate, end: { mode: 'never' | 'after_count' | 'on_date' }, exceptions: string[] }` — PRD-v3.0 specified `RecurrencePattern` with `{ frequency, interval, daysOfWeek, timesPerDay, end: { type: ... } }`. The implementation diverged. Use the actual `src/types.ts` as the source of truth for all type definitions — never PRD-v3.0 types.ts listings when they conflict.
 
 ---
 
