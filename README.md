@@ -161,7 +161,7 @@ Started on Father's Day, June 21, 2026 — the Summer Solstice — as a build se
 The goal: teach by doing, ship something real, hand it to her when it's done.
 
 ```
-Ralph v0.0 → Vyrle v1.0 → Jamie v2.0 → Rylee v0.1.0
+Ralph v0.0 → Virgil v1.0 → Jamie v2.0 → Kieran v3.0
 ```
 
 The fourth Hill. Pay it forward.

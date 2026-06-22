@@ -4,9 +4,9 @@
  * Built on Father's Day, Summer Solstice 2026.
  * Jamie + Kieran Hill.
  *
- * v0.1.0 — Rylee (Kieran)
+ * v3.0 — Kieran
  * v2.0 — Jamie
- * v1.0 — Vyrle
+ * v1.0 — Virgil
  * v0.0 — Ralph
  *
  * The fourth Hill. Pay it forward.
