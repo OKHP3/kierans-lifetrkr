@@ -24,6 +24,14 @@
   --accent-rose-subtle:  rgba(212, 117, 107, 0.12);
   --accent-sage-subtle:  rgba(78, 207, 160, 0.12);
   --accent-muted-subtle: rgba(155, 138, 176, 0.12);
+
+  /* ── Enhancement tokens ── */
+  --glow-amethyst:       rgba(196, 160, 232, 0.13);
+  --glow-amethyst-md:    rgba(196, 160, 232, 0.22);
+  --glow-gold:           rgba(232, 184, 109, 0.08);
+  --card-shine:          linear-gradient(145deg, rgba(255,255,255,0.025) 0%, transparent 55%);
+  --title-gradient:      linear-gradient(135deg, #EAE0F8 0%, #C4A0E8 55%, #E8B86D 100%);
+  --nav-top-gradient:    linear-gradient(to right, transparent 0%, rgba(196,160,232,0.30) 50%, transparent 100%);
 }
 
 /* ─── Moonlit Hearth — Light (Morning Parchment) ────────────── */
@@ -47,6 +55,14 @@
   --accent-rose-subtle:  rgba(155, 53, 48, 0.10);
   --accent-sage-subtle:  rgba(30, 138, 96, 0.10);
   --accent-muted-subtle: rgba(74, 53, 104, 0.10);
+
+  /* ── Enhancement tokens ── */
+  --glow-amethyst:       rgba(123, 79, 191, 0.10);
+  --glow-amethyst-md:    rgba(123, 79, 191, 0.18);
+  --glow-gold:           rgba(160, 98, 14, 0.07);
+  --card-shine:          linear-gradient(145deg, rgba(255,255,255,0.50) 0%, transparent 55%);
+  --title-gradient:      linear-gradient(135deg, #1A0E2E 0%, #7B4FBF 60%, #A0620E 100%);
+  --nav-top-gradient:    linear-gradient(to right, transparent 0%, rgba(123,79,191,0.22) 50%, transparent 100%);
 }
 
 * {
@@ -98,9 +114,12 @@ html, body, #root {
   font-family: 'Cormorant Garamond', serif;
   font-size: 30px;
   font-weight: 300;
-  color: var(--text-primary);
   line-height: 1.1;
   margin-bottom: 4px;
+  background: var(--title-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* ─── Section label ──────────────────────────────────────────── */
@@ -113,6 +132,17 @@ html, body, #root {
   text-transform: uppercase;
   margin-bottom: 8px;
   margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.section-label::before {
+  content: '✦';
+  font-size: 7px;
+  color: var(--accent-amethyst);
+  opacity: 0.6;
+  flex-shrink: 0;
 }
 
 .section-label:first-child {
@@ -144,11 +174,19 @@ html, body, #root {
   max-width: 480px;
   height: 64px;
   background: var(--surface);
-  border-top: 0.5px solid var(--border);
+  border-top: none;
   display: flex;
   align-items: center;
   justify-content: space-around;
   z-index: 100;
+}
+
+.bottom-nav::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 0.5px;
+  background: var(--nav-top-gradient);
 }
 
 .nav-item {
@@ -162,6 +200,7 @@ html, body, #root {
   min-width: 48px;
   text-decoration: none;
   color: var(--text-muted);
+  position: relative;
 }
 
 .nav-label {
@@ -177,15 +216,37 @@ html, body, #root {
 
 .nav-item.active svg {
   color: var(--accent-amethyst);
+  filter: drop-shadow(0 0 4px var(--glow-amethyst-md));
+}
+
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--accent-amethyst);
+  opacity: 0.7;
 }
 
 /* ─── Card ───────────────────────────────────────────────────── */
 .card {
   background: var(--surface);
+  background-image: var(--card-shine);
   border: 0.5px solid var(--border);
   border-radius: 14px;
   padding: 13px 14px;
   margin-bottom: 10px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.card:hover {
+  border-color: rgba(196, 160, 232, 0.35);
+  box-shadow: 0 2px 20px var(--glow-amethyst);
 }
 
 /* ─── Buttons ────────────────────────────────────────────────── */
@@ -249,6 +310,7 @@ html, body, #root {
 
 .input-field:focus {
   border-color: var(--accent-amethyst);
+  box-shadow: 0 0 0 3px var(--glow-amethyst);
 }
 
 .input-field::placeholder {
@@ -280,6 +342,7 @@ input[type="text"], textarea {
 
 input[type="text"]:focus, textarea:focus {
   border-color: var(--accent-amethyst);
+  box-shadow: 0 0 0 3px var(--glow-amethyst);
 }
 
 input[type="text"]::placeholder, textarea::placeholder {
@@ -321,6 +384,7 @@ select:focus {
   background: var(--accent-amethyst);
   border-color: var(--accent-amethyst);
   color: var(--bg);
+  box-shadow: 0 0 8px var(--glow-amethyst-md);
 }
 
 .check-circle.checked {
@@ -427,7 +491,9 @@ select:focus {
 
 .modal-sheet {
   background: var(--surface);
+  background-image: var(--card-shine);
   border: 0.5px solid var(--border);
+  border-top: 1px solid rgba(196, 160, 232, 0.25);
   border-radius: 20px 20px 0 0;
   padding: 20px 16px 40px;
   width: 100%;
@@ -687,6 +753,7 @@ select:focus {
     color: var(--accent-amethyst);
     font-weight: 500;
     border-left-color: var(--accent-amethyst);
+    box-shadow: inset 0 0 20px var(--glow-amethyst);
   }
 
   .bottom-nav {
