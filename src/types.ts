@@ -50,6 +50,11 @@ export type RoutineTemplate = {
   dayOfWeek: RoutineDayOfWeek
   name: string
   items: RoutineItem[]
+  // v2 fields
+  description?: string
+  categoryId?: string
+  tags?: string[]
+  recurrence?: RecurrenceRule
 }
 
 export type RoutineCompletion = {

@@ -69,7 +69,9 @@ type Action =
   | { type: 'REMOVE_ROUTINE_ITEM'; payload: { templateId: string; itemId: string } }
   | { type: 'REORDER_ROUTINE'; payload: { templateId: string; items: RoutineItem[] } }
   | { type: 'TOGGLE_ROUTINE_ITEM'; payload: { templateId: string; itemId: string; date: string } }
+  | { type: 'UPDATE_ROUTINE_TEMPLATE'; payload: { id: string } & Partial<RoutineTemplate> }
   | { type: 'ADD_HABIT'; payload: Habit }
+  | { type: 'UPDATE_HABIT'; payload: Habit }
   | { type: 'REMOVE_HABIT'; payload: string }
   | { type: 'TOGGLE_HABIT'; payload: { habitId: string; date: string } }
   | { type: 'ADD_TASK'; payload: Task }
@@ -201,8 +203,22 @@ function reducer(state: AppState, action: Action): AppState {
       }
     }
 
+    case 'UPDATE_ROUTINE_TEMPLATE':
+      return {
+        ...state,
+        routineTemplates: state.routineTemplates.map(t =>
+          t.id === action.payload.id ? { ...t, ...action.payload } : t
+        ),
+      }
+
     case 'ADD_HABIT':
       return { ...state, habits: [...state.habits, action.payload] }
+
+    case 'UPDATE_HABIT':
+      return {
+        ...state,
+        habits: state.habits.map(h => h.id === action.payload.id ? action.payload : h),
+      }
 
     case 'REMOVE_HABIT':
       return {
@@ -287,11 +303,22 @@ const PERSIST_KEYS: Array<keyof AppState> = [
   'habits', 'habitCompletions', 'tasks',
 ]
 
+const HABIT_DEFAULTS: Habit = {
+  id: '', name: '', active: true, createdAt: '',
+  tags: [], description: undefined, colorTag: undefined,
+  categoryId: undefined, recurrence: undefined, updatedAt: undefined,
+}
+
 function loadPersistedState(): Partial<AppState> {
   const result: Partial<AppState> = {}
   for (const key of PERSIST_KEYS) {
-    const val = storage.get<unknown>(key)
-    if (val !== null) (result as Record<string, unknown>)[key] = val
+    if (key === 'habits') {
+      const habits = storage.getList<Habit>(key, HABIT_DEFAULTS)
+      if (habits.length > 0) result.habits = habits
+    } else {
+      const val = storage.get<unknown>(key)
+      if (val !== null) (result as Record<string, unknown>)[key] = val
+    }
   }
   const profile = storage.getProfile()
   if (profile) result.profile = profile
