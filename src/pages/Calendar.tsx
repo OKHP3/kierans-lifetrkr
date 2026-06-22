@@ -26,56 +26,70 @@ const DOW_SHORT: Record<string, string> = {
 
 // ─── Recurrence Expansion ────────────────────────────────────────────────────
 
-function eventOccursOnDate(event: CalendarEvent, dateStr: string): boolean {
+function eventOccursOnDate(event: CalendarEvent, ds: string): boolean {
   const startDate = event.start.split('T')[0]
-  if (startDate === dateStr) return true
+  if (startDate === ds) return true
 
   const rec = event.recurrence
   if (!rec || rec.frequency === 'none') return false
-  if (dateStr < startDate) return false
+  if (ds < startDate) return false
 
-  // Check recurrence end
-  if (rec.end.mode === 'onDate' && dateStr > rec.end.date) return false
+  // onDate end
+  if (rec.end.mode === 'onDate' && ds > rec.end.date) return false
 
-  // Check exception list
-  if (rec.exceptions?.includes(dateStr)) return false
+  // Exception dates
+  if (rec.exceptions?.includes(ds)) return false
 
   const start = new Date(startDate + 'T00:00:00')
-  const check = new Date(dateStr + 'T00:00:00')
+  const check = new Date(ds + 'T00:00:00')
   const msPerDay = 86400000
   const daysDiff = Math.round((check.getTime() - start.getTime()) / msPerDay)
   const n = rec.interval || 1
 
-  if (rec.frequency === 'daily') {
-    return daysDiff % n === 0
-  }
+  let occurrenceIndex = -1  // 0-based; -1 means not yet computed
 
-  if (rec.frequency === 'weekly') {
+  if (rec.frequency === 'daily') {
+    if (daysDiff % n !== 0) return false
+    occurrenceIndex = daysDiff / n
+  } else if (rec.frequency === 'weekly') {
     if (rec.daysOfWeek && rec.daysOfWeek.length > 0) {
-      // Must be on a scheduled day of week AND in a valid week interval
       const checkDow = check.getDay()
       if (!rec.daysOfWeek.some(d => (DOW_NUM[d] ?? -1) === checkDow)) return false
       const weeksDiff = Math.floor(daysDiff / 7)
-      return weeksDiff % n === 0
+      if (weeksDiff % n !== 0) return false
+      // Compute occurrence index: (fullCycles * daysPerCycle) + position within current week
+      const fullCycles = Math.floor(weeksDiff / n)
+      const sortedDows = rec.daysOfWeek
+        .map(d => DOW_NUM[d] ?? -1).filter(d => d >= 0).sort((a, b) => a - b)
+      const posInWeek = sortedDows.indexOf(checkDow)
+      occurrenceIndex = fullCycles * sortedDows.length + (posInWeek >= 0 ? posInWeek : 0)
+    } else {
+      if (daysDiff % (7 * n) !== 0) return false
+      occurrenceIndex = daysDiff / (7 * n)
     }
-    return daysDiff % (7 * n) === 0
-  }
-
-  if (rec.frequency === 'monthly') {
+  } else if (rec.frequency === 'monthly') {
     const monthsDiff =
       (check.getFullYear() - start.getFullYear()) * 12 + (check.getMonth() - start.getMonth())
     if (monthsDiff % n !== 0) return false
     const dom = rec.dayOfMonth ?? start.getDate()
-    return check.getDate() === dom
-  }
-
-  if (rec.frequency === 'yearly') {
+    if (check.getDate() !== dom) return false
+    occurrenceIndex = monthsDiff / n
+  } else if (rec.frequency === 'yearly') {
     const yearsDiff = check.getFullYear() - start.getFullYear()
     if (yearsDiff % n !== 0) return false
-    return check.getMonth() === start.getMonth() && check.getDate() === start.getDate()
+    if (check.getMonth() !== start.getMonth() || check.getDate() !== start.getDate()) return false
+    occurrenceIndex = yearsDiff / n
+  } else {
+    return false
   }
 
-  return false
+  // afterCount end: occurrence index is 0-based; start date is index 0
+  if (rec.end.mode === 'afterCount') {
+    // +1 because start date itself is occurrence 0, so total = index + 1 (where index starts at 1 for recurrences)
+    if (occurrenceIndex + 1 >= rec.end.count) return false
+  }
+
+  return true
 }
 
 // ─── Recurrence Label ─────────────────────────────────────────────────────────
@@ -227,9 +241,15 @@ export default function Calendar() {
         } as CalendarEvent & { emoji?: string }))
       : []
 
+    // Sort key: occurrence date + original time component (all-day sorts before timed events)
+    function sortKey(e: CalendarEvent): string {
+      if (e.allDay) return ds + 'T00:00:00'
+      const timePart = e.start.includes('T') ? e.start.substring(10) : 'T00:00:00'
+      return ds + timePart
+    }
     return [...stored, ...cosmicEvs]
       .filter(e => passesFilters(e, ds))
-      .sort((a, b) => a.start.localeCompare(b.start))
+      .sort((a, b) => sortKey(a).localeCompare(sortKey(b)))
   }
 
   // For grid dot: any stored event (incl. recurrence) occurs on this day
