@@ -1,10 +1,10 @@
 # Kieran's LifeTrkr
 
-> A dark-mode personal life OS. Routines, habits, calendar, tasks, and backlog — one interface, zero noise.
+> A dark-mode personal life OS. Rituals, habits, calendar, tasks, and archive — one interface, zero noise.
 
-**Status:** Phase 1 — UI Shell (in development)
-**Stack:** React 18 · Vite · TypeScript · Tailwind CSS
-**Deployment:** Replit · GitHub sync
+**Version:** v0.1.0  
+**Status:** Phase 1 — UI Shell (live)  
+**Stack:** React 18 · Vite 5 · TypeScript · Tailwind CSS  
 **Aesthetic:** Moonlit Hearth — warmly mystical dark mode
 
 ---
@@ -15,16 +15,16 @@ Kieran's LifeTrkr is a mobile-first personal organization app built around one q
 
 **What does today require from me?**
 
-Six tabs. One user. No corporate productivity overhead. Not Notion.
+Six tabs. One user. No corporate productivity overhead.
 
-| Tab | Label | Purpose |
-|---|---|---|
-| Home | Home | Today's ritual, upcoming events, at-a-glance dashboard |
-| Rituals | Rituals | Day-of-week routine templates (Mon through Sun) |
-| Habits | Habits | Daily practice tracking with moon-streak counter |
-| Calendar | Calendar | Google Calendar sync (Phase 1.5) |
-| Today | Today | Committed tasks for the current day |
-| Archive | Archive | Master backlog — the someday list |
+| Tab | Purpose |
+|---|---|
+| Home | Today's rituals, upcoming events, at-a-glance dashboard |
+| Rituals | Day-of-week routine templates (Sun through Sat) |
+| Habits | Daily practice tracking with moon-streak counter |
+| Calendar | Google Calendar sync (Phase 1.5) |
+| Today | Committed tasks for the current day |
+| Archive | Master backlog — the someday list |
 
 ---
 
@@ -32,16 +32,15 @@ Six tabs. One user. No corporate productivity overhead. Not Notion.
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Framework | React 18 + Vite | SPA, fast HMR |
+| Framework | React 18 + Vite 5 | SPA, fast HMR |
 | Language | TypeScript | Strict typing throughout |
-| Styling | Tailwind CSS | Dark mode, mobile-first |
-| State | React Context + useReducer | No external state library in Phase 1 |
-| Storage | localStorage | Phase 1 only — swaps to Notion in Phase 2 |
-| Backend | Express.js on Replit | Phase 2 — Notion API proxy |
-| Calendar | Google Calendar API (read-only) | Phase 1.5 |
-| Hosting | Replit Deployments | Continuous deploy from this repo |
+| Styling | Tailwind CSS | Moonlit Hearth tokens, mobile-first |
+| State | React Context + useReducer | localStorage in Phase 1 |
+| Router | HashRouter | Required for GitHub Pages SPA |
+| Calendar | Google Calendar API (read-only) | Client-side GIS token flow |
+| Hosting | GitHub Pages | Auto-deploys via GitHub Actions on push to main |
 | Icons | Tabler Icons (outline) | ti-moon, ti-feather, ti-scroll, etc. |
-| Fonts | Cormorant Garamond · DM Sans · Space Mono | Loaded via Google Fonts |
+| Fonts | Cormorant Garamond · DM Sans · Space Mono | Google Fonts |
 
 ---
 
@@ -49,32 +48,32 @@ Six tabs. One user. No corporate productivity overhead. Not Notion.
 
 ### Prerequisites
 
-- Node.js 18 or higher
+- Node.js 20 or higher
 - npm
 
 ### Local Development
 
 ```bash
 # Clone
-git clone https://github.com/[username]/kierans-lifetrkr.git
+git clone https://github.com/OKHP3/kierans-lifetrkr.git
 cd kierans-lifetrkr
 
 # Install
 npm install
 
-# Environment (Phase 1 — not required; Phase 2 — required)
-cp .env.example .env
-# Fill in values per docs/SETUP.md
-
 # Run
 npm run dev
+# App runs at http://localhost:5000
 ```
 
-App runs at `http://localhost:5173` (frontend) and `http://localhost:3001` (backend, Phase 2 only).
+No environment variables are required for Phase 1. The app runs fully on localStorage.
 
-### Phase 1 Note
+To enable Google Calendar and Tasks sync, set one value:
 
-Phase 1 uses localStorage exclusively. No environment variables are required to run the app locally in Phase 1. The `.env` file is only needed when wiring up Notion (Phase 2) and Google Calendar OAuth (Phase 1.5).
+```bash
+# .env (not committed — see .env.example)
+VITE_GOOGLE_CLIENT_ID=YOUR_CLIENT_ID.apps.googleusercontent.com
+```
 
 ---
 
@@ -82,61 +81,37 @@ Phase 1 uses localStorage exclusively. No environment variables are required to 
 
 ```
 kierans-lifetrkr/
-├── client/                   # React (Vite) frontend
-│   ├── src/
-│   │   ├── pages/
-│   │   │   ├── Home.tsx      # Dashboard — greeting, ritual, calendar preview
-│   │   │   ├── Rituals.tsx   # Day-of-week routine templates
-│   │   │   ├── Habits.tsx    # Daily habit tracking + moon-streak grid
-│   │   │   ├── Calendar.tsx  # Event view (manual Phase 1, Google Phase 1.5)
-│   │   │   ├── Todo.tsx      # Today's committed task list
-│   │   │   └── Backlog.tsx   # Master someday list
-│   │   ├── components/
-│   │   │   ├── BottomNav.tsx
-│   │   │   ├── Card.tsx
-│   │   │   ├── Checklist.tsx
-│   │   │   └── MoreSection.tsx
-│   │   ├── context/
-│   │   │   └── AppContext.tsx # Shared state + dispatch
-│   │   ├── lib/
-│   │   │   ├── storage.ts    # localStorage abstraction layer
-│   │   │   └── date.ts       # Date utilities + seasonal badge logic
-│   │   ├── types.ts
-│   │   ├── App.tsx
-│   │   └── main.tsx
-│   ├── index.html
-│   └── vite.config.ts
-├── server/                   # Express backend (Phase 2)
-│   ├── routes/
-│   │   ├── notion.js         # CRUD proxy for all Notion databases
-│   │   └── google.js         # Google Calendar OAuth + read handler
-│   ├── lib/
-│   │   ├── notionClient.js
-│   │   └── googleClient.js
-│   └── index.js
-├── docs/
-│   ├── PRD.md                # Full product requirements document
-│   ├── HANDOFF.md            # Account transition checklist (Jamie → Kieran)
-│   ├── ROADMAP.md            # Phase plan with scope and unlock criteria
-│   └── DESIGN.md             # Moonlit Hearth design system spec
-├── .env.example              # Environment variable template (no secrets)
-├── .gitignore
-├── package.json
-└── README.md
+├── src/
+│   ├── context/             # AppContext (useReducer + localStorage), ThemeContext
+│   ├── components/          # BottomNav, SideNav, ThemeToggle, CheckCircle,
+│   │                        #   Toast, GoogleConnectButton, TokenExpiryBanner
+│   ├── hooks/               # useGoogleAuth, useToast
+│   ├── lib/                 # storage.ts, date.ts, googleCalendar.ts, googleTasks.ts
+│   ├── pages/               # Home, Rituals, Habits, Calendar, Today, Archive, Settings
+│   ├── types.ts             # All TypeScript types
+│   ├── constants.ts         # APP_VERSION, GOOGLE_CLIENT_ID, quotes, seasonal dates
+│   ├── App.tsx              # HashRouter + Routes
+│   └── main.tsx             # Entry point
+├── docs/                    # PRD, Architecture, Design System, Roadmap, Handoff
+├── .github/workflows/       # static.yml — builds and deploys to GitHub Pages on push
+├── index.html               # Vite entry point
+├── vite.config.ts           # host 0.0.0.0:5000, base /kierans-lifetrkr/ in production
+├── tailwind.config.js       # Moonlit Hearth color tokens
+├── tsconfig.json
+└── package.json
 ```
 
 ---
 
 ## Phase Roadmap
 
-| Phase | Scope | Unlock Criteria |
+| Version | Phase | Scope |
 |---|---|---|
-| **1 — UI Shell** | React + Tailwind + localStorage + all 6 tabs | Kieran uses it for one day |
-| **1.5 — Calendar** | Google Calendar OAuth, read-only event sync | Phase 1 UI is stable |
-| **2 — Notion Backend** | Express.js server + Notion API + data migration | Data model is stable |
-| **3 — Handoff** | Transfer repo, Replit, Notion, and GCP to Kieran | Phase 2 is stable |
-
-See `docs/ROADMAP.md` for full scope detail per phase.
+| **v0.1.0** | UI Shell | React + localStorage + all 6 tabs + Google Auth shell |
+| **v0.2.0** | Calendar | Google Calendar live sync (client-side GIS) |
+| **v0.3.0** | Tasks | Google Tasks live sync |
+| **v0.4–0.9** | Polish | Public prep, OAuth verification, real-user testing |
+| **v1.0.0** | Production | Google-verified, battle-tested, Kieran owns it |
 
 ---
 
@@ -146,50 +121,53 @@ See `docs/ROADMAP.md` for full scope detail per phase.
 
 | Token | Hex | Usage |
 |---|---|---|
-| bg | #0D0B14 | Base background |
+| bg | #0D0B14 | Base background — deep midnight purple-black |
 | surface | #1A1424 | Cards, nav, modals |
 | accentAmethyst | #C4A0E8 | Primary CTA, active nav, streaks |
 | accentGold | #E8B86D | Calendar events, 30-day milestone |
 | accentSage | #4ECFA0 | Completion states |
 | textPrimary | #EAE0F8 | Warm moonstone white |
 
-Display type: Cormorant Garamond (300 weight, greeting only)
-Body: DM Sans · Mono: Space Mono
+Display: Cormorant Garamond (greeting only) · Body: DM Sans · Mono: Space Mono
 
 See `docs/DESIGN.md` for the full token and component spec.
 
 ---
 
-## Environment Variables
+## Deployment
 
-See `.env.example` for the full list. Secrets are stored in Replit's Secrets panel — never committed to this repo.
+Pushes to `main` auto-deploy to GitHub Pages via `.github/workflows/static.yml`.
+
+Live at: **https://okhp3.github.io/kierans-lifetrkr/**
 
 ---
 
-## Ownership
+## Environment Variables
 
-Built by Jamie and Kieran Hill.
-Stewarded under Jamie's accounts during development.
-Transfer to Kieran's accounts is planned post Phase 2 stabilization.
+Only one value needed, and it's not a secret:
 
-See `docs/HANDOFF.md` for the complete transfer checklist.
+```
+VITE_GOOGLE_CLIENT_ID=YOUR_CLIENT_ID.apps.googleusercontent.com
+```
+
+See `.env.example` for setup instructions.
 
 ---
 
 ## Origin
 
-Started on Father's Day, June 21, 2026 — the Summer Solstice — as a build session
-between Jamie Hill and his daughter Kieran.
+Started on Father's Day, June 21, 2026 — the Summer Solstice — as a build session between Jamie Hill and his daughter Rylee (Kieran).
 
-The goal was simple: teach by doing, ship something real, hand it to her when it's done.
+The goal: teach by doing, ship something real, hand it to her when it's done.
 
-Kieran is the fourth generation.
-Ralph v0.0 → Virgil v1.0 → Jamie v2.0 → Kieran v3.0.
+```
+Ralph v0.0 → Vyrle v1.0 → Jamie v2.0 → Rylee v0.1.0
+```
 
-Part of the [OverKill Hill P³](https://overkillhill.com/manifesto/) approach to
-paying forward what you know.
+The fourth Hill. Pay it forward.
+
+---
 
 ## License
 
 MIT — free to use, fork, and build on.
-If this sparked something for you, a nod to where it came from is appreciated.
