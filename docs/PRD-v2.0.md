@@ -41,7 +41,7 @@ Started on Father's Day, June 21, 2026 — the Summer Solstice — as a build se
 Jamie Hill and his daughter Kieran. The goal: teach by doing, ship something real, make it
 useful for more than just the person it was named after.
 
-Kieran is the fourth generation: Ralph v0.0 → Virgil v1.0 → Jamie v2.0 → Kieran v3.0.
+Kieran is the fourth generation: Ralph v0.0 → Vyrle v1.0 → Jamie v2.0 → Kieran v3.0.
 
 Published under MIT license. Sharing is caring.
 

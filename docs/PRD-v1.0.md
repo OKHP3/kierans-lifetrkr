@@ -1,3 +1,8 @@
+> ⚠️ ARCHIVED — Superseded by PRD-v2.0.md, PRD-v3.0.md, and PRD-v4.0.md.
+> This document describes the original Express + Notion + server-side OAuth architecture,
+> which was replaced on June 21, 2026. Do not use this document for active development.
+> Retained for historical reference only.
+
 # Kieran's LifeTrkr — Product Requirements Document
 **Version:** 1.1  
 **Date:** June 21, 2026  

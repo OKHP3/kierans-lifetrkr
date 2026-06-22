@@ -45,7 +45,7 @@ The June 22, 2026 second build session advanced from v0.1.0 (UI shell only) to v
 - Settings page is missing the "Regenerate today's oracle" button (clears cache key for today, triggers re-fetch).
 - No `src/lib/AppReducer.ts` split — `AppContext.tsx` contains both context and reducer.
 - The Archive tab uses "backlog" terminology in some places and "archive" in others — PRD-v3.0 calls it Archive tab with backlog tasks.
-- Vyrle vs Virgil: The family lineage in `Home.tsx` and `README.md` reads `Ralph · Vyrle · Jamie · Kieran`. PRD-v3.0 Section 22 uses "Virgil". This is the name of Kieran's grandfather. Do not change without confirming with Kieran/Jamie. Leave as-is; see Section 12 Open Questions.
+- Vyrle vs Virgil: RESOLVED — June 22, 2026. Jamie confirmed the correct spelling is VYRLE. All doc files have been updated. Home.tsx and README.md (which already had Vyrle) are correct. PRD-v3.0 and DESIGN.md have been corrected. No further action needed.
 
 ---
 
@@ -354,8 +354,8 @@ GitHub Actions `.github/workflows/static.yml` also auto-deploys on push to `main
 
 ## Section 12 — Open Questions / Decisions Needed
 
-**1. Virgil vs Vyrle**
-The family lineage in `Home.tsx` and `README.md` reads `Ralph · Vyrle · Jamie · Kieran`. PRD-v3.0 Section 22 uses "Virgil". This is the name of Kieran's grandfather. The correct spelling should be confirmed with Kieran or Jamie before any session changes this. Do not assume.
+**1. Vyrle vs Virgil — RESOLVED**
+Jamie confirmed June 22, 2026: the correct spelling is VYRLE. All doc files updated. Home.tsx, README.md, App.tsx, DESIGN.md, PRD-v1.0.md, PRD-v2.0.md, PRD-v3.0.md corrected. No further action needed.
 
 **2. Horoscope API reliability**
 `freehoroscopeapi.com` is a free, unverified third-party API with no SLA. If it becomes unreliable, a replacement should be sourced. Candidate: Aztro API, or a simple hardcoded daily horoscope table seeded by sign + week-of-year. This decision is deferred to v0.3.0 unless the API fails before then.
@@ -503,7 +503,7 @@ Before starting a build session, the agent should:
 | App Version | Date | Author | Notes |
 |---|---|---|---|
 | v0.0 | — | Ralph | Grandfather — generation 0 |
-| v1.0 | — | Virgil/Vyrle | Father — generation 1 (see Section 12 re: name spelling) |
+| v1.0 | — | Vyrle | Father — generation 1 |
 | v2.0 | — | Jamie | Son — generation 2; original app concept |
 | v3.0 | June 21, 2026 | Kieran (session 1) | TypeScript migration, HashRouter, GIS auth, gh-pages |
 

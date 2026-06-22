@@ -14,7 +14,7 @@ Kieran
 |---|---|---|
 | GitHub | Jamie | Active — source repo |
 | Replit | Jamie | Active — build environment |
-| Notion | Jamie | Phase 2 — not yet active |
+| Notion (project hub only) | Jamie | Not the app database — Notion hosts the project management hub only. No transfer needed. |
 | Google Cloud | Jamie | Phase 1.5 — pending setup |
 | Google Calendar | Kieran | Required — must be Kieran's Google account for OAuth |
 
@@ -38,47 +38,34 @@ Kieran
 - [ ] Verify dev server runs cleanly under Kieran's account
 - [ ] Archive (do not delete) Jamie's original Repl as a backup
 
-### Notion
-Two options. Pick one based on timing and Kieran's readiness.
-
-**Option A — Share and promote (faster, good immediately post-build):**
-- [ ] Share each Notion database with Kieran as a workspace member
-- [ ] Kieran creates a new Notion integration under her own account
-- [ ] Update NOTION_API_KEY in Kieran's Replit Secrets
-
-**Option B — Clean break (better long-term separation):**
-- [ ] Kieran creates her own Notion workspace
-- [ ] Re-create all 5 database schemas (see docs/PRD.md Section 5)
-- [ ] Export data from Jamie's databases as CSV (Notion → ... → Export → CSV)
-- [ ] Import CSV data into Kieran's databases
-- [ ] Kieran creates new Notion integration
-- [ ] Update NOTION_API_KEY and all NOTION_*_DB_ID values in Kieran's Replit Secrets
-
-Recommendation: Option A first. Option B when Kieran is ready to fully own the workspace independently.
-
 ### Google Cloud
+The app uses the GIS token model. There is no Client Secret and no redirect URI.
+Only a Client ID and authorized JavaScript origins are needed.
+
 - [ ] Add Kieran's Google account as Owner in the GCP project (GCP → IAM & Admin → Grant Access)
-- [ ] Kieran creates new OAuth 2.0 credentials in the project (APIs & Services → Credentials → Web Application)
-- [ ] Add Kieran's Replit deployment URL to authorized redirect URIs:
-  `https://[kieran-repl-name].[kieran-username].repl.co/api/google/callback`
-- [ ] Update GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI in Kieran's Replit Secrets
+- [ ] Kieran creates new OAuth 2.0 Client ID in the project:
+  - APIs & Services → Credentials → Create Credentials → OAuth 2.0 Client ID
+  - Application type: Web Application
+  - Authorized JavaScript Origins ONLY (no redirect URIs needed for the token model):
+    - https://okhp3.github.io (or Kieran's custom domain if set)
+    - http://localhost:5173 (for dev)
+- [ ] Update VITE_GOOGLE_CLIENT_ID in Kieran's Replit Secrets with the new Client ID
 - [ ] Remove Jamie's account from the GCP project IAM
+- [ ] Update Authorized JavaScript Origins in the old Client ID to remove any dev origins (optional cleanup)
 
 ### Final Verification
 - [ ] App loads cleanly under Kieran's accounts end-to-end
-- [ ] All 6 tabs function correctly
+- [ ] All 7 tabs function correctly (Home, Rituals, Habits, Calendar, Today, Archive, Settings)
 - [ ] Google Calendar sync works under Kieran's Google account
-- [ ] Notion data persists correctly across sessions
 - [ ] README ownership section updated
 
 ---
 
 ## Critical Warnings
 
-1. Never commit API keys, OAuth secrets, or Notion tokens to the GitHub repo. All secrets live in Replit Secrets only.
+1. Never commit API keys or OAuth secrets to the GitHub repo. All secrets live in Replit Secrets only.
 2. Do not use Replit's Transfer feature. Fork instead. Transfer is immediate and irreversible.
-3. Rotate and deactivate Jamie's NOTION_API_KEY after Kieran's new integration is active.
-4. Google OAuth redirect URIs must match exactly in GCP before OAuth will function. A mismatch produces a silent 400 error.
+3. The GIS token model requires no Client Secret and no redirect URI — only the Client ID and authorized JavaScript origins in GCP. A mismatched origin produces a silent 400 error.
 
 ---
 
@@ -88,12 +75,10 @@ Recommendation: Option A first. Option B when Kieran is ready to fully own the w
 |---|---|
 | GitHub transfer | 5 min |
 | Replit fork + re-enter secrets | 20 min |
-| Notion Option A | 15 min |
-| Notion Option B | 30 min |
+| Notion hub page (read access for Kieran) | 5 min — share the Notion project hub page with Kieran's account as viewer |
 | Google Cloud transfer + new credentials | 20 min |
 | Smoke test | 15 min |
-| **Total (Option A path)** | **~75 min** |
-| **Total (Option B path)** | **~90 min** |
+| **Total** | **~65 min** |
 
 ---
 
