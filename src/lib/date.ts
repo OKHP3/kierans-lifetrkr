@@ -1,16 +1,16 @@
-import type { DayOfWeek } from '../types'
+import type { RoutineDayOfWeek } from '../types'
 import { DAYS_OF_WEEK, SEASONAL_DATES, DAILY_QUOTES } from '../constants'
 
 export function getTodayISO(): string {
   return new Date().toISOString().split('T')[0]
 }
 
-export function getDayOfWeek(): DayOfWeek {
-  return DAYS_OF_WEEK[new Date().getDay()] as DayOfWeek
+export function getDayOfWeek(): RoutineDayOfWeek {
+  return DAYS_OF_WEEK[new Date().getDay()] as RoutineDayOfWeek
 }
 
-export function getDayOfWeekFull(date: Date = new Date()): DayOfWeek {
-  return DAYS_OF_WEEK[date.getDay()] as DayOfWeek
+export function getDayOfWeekFull(date: Date = new Date()): RoutineDayOfWeek {
+  return DAYS_OF_WEEK[date.getDay()] as RoutineDayOfWeek
 }
 
 export function getSeasonalBadge(): string | null {

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react'
 import type {
   AppState, RoutineTemplate, RoutineCompletion, Habit, HabitCompletion,
   Task, CalendarEvent, GoogleTask, TaskList, GoogleProfile, UserSettings,
-  DayOfWeek, RoutineItem,
+  RoutineDayOfWeek, RoutineItem,
 } from '../types'
 import { storage } from '../lib/storage'
 import { getTodayISO } from '../lib/date'
@@ -29,7 +29,7 @@ const defaultSettings: UserSettings = {
 
 const defaultTemplates: RoutineTemplate[] = ([...DAYS_OF_WEEK] as string[]).map(day => ({
   id: day.toLowerCase(),
-  dayOfWeek: day as DayOfWeek,
+  dayOfWeek: day as RoutineDayOfWeek,
   name: `${day} Rituals`,
   items: [],
 }))

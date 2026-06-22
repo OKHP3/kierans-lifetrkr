@@ -1,4 +1,4 @@
-import type { RecurrenceRule, DayOfWeekRecurrence, RecurrenceFrequency } from '../types'
+import type { RecurrenceRule, DayOfWeek, RecurrenceFrequency } from '../types'
 
 interface Props {
   value: RecurrenceRule
@@ -13,7 +13,7 @@ const FREQ_OPTIONS: { value: RecurrenceFrequency; label: string }[] = [
   { value: 'custom',  label: 'Custom'          },
 ]
 
-const WEEKDAYS: { value: DayOfWeekRecurrence; label: string }[] = [
+const WEEKDAYS: { value: DayOfWeek; label: string }[] = [
   { value: 'monday',    label: 'Mo' },
   { value: 'tuesday',   label: 'Tu' },
   { value: 'wednesday', label: 'We' },
@@ -36,7 +36,7 @@ export default function RecurrenceEditor({ value, onChange }: Props) {
     onChange({ ...value, ...patch })
   }
 
-  function toggleDay(day: DayOfWeekRecurrence) {
+  function toggleDay(day: DayOfWeek) {
     const current = daysOfWeek ?? []
     const next = current.includes(day)
       ? current.filter(d => d !== day)

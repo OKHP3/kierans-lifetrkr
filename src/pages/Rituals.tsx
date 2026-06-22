@@ -3,12 +3,12 @@ import { useApp, genId } from '../context/AppContext'
 import CheckCircle from '../components/CheckCircle'
 import { getTodayISO, getDayOfWeek } from '../lib/date'
 import { DAYS_OF_WEEK, DAYS_SHORT } from '../constants'
-import type { DayOfWeek } from '../types'
+import type { RoutineDayOfWeek } from '../types'
 
 export default function Rituals() {
   const { state, dispatch } = useApp()
   const todayFull = getDayOfWeek()
-  const [selectedDay, setSelectedDay] = useState<DayOfWeek>(todayFull)
+  const [selectedDay, setSelectedDay] = useState<RoutineDayOfWeek>(todayFull)
   const [editMode, setEditMode] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const [newTitle, setNewTitle] = useState('')
@@ -61,7 +61,7 @@ export default function Rituals() {
       {/* Day pills */}
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4, marginBottom: 20, scrollbarWidth: 'none' }}>
         {(DAYS_OF_WEEK as readonly string[]).map((day, i) => {
-          const dayFull = day as DayOfWeek
+          const dayFull = day as RoutineDayOfWeek
           const isSelected = selectedDay === dayFull
           const isCurrentDay = dayFull === todayFull
           return (

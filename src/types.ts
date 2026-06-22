@@ -32,13 +32,10 @@ export type UserSettings = {
 
 // ─── Routines ──────────────────────────────────────────────────────────────
 
-/** Uppercase day-of-week used by RoutineTemplate (legacy shape). */
+/** Uppercase day-of-week used by RoutineTemplate. */
 export type RoutineDayOfWeek =
   | 'Sunday' | 'Monday' | 'Tuesday' | 'Wednesday'
   | 'Thursday' | 'Friday' | 'Saturday'
-
-/** @deprecated Use RoutineDayOfWeek for routines, DayOfWeek for recurrence. */
-export type DayOfWeek = RoutineDayOfWeek
 
 export type RoutineItem = {
   id: string
@@ -169,7 +166,7 @@ export type RecurrenceFrequency =
   | 'custom'
 
 /** Lowercase day-of-week used by RecurrenceRule. */
-export type DayOfWeekRecurrence =
+export type DayOfWeek =
   | 'monday'
   | 'tuesday'
   | 'wednesday'
@@ -186,7 +183,7 @@ export type RecurrenceEnd =
 export type RecurrenceRule = {
   frequency: RecurrenceFrequency
   interval: number
-  daysOfWeek?: DayOfWeekRecurrence[]
+  daysOfWeek?: DayOfWeek[]
   dayOfMonth?: number | null
   startDate: string
   end: RecurrenceEnd
