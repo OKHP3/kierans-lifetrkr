@@ -9,7 +9,7 @@ import { getTodayISO, getDayOfWeek, getGreeting, getSeasonalBadge, getDailyQuote
 
 // Easter egg — fixed content per PRD
 const EASTER_CONTENT = {
-  title:  'Ralph · Virgil · Jamie · Kieran',
+  title:  'Ralph · Vyrle · Jamie · Kieran',
   footer: 'Built on Father\'s Day, Summer Solstice 2026 ✦ The fourth hill.',
 }
 

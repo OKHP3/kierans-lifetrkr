@@ -317,7 +317,7 @@ export default function Settings() {
         <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: 0, fontFamily: 'Space Mono, monospace' }}>v0.1.0 · MIT License</p>
         <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: '8px 0 0' }}>Built on Father's Day, Summer Solstice 2026 ✦</p>
         <p style={{ fontSize: 10, color: 'var(--text-ghost)', margin: '8px 0 0', fontFamily: 'Space Mono, monospace', letterSpacing: '0.04em' }}>
-          Ralph · Virgil · Jamie · Kieran
+          Ralph · Vyrle · Jamie · Kieran
         </p>
       </div>
 
