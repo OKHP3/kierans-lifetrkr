@@ -2,13 +2,16 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import CheckCircle from '../components/CheckCircle'
+import { OracleCard } from '../components/OracleCard'
+import { useOracle } from '../hooks/useOracle'
+import { getMoonPhase, getAstroSeason, getMercuryStatus } from '../lib/celestial'
 import { getTodayISO, getDayOfWeek, getGreeting, getSeasonalBadge, getDailyQuote, formatEventTime, formatEventDate } from '../lib/date'
 
-const EASTER_QUOTES = [
-  'The fourth hill is the highest.',
-  'Ralph → Virgil → Jamie → Kieran. Always forward.',
-  '✦ Built on Father\'s Day, Summer Solstice 2026 ✦',
-]
+// Easter egg — fixed content per PRD
+const EASTER_CONTENT = {
+  title:  'Ralph · Virgil · Jamie · Kieran',
+  footer: 'Built on Father\'s Day, Summer Solstice 2026 ✦ The fourth hill.',
+}
 
 export default function Home() {
   const { state, dispatch } = useApp()
@@ -16,12 +19,18 @@ export default function Home() {
   const [moreExpanded, setMoreExpanded] = useState(false)
   const [easterCount, setEasterCount] = useState(0)
   const [showEaster, setShowEaster] = useState(false)
+  const { oracle, isLoadingOracle } = useOracle()
 
   const today = getTodayISO()
   const dayOfWeek = getDayOfWeek()
   const greeting = getGreeting()
   const seasonalBadge = getSeasonalBadge()
   const dailyQuote = getDailyQuote()
+
+  // Celestial data (computed once per render — cheap math)
+  const moon    = getMoonPhase()
+  const season  = getAstroSeason()
+  const mercury = getMercuryStatus()
 
   const displayName = state.settings.displayName || state.profile?.name
 
@@ -57,7 +66,7 @@ export default function Home() {
             {displayName ? (
               <>{displayName} <button onClick={handleStarTap} style={{ background: 'none', border: 'none', color: 'var(--accent-amethyst)', cursor: 'pointer', fontSize: 20, padding: 0, verticalAlign: 'middle' }}>✦</button></>
             ) : (
-              <button onClick={() => navigate('/settings')} style={{ background: 'none', border: 'none', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', color: 'var(--text-ghost)', cursor: 'pointer', padding: 0, textDecoration: 'none' }}>
+              <button onClick={() => navigate('/settings')} style={{ background: 'none', border: 'none', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', color: 'var(--text-ghost)', cursor: 'pointer', padding: 0 }}>
                 Set your name →
               </button>
             )}
@@ -76,8 +85,23 @@ export default function Home() {
         </button>
       </div>
 
+      {/* Celestial Row */}
+      <div style={{ display: 'flex', gap: 8, marginTop: 14, marginBottom: 2, flexWrap: 'wrap' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--text-muted)', background: 'var(--surface)', borderRadius: 20, padding: '4px 10px', border: '0.5px solid var(--border-subtle)' }}>
+          {moon.emoji} <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 11 }}>{moon.name}</span>
+        </span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--text-muted)', background: 'var(--surface)', borderRadius: 20, padding: '4px 10px', border: '0.5px solid var(--border-subtle)' }}>
+          {season.emoji} <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 11 }}>{season.sign}</span>
+        </span>
+        {mercury.retrograde && (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#f4a261', background: 'rgba(244,162,97,0.12)', borderRadius: 20, padding: '4px 10px', border: '0.5px solid rgba(244,162,97,0.35)' }}>
+            ☿ <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 11 }}>Rx until {mercury.endDate}</span>
+          </span>
+        )}
+      </div>
+
       {/* Today's Rituals */}
-      <section style={{ marginTop: 24 }}>
+      <section style={{ marginTop: 20 }}>
         <p className="section-label">TODAY'S RITUALS</p>
         <div className="card">
           {(!template || template.items.length === 0) ? (
@@ -135,6 +159,14 @@ export default function Home() {
 
       {moreExpanded && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 16 }}>
+          {/* Oracle */}
+          {state.settings.oracleEnabled && (
+            <section>
+              <p className="section-label">ORACLE</p>
+              <OracleCard reading={oracle} loading={isLoadingOracle} />
+            </section>
+          )}
+
           {/* Habits */}
           {activeHabits.length > 0 && (
             <section>
@@ -185,16 +217,18 @@ export default function Home() {
         </div>
       )}
 
-      {/* Easter egg modal */}
+      {/* Easter egg modal — fixed content per PRD */}
       {showEaster && (
         <div className="modal-overlay" onClick={() => setShowEaster(false)}>
           <div className="modal-sheet" onClick={e => e.stopPropagation()}>
             <div style={{ padding: '24px 20px', textAlign: 'center' }}>
               <p style={{ fontSize: 32, marginBottom: 12 }}>✦</p>
               <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 20, color: 'var(--text-primary)', marginBottom: 8 }}>
-                {EASTER_QUOTES[Math.floor(Math.random() * EASTER_QUOTES.length)]}
+                {EASTER_CONTENT.title}
               </p>
-              <p style={{ fontSize: 11, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', letterSpacing: '0.06em' }}>Ralph v0.0 · Vyrle v1.0 · Jamie v2.0 · Rylee v0.1.0</p>
+              <p style={{ fontSize: 11, color: 'var(--accent-amethyst)', fontFamily: 'Space Mono, monospace', letterSpacing: '0.06em', margin: '4px 0 0' }}>
+                {EASTER_CONTENT.footer}
+              </p>
               <button className="btn-primary" style={{ marginTop: 20, width: '100%' }} onClick={() => setShowEaster(false)}>Close</button>
             </div>
           </div>

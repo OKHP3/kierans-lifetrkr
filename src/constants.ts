@@ -52,30 +52,60 @@ export const SEASONAL_DATES: Record<string, string> = {
   '12-31': "New Year's Eve ✦",
 }
 
-// ─── Categories ────────────────────────────────────────────────────────────
+// ─── Categories (PRD v3.0 — 29 canonical categories) ───────────────────────
 
+export type Category = { emoji: string; label: string; group: 'Spiritual' | 'Daily' }
+
+export const CATEGORIES: Category[] = [
+  // ── Spiritual Practice ──────────────────────────
+  { emoji: '🌙', label: 'Moon ritual',    group: 'Spiritual' },
+  { emoji: '🔮', label: 'Divination',     group: 'Spiritual' },
+  { emoji: '🃏', label: 'Card reading',   group: 'Spiritual' },
+  { emoji: '✨', label: 'Spellwork',      group: 'Spiritual' },
+  { emoji: '🕯️', label: 'Candle work',  group: 'Spiritual' },
+  { emoji: '🧿', label: 'Protection',     group: 'Spiritual' },
+  { emoji: '🌿', label: 'Herbalism',      group: 'Spiritual' },
+  { emoji: '🌸', label: 'Altar work',     group: 'Spiritual' },
+  { emoji: '🌟', label: 'Manifestation',  group: 'Spiritual' },
+  { emoji: '💎', label: 'Crystals',       group: 'Spiritual' },
+  { emoji: '📿', label: 'Ritual',         group: 'Spiritual' },
+  { emoji: '🌀', label: 'Energy work',    group: 'Spiritual' },
+  // ── Daily Life ──────────────────────────────────
+  { emoji: '💊', label: 'Medication',     group: 'Daily' },
+  { emoji: '🧘', label: 'Meditation',     group: 'Daily' },
+  { emoji: '😴', label: 'Sleep / Rest',   group: 'Daily' },
+  { emoji: '🏃', label: 'Movement',       group: 'Daily' },
+  { emoji: '💪', label: 'Exercise',       group: 'Daily' },
+  { emoji: '🍎', label: 'Nutrition',      group: 'Daily' },
+  { emoji: '💧', label: 'Hydration',      group: 'Daily' },
+  { emoji: '🫁', label: 'Breathwork',     group: 'Daily' },
+  { emoji: '🧠', label: 'Mental health',  group: 'Daily' },
+  { emoji: '📖', label: 'Journaling',     group: 'Daily' },
+  { emoji: '📚', label: 'Study',          group: 'Daily' },
+  { emoji: '💼', label: 'Work',           group: 'Daily' },
+  { emoji: '🧹', label: 'Cleaning',       group: 'Daily' },
+  { emoji: '🌱', label: 'Self-care',      group: 'Daily' },
+  { emoji: '💰', label: 'Finance',        group: 'Daily' },
+  { emoji: '🤝', label: 'Connection',     group: 'Daily' },
+  { emoji: '🎵', label: 'Creative',       group: 'Daily' },
+  { emoji: '☕', label: 'Morning ritual', group: 'Daily' },
+  { emoji: '🙏', label: 'Gratitude',      group: 'Daily' },
+]
+
+// Legacy category list — kept for backward compat with existing stored data
 export const DEFAULT_CATEGORIES: LifeTrkrCategory[] = [
   { id: 'medication',  label: 'Medication',   emoji: '💊',  realm: 'health'    },
   { id: 'sleep',       label: 'Sleep',         emoji: '😴',  realm: 'body'      },
-  { id: 'rest',        label: 'Rest',          emoji: '🛌',  realm: 'body'      },
   { id: 'meditation',  label: 'Meditation',    emoji: '🧘',  realm: 'mind'      },
   { id: 'hydration',   label: 'Hydration',     emoji: '💧',  realm: 'body'      },
-  { id: 'movement',    label: 'Movement',      emoji: '🚶',  realm: 'body'      },
+  { id: 'movement',    label: 'Movement',      emoji: '🏃',  realm: 'body'      },
   { id: 'study',       label: 'Study',         emoji: '📚',  realm: 'school'    },
-  { id: 'chores',      label: 'Chores',        emoji: '🧺',  realm: 'home'      },
-  { id: 'room-reset',  label: 'Room Reset',    emoji: '🧹',  realm: 'home'      },
-  { id: 'mood-check',  label: 'Mood Check',    emoji: '🧠',  realm: 'mind'      },
-  { id: 'journaling',  label: 'Journaling',    emoji: '📓',  realm: 'creative'  },
-  { id: 'music',       label: 'Music',         emoji: '🎧',  realm: 'creative'  },
-  { id: 'friends',     label: 'Friends',       emoji: '👥',  realm: 'social'    },
-  { id: 'moon-work',   label: 'Moon Work',     emoji: '🌙',  realm: 'magic'     },
-  { id: 'card-reading',label: 'Card Reading',  emoji: '🃏',  realm: 'magic'     },
-  { id: 'spellcasting',label: 'Spellcasting',  emoji: '🕯️', realm: 'magic'     },
-  { id: 'intention',   label: 'Intention',     emoji: '✨',  realm: 'magic'     },
-  { id: 'reflection',  label: 'Reflection',    emoji: '🔮',  realm: 'mind'      },
-  { id: 'black-cat',   label: 'Black Cat',     emoji: '🐈‍⬛', realm: 'magic'   },
+  { id: 'mood-check',  label: 'Mental health', emoji: '🧠',  realm: 'mind'      },
+  { id: 'journaling',  label: 'Journaling',    emoji: '📖',  realm: 'creative'  },
+  { id: 'moon-work',   label: 'Moon ritual',   emoji: '🌙',  realm: 'magic'     },
+  { id: 'card-reading',label: 'Card reading',  emoji: '🃏',  realm: 'magic'     },
   { id: 'crystals',    label: 'Crystals',      emoji: '💎',  realm: 'magic'     },
-  { id: 'herbs',       label: 'Herbs',         emoji: '🌿',  realm: 'magic'     },
+  { id: 'herbs',       label: 'Herbalism',     emoji: '🌿',  realm: 'magic'     },
 ]
 
 // ─── Default Recurrence ────────────────────────────────────────────────────

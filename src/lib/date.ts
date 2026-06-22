@@ -61,3 +61,31 @@ export function isToday(isoDate: string): boolean {
 export function isTodayOrFuture(isoDate: string): boolean {
   return isoDate >= getTodayISO()
 }
+
+export type RecurrenceFrequency =
+  | 'none' | 'daily' | 'weekdays' | 'weekends' | 'specific_days'
+  | 'weekly' | 'monthly' | 'custom'
+
+export type SimpleRecurrencePattern = {
+  frequency: RecurrenceFrequency
+  daysOfWeek?: number[]  // 0=Sun…6=Sat
+}
+
+/** Returns true if a recurrence pattern is active on the given date (defaults to today). */
+export function isActiveToday(
+  pattern: SimpleRecurrencePattern,
+  date: Date = new Date(),
+): boolean {
+  if (pattern.frequency === 'none') return false
+  const day = date.getDay()
+  switch (pattern.frequency) {
+    case 'daily':         return true
+    case 'weekdays':      return day >= 1 && day <= 5
+    case 'weekends':      return day === 0 || day === 6
+    case 'specific_days': return (pattern.daysOfWeek ?? []).includes(day)
+    case 'weekly':
+    case 'monthly':
+    case 'custom':        return true
+    default:              return false
+  }
+}

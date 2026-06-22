@@ -1,3 +1,52 @@
+// ─── Zodiac ────────────────────────────────────────────────────────────────
+
+export type ZodiacSign =
+  | 'Aries' | 'Taurus' | 'Gemini' | 'Cancer'
+  | 'Leo' | 'Virgo' | 'Libra' | 'Scorpio'
+  | 'Sagittarius' | 'Capricorn' | 'Aquarius' | 'Pisces'
+
+// ─── Celestial ─────────────────────────────────────────────────────────────
+
+export type MoonPhaseName =
+  | 'New Moon' | 'Waxing Crescent' | 'First Quarter' | 'Waxing Gibbous'
+  | 'Full Moon' | 'Waning Gibbous' | 'Last Quarter' | 'Waning Crescent'
+
+export type MoonPhase = {
+  name: MoonPhaseName
+  emoji: string
+  illumination: number   // 0.0 to 1.0
+  daysUntilNext: number
+}
+
+export type AstroSeason = {
+  sign: ZodiacSign
+  emoji: string
+  element: 'Fire' | 'Earth' | 'Air' | 'Water'
+  dates: string          // e.g. "Jun 21 – Jul 22"
+}
+
+// ─── Oracle ────────────────────────────────────────────────────────────────
+
+export type TarotCard = {
+  name: string
+  name_short: string
+  type: string           // 'major' | 'minor'
+  suit?: string
+  value?: string
+  meaning_up: string
+  meaning_rev: string
+  desc: string
+}
+
+export type OracleReading = {
+  date: string           // YYYY-MM-DD
+  tarotCard: TarotCard
+  moonPhase: MoonPhase
+  astroSeason: AstroSeason
+  message: string        // Claude-generated oracle text
+  horoscope?: string     // from freehoroscopeapi.com if birth sign set
+}
+
 // ─── Identity ──────────────────────────────────────────────────────────────
 
 export type GoogleProfile = {
@@ -12,10 +61,20 @@ export type UserSettings = {
   email: string
   timezone: string
   googleConnected: boolean
+  // Calendar
   calendarDaysAhead: number
+  showGoogleCalendar: boolean
+  showMoonPhaseOnCalendar: boolean
+  // Tasks
   selectedTaskLists: string[]
   showGoogleTasks: boolean
+  showTasksDueToday: boolean
   showCompletedTasks: boolean
+  // Oracle
+  birthSign: ZodiacSign | null
+  oracleEnabled: boolean
+  showMercuryBanner: boolean
+  // Profile extras
   pronouns: string
   birthMonth: string
   birthDay: string
@@ -82,6 +141,7 @@ export type Habit = {
 export type HabitCompletion = {
   habitId: string
   date: string
+  completionIndex?: number   // 0-based, for habits with timesPerDay > 1
 }
 
 // ─── Tasks ─────────────────────────────────────────────────────────────────
@@ -154,9 +214,11 @@ export type AppState = {
   calendarEvents: CalendarEvent[]
   googleTasks: GoogleTask[]
   taskLists: TaskList[]
+  oracle: OracleReading | null
   isGoogleConnected: boolean
   isLoadingCalendar: boolean
   isLoadingTasks: boolean
+  isLoadingOracle: boolean
   lastGoogleSync: string | null
 }
 

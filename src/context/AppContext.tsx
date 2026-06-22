@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react'
 import type {
   AppState, RoutineTemplate, RoutineCompletion, Habit, HabitCompletion,
   Task, CalendarEvent, GoogleTask, TaskList, GoogleProfile, UserSettings,
-  RoutineDayOfWeek, RoutineItem,
+  RoutineDayOfWeek, RoutineItem, OracleReading,
 } from '../types'
 import { storage } from '../lib/storage'
 import { getTodayISO } from '../lib/date'
@@ -16,9 +16,15 @@ const defaultSettings: UserSettings = {
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   googleConnected: false,
   calendarDaysAhead: 14,
+  showGoogleCalendar: true,
+  showMoonPhaseOnCalendar: true,
   selectedTaskLists: [],
   showGoogleTasks: true,
+  showTasksDueToday: true,
   showCompletedTasks: false,
+  birthSign: null,
+  oracleEnabled: true,
+  showMercuryBanner: true,
   pronouns: '',
   birthMonth: '',
   birthDay: '',
@@ -45,9 +51,11 @@ const initialState: AppState = {
   calendarEvents: [],
   googleTasks: [],
   taskLists: [],
+  oracle: null,
   isGoogleConnected: false,
   isLoadingCalendar: false,
   isLoadingTasks: false,
+  isLoadingOracle: false,
   lastGoogleSync: null,
 }
 
@@ -67,6 +75,8 @@ type Action =
   | { type: 'SET_LOADING_CALENDAR'; payload: boolean }
   | { type: 'SET_LOADING_TASKS'; payload: boolean }
   | { type: 'SET_LAST_SYNC'; payload: string }
+  | { type: 'SET_ORACLE'; payload: OracleReading }
+  | { type: 'SET_LOADING_ORACLE'; payload: boolean }
   | { type: 'ADD_ROUTINE_ITEM'; payload: { templateId: string; item: RoutineItem } }
   | { type: 'REMOVE_ROUTINE_ITEM'; payload: { templateId: string; itemId: string } }
   | { type: 'REORDER_ROUTINE'; payload: { templateId: string; items: RoutineItem[] } }
@@ -158,6 +168,12 @@ function reducer(state: AppState, action: Action): AppState {
 
     case 'SET_LAST_SYNC':
       return { ...state, lastGoogleSync: action.payload }
+
+    case 'SET_ORACLE':
+      return { ...state, oracle: action.payload, isLoadingOracle: false }
+
+    case 'SET_LOADING_ORACLE':
+      return { ...state, isLoadingOracle: action.payload }
 
     case 'ADD_ROUTINE_ITEM':
       return {
