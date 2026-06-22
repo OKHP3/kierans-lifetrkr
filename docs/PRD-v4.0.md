@@ -22,28 +22,38 @@ A full three-source review (live app + GitHub + Notion) was conducted June 22, 2
 - localStorage persistence (basic — unknown if properly namespaced by Google sub)
 - Google auth button present but non-functional (GCP not configured)
 
-### What Is Confirmed Missing
+### What Is Already Shipped (v0.1.8) — Do NOT Rebuild
 
-| Gap | Severity | Session |
+The June 22 second build session (v0.1.1–v0.1.8) pulled most planned v0.3.0 features forward. The following all exist in the codebase right now:
+
+- `src/components/RecurrenceEditor.tsx` — recurrence picker (daily, weekdays, specific days, custom interval)
+- `src/components/CategoryPicker.tsx` — emoji category tag picker
+- TagInput, FilterBar components — wired into Rituals, Habits, Archive
+- `src/lib/celestial.ts` — moon phase math, astrological season detection, Mercury retrograde calendar
+- `src/lib/cosmic.ts` — deterministic daily cards and wisdom
+- `src/lib/oracle.ts` — three-layer oracle: tarotapi.dev + freehoroscopeapi.com + direct Anthropic browser call
+- `src/hooks/useOracle.ts` — orchestrates daily oracle fetch with localStorage caching
+- `src/components/OracleCard.tsx` — oracle display card with tarot, moon, message, horoscope
+- Calendar page: moon phase emoji on every date cell, oracle panel in day expansion
+- Home page: OracleCard in "More" section, celestial row (moon + season + Mercury Rx badge)
+- Settings: Oracle & Celestial section, 12-sign sun sign picker
+
+### What Is Genuinely Still Open
+
+| Gap | Severity | Target |
 |---|---|---|
-| React source NOT in GitHub main branch — only in Replit + gh-pages build | CRITICAL | A |
-| README describes PRD v1.0 architecture (Notion, Express, Replit hosting) | HIGH | A |
-| PRD-v3.0.md not committed to docs/ | HIGH | A |
-| .env.example references old Notion/Express variable names | MEDIUM | A |
-| GCP project not created — blocks ALL Google features | BLOCKER | Before B |
-| Google Calendar API not wired | v0.2.0 | B |
-| Google Tasks API not wired | v0.2.0 | B |
-| Token expiry banner not built | v0.2.0 | B |
-| Settings Google connection not wired | v0.2.0 | B |
-| Recurrence system absent from all three features | v0.3.0 | C |
-| Category/emoji tag picker absent | v0.3.0 | C |
-| Description field absent from rituals and habits | v0.3.0 | C |
-| Celestial engine (moon phases, astro season, Mercury) absent | v0.3.0 | C |
-| Oracle of the Day absent | v0.3.0 | C |
-| Claude API oracle proxy strategy not implemented | v0.3.0 | C |
-| tarotapi.dev not wired | v0.3.0 | C |
-| freehoroscopeapi.com not wired | v0.3.0 | C |
-| Brand assets (app icon, OG card, splash) not committed | v0.4.0 | D |
+| GCP project not created — blocks ALL Google features | BLOCKER | Before Session B |
+| Google Calendar API not wired | HIGH | v0.2.0 / Session B |
+| Google Tasks API not wired | HIGH | v0.2.0 / Session B |
+| Token expiry banner not verified | MEDIUM | v0.2.0 / Session B |
+| Settings Google connection not fully wired | MEDIUM | v0.2.0 / Session B |
+| Cloudflare Worker not deployed — oracle calls Anthropic directly from browser (key exposed) | HIGH | v0.3.0 / Session C |
+| Dark mode not default (app launches in Auto/light for first-time visitors) | MEDIUM | v0.3.0 |
+| APP_VERSION constant still at v0.1.0 | LOW | v0.3.0 |
+| First-launch welcome screen not built | LOW | v0.3.0 |
+| Settings: About section not built | LOW | v0.3.0 |
+| Settings: "Regenerate today's oracle" button not built | LOW | v0.3.0 |
+| Brand assets (app icon, OG card, splash) not committed | LOW | v0.4.0 |
 
 ---
 
@@ -719,6 +729,8 @@ npm run deploy
 ---
 
 ## SESSION C — v0.3.0: RECURRENCE + CATEGORIES + CELESTIAL + ORACLE (90 minutes)
+
+> **NOTE (updated June 22, 2026):** All components described in this session already exist in the codebase as of v0.1.8. RecurrenceEditor, CategoryPicker, celestial.ts, cosmic.ts, oracle.ts, useOracle.ts, and OracleCard are all shipped and live. This session's goal is to **verify correct behavior, close the remaining UX gaps** (dark mode default, APP_VERSION, first-launch screen, Settings About + Regenerate button), and **wire in the Cloudflare Worker** to replace the current direct browser Anthropic call. Do not rebuild components that already exist — read the existing code first, then patch what is incomplete or incorrect.
 
 ### C0. Cloudflare Worker — Oracle Proxy (REQUIRED before Claude oracle call)
 
@@ -1426,15 +1438,16 @@ npm run deploy
 
 ## VERSION TRACKING
 
-| App Version | Session | Key Deliverables |
-|---|---|---|
-| v0.1.x | Complete | UI shell, basic forms, localStorage, deployed |
-| v0.1.x patch | Session A | Source in GitHub, README corrected, PRD-v3.0 committed |
-| v0.2.0 | Session B | Google Calendar + Tasks live, token expiry, Settings wired |
-| v0.3.0 | Session C | Recurrence, categories, celestial, oracle via CF Worker |
-| v0.4.0 | Session D (future) | Brand assets, PWA manifest, app icon, OG card, polish |
-| v0.5.0 | Session E (future) | Privacy policy, Google OAuth verification |
-| v1.0.0 | TBD | Google-verified, Kieran-owned, public stable release |
+| App Version | Session | Status | Key Deliverables |
+|---|---|---|---|
+| v0.1.0 | Session 1 (Jun 21) | ✅ SHIPPED | UI shell, basic forms, localStorage, deployed to GitHub Pages |
+| v0.1.1–v0.1.8 | Session 2 (Jun 22) | ✅ SHIPPED | RecurrenceEditor, CategoryPicker, celestial engine, three-layer oracle, OracleCard, FilterBar, TagInput |
+| v0.1.x patch | Session A (docs) | ✅ SHIPPED | Source in GitHub, README corrected, PRD-v3.0 + PRD-v4.0 committed, ROADMAP rewritten |
+| v0.2.0 | Session B | ⏳ NEXT | Google Calendar + Tasks live, GCP setup, token expiry banner, Settings wired |
+| v0.3.0 | Session C | 📋 PLANNED | Dark mode default, APP_VERSION, first-launch screen, CF Worker wired, UX polish |
+| v0.4.0 | Session D | 📋 PLANNED | Brand assets, PWA manifest, app icon, OG card, service worker |
+| v0.5.0 | Session E | 📋 PLANNED | Privacy policy, Google OAuth verification submission |
+| v1.0.0 | TBD | 🔒 RESERVED | Google-verified, Kieran-owned, public stable release |
 
 ---
 
