@@ -39,7 +39,7 @@ Phase 1 shipped June 21, 2026. Phase 1 patches (v0.1.1–v0.1.8) shipped June 22
 - [ ] First-launch welcome screen (PRD-v3.0 Section 16.1)
 - [ ] Settings: About section (version, origin, MIT license)
 - [ ] Settings: "Regenerate today's oracle" button (clears daily cache, re-fetches)
-- [ ] Cloudflare Worker — oracle currently calls Anthropic directly from browser (key exposed in client code); Worker is the planned secure upgrade
+- [ ] VITE_ANTHROPIC_API_KEY not set — Claude oracle falls back to card.meaning_up
 
 ---
 
@@ -68,8 +68,8 @@ Phase 1 shipped June 21, 2026. Phase 1 patches (v0.1.1–v0.1.8) shipped June 22
 - [ ] First-launch welcome screen
 - [ ] Settings About section
 - [ ] Settings "Regenerate today's oracle" button
-- [ ] Cloudflare Worker deployed; oracle.ts updated to call Worker instead of Anthropic directly
-- [ ] VITE_ORACLE_WORKER_URL wired in constants.ts
+- [ ] VITE_ANTHROPIC_API_KEY activated via Replit external_apis skill
+- [ ] Claude oracle confirmed live (genuine AI-generated daily message)
 - [ ] Recurrence isActiveToday() filtering verified for habits and ritual items
 - [ ] Mercury retrograde banner verified on Calendar
 - [ ] Horoscope section renders correctly when birthSign is set

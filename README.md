@@ -55,7 +55,7 @@ User's Browser
          ↕                              ↕
   Google Identity Services       Google Calendar API
   (consent popup, token grant)   Google Tasks API
-                                 Anthropic Claude API (via Cloudflare Worker)
+                                 Anthropic Claude API (direct browser fetch)
                                  tarotapi.dev
                                  freehoroscopeapi.com
 ```
@@ -73,7 +73,7 @@ User's Browser
 | Auth | Google Identity Services (GIS) — token model, Client ID only |
 | Calendar | Google Calendar API v3 (browser fetch, read-only) |
 | Tasks | Google Tasks API v1 (browser fetch, read-only) |
-| Oracle | claude-sonnet-4-6 via Cloudflare Worker proxy (holds API key server-side) |
+| Oracle | claude-sonnet-4-5 via direct browser fetch (`VITE_ANTHROPIC_API_KEY`) |
 | Tarot | tarotapi.dev (free, no auth, CORS-enabled) |
 | Horoscope | freehoroscopeapi.com (free, no auth) |
 | Moon data | Client-side Julian date math — no API required |
@@ -89,12 +89,17 @@ npm run dev       # http://localhost:5173
 npm run deploy    # build → push to gh-pages → live
 ```
 
-One environment variable required. It is a Client ID, not a secret, and is
-safe to embed in the built JavaScript:
+Two environment variables. Both set as Replit Secrets.
 
 ```
 VITE_GOOGLE_CLIENT_ID=your_gcp_client_id.apps.googleusercontent.com
+VITE_ANTHROPIC_API_KEY=your_anthropic_key
 ```
+
+`VITE_GOOGLE_CLIENT_ID` is a public OAuth Client ID — safe to embed in client
+code. `VITE_ANTHROPIC_API_KEY` enables the Claude daily oracle message; without
+it the oracle falls back to the tarot card's upright meaning. Both have graceful
+fallbacks — the app runs fully without either key set.
 
 See `.env.example` for the full list.
 
@@ -118,7 +123,7 @@ v1.0.0 is not a placeholder — it is earned.
 |---|---|---|
 | v0.1.x | LIVE | UI shell, localStorage, Google auth button |
 | v0.2.0 | In progress | Google Calendar + Tasks live integration |
-| v0.3.0 | Planned | Recurrence + Categories + Celestial + Oracle |
+| v0.3.0 | Planned | Close remaining gaps (dark default, About, Regenerate oracle, activate Claude) |
 | v0.4.0 | Planned | Brand assets, PWA, polish |
 | v0.5.0 | Planned | Privacy policy, Google OAuth verification |
 | v1.0.0 | Reserved | Google-verified, Kieran-owned, public stable release |
