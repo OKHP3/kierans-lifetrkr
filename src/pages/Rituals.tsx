@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useApp, genId } from '../context/AppContext'
 import CheckCircle from '../components/CheckCircle'
+import FilterBar from '../components/FilterBar'
 import CategoryPicker from '../components/CategoryPicker'
 import TagInput from '../components/TagInput'
 import DescriptionField from '../components/DescriptionField'
@@ -13,15 +14,7 @@ const DAY_NUM: Record<RoutineDayOfWeek, number> = {
   Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6,
 }
 
-function chipSt(active: boolean): React.CSSProperties {
-  return {
-    fontSize: 11, padding: '2px 8px', borderRadius: 12, cursor: 'pointer',
-    background: active ? 'var(--surface-raised)' : 'transparent',
-    border: `0.5px solid ${active ? 'var(--accent-amethyst)' : 'var(--border)'}`,
-    color: active ? 'var(--accent-amethyst)' : 'var(--text-muted)',
-    fontFamily: 'Space Mono, monospace', flexShrink: 0,
-  }
-}
+type SortKey = 'default' | 'title' | 'next-occ' | 'category'
 
 export default function Rituals() {
   const { state, dispatch } = useApp()
@@ -32,14 +25,14 @@ export default function Rituals() {
   const [newTitle, setNewTitle] = useState('')
   const [newTime, setNewTime] = useState('')
 
-  // Filter state
+  // Filter & sort state
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
   const [tagFilter, setTagFilter] = useState<string | null>(null)
   const [freqFilter, setFreqFilter] = useState<string | null>(null)
-  const [sortBy, setSortBy] = useState<'default' | 'title' | 'next-occ' | 'category'>('default')
+  const [sortBy, setSortBy] = useState<SortKey>('default')
 
-  // Metadata edit state
+  // Metadata editor state — initialized fresh each time Details opens
   const [showMeta, setShowMeta] = useState(false)
   const [metaDesc, setMetaDesc] = useState('')
   const [metaCategoryId, setMetaCategoryId] = useState<string | undefined>()
@@ -58,16 +51,20 @@ export default function Rituals() {
     ? DEFAULT_CATEGORIES.find(c => c.id === template.categoryId)
     : undefined
 
-  useEffect(() => {
+  // Close the panel (not re-init) when day changes — user must re-open to see the new day's data
+  useEffect(() => { setShowMeta(false) }, [selectedDay])
+
+  // Initialize form from current template data when the panel opens
+  function openMeta() {
     if (!template) return
     setMetaDesc(template.description ?? '')
     setMetaCategoryId(template.categoryId)
     setMetaTags(template.tags ?? [])
     setMetaRecurrence(template.recurrence ?? makeDefaultRecurrence())
-    setShowMeta(false)
-  }, [selectedDay]) // eslint-disable-line react-hooks/exhaustive-deps
+    setShowMeta(true)
+  }
 
-  // Derive unique filter options from all templates
+  // Derive unique filter options
   const usedCategoryIds = [...new Set(state.routineTemplates.filter(t => t.categoryId).map(t => t.categoryId!))]
   const allTemplateTags = [...new Set(state.routineTemplates.flatMap(t => t.tags ?? []))]
   const usedFreqs = [...new Set(
@@ -76,7 +73,7 @@ export default function Rituals() {
       .map(t => t.recurrence!.frequency)
   )]
 
-  // Build the sorted + filtered day list
+  // Build sorted + filtered day list
   let filteredDays = ([...DAYS_OF_WEEK] as RoutineDayOfWeek[]).filter(day => {
     const t = state.routineTemplates.find(t2 => t2.dayOfWeek === day)
     if (statusFilter === 'active' && (t?.items?.length ?? 0) === 0) return false
@@ -92,9 +89,7 @@ export default function Rituals() {
     filteredDays = [...filteredDays].sort((a, b) => a.localeCompare(b))
   } else if (sortBy === 'next-occ') {
     filteredDays = [...filteredDays].sort((a, b) => {
-      const da = (DAY_NUM[a] - todayNum + 7) % 7
-      const db = (DAY_NUM[b] - todayNum + 7) % 7
-      return da - db
+      return ((DAY_NUM[a] - todayNum + 7) % 7) - ((DAY_NUM[b] - todayNum + 7) % 7)
     })
   } else if (sortBy === 'category') {
     filteredDays = [...filteredDays].sort((a, b) => {
@@ -153,55 +148,58 @@ export default function Rituals() {
         </button>
       </div>
 
-      {/* Status filter chips */}
-      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 8, scrollbarWidth: 'none' }}>
-        {([['all', 'All'], ['active', 'Has items'], ['inactive', 'Empty']] as const).map(([v, label]) => (
-          <button key={v} type="button" onClick={() => setStatusFilter(v)} style={chipSt(statusFilter === v)}>{label}</button>
-        ))}
-      </div>
+      {/* Status filter */}
+      <FilterBar
+        chips={[
+          { label: 'All', value: 'all', active: statusFilter === 'all' },
+          { label: 'Has items', value: 'active', active: statusFilter === 'active' },
+          { label: 'Empty', value: 'inactive', active: statusFilter === 'inactive' },
+        ]}
+        onChange={(val) => setStatusFilter(val as typeof statusFilter)}
+        className="mb-2"
+      />
 
-      {/* Category chips */}
+      {/* Category filter */}
       {usedCategoryIds.length > 0 && (
-        <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 8, scrollbarWidth: 'none', alignItems: 'center' }}>
-          <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>cat:</span>
-          {usedCategoryIds.map(id => {
+        <FilterBar
+          chips={usedCategoryIds.map(id => {
             const cat = DEFAULT_CATEGORIES.find(c => c.id === id)
-            return (
-              <button key={id} type="button" onClick={() => setCategoryFilter(c => c === id ? null : id)} style={chipSt(categoryFilter === id)}>
-                {cat?.emoji} {cat?.label ?? id}
-              </button>
-            )
+            return { label: `${cat?.emoji ?? ''} ${cat?.label ?? id}`, value: id, active: categoryFilter === id }
           })}
-        </div>
+          onChange={(val, wantsActive) => setCategoryFilter(wantsActive ? val : null)}
+          className="mb-2"
+        />
       )}
 
-      {/* Tag chips */}
+      {/* Tag filter */}
       {allTemplateTags.length > 0 && (
-        <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 8, scrollbarWidth: 'none', alignItems: 'center' }}>
-          <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>tag:</span>
-          {allTemplateTags.map(tag => (
-            <button key={tag} type="button" onClick={() => setTagFilter(t => t === tag ? null : tag)} style={chipSt(tagFilter === tag)}>{tag}</button>
-          ))}
-        </div>
+        <FilterBar
+          chips={allTemplateTags.map(tag => ({ label: tag, value: tag, active: tagFilter === tag }))}
+          onChange={(val, wantsActive) => setTagFilter(wantsActive ? val : null)}
+          className="mb-2"
+        />
       )}
 
-      {/* Frequency chips */}
+      {/* Frequency filter */}
       {usedFreqs.length > 0 && (
-        <div style={{ display: 'flex', gap: 4, overflowX: 'auto', marginBottom: 8, scrollbarWidth: 'none', alignItems: 'center' }}>
-          <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>freq:</span>
-          {usedFreqs.map(f => (
-            <button key={f} type="button" onClick={() => setFreqFilter(ff => ff === f ? null : f)} style={chipSt(freqFilter === f)}>{f}</button>
-          ))}
-        </div>
+        <FilterBar
+          chips={usedFreqs.map(f => ({ label: f, value: f, active: freqFilter === f }))}
+          onChange={(val, wantsActive) => setFreqFilter(wantsActive ? val : null)}
+          className="mb-2"
+        />
       )}
 
-      {/* Sort row */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 14, alignItems: 'center' }}>
-        <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>sort:</span>
-        {([['default', 'day'], ['title', 'title'], ['next-occ', 'next'], ['category', 'category']] as const).map(([v, label]) => (
-          <button key={v} type="button" onClick={() => setSortBy(v)} style={chipSt(sortBy === v)}>{label}</button>
-        ))}
-      </div>
+      {/* Sort */}
+      <FilterBar
+        chips={[
+          { label: 'day ↕', value: 'default', active: sortBy === 'default' },
+          { label: 'title', value: 'title', active: sortBy === 'title' },
+          { label: 'next', value: 'next-occ', active: sortBy === 'next-occ' },
+          { label: 'category', value: 'category', active: sortBy === 'category' },
+        ]}
+        onChange={(val) => setSortBy(val as SortKey)}
+        className="mb-4"
+      />
 
       {/* Day pills */}
       <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4, marginBottom: 16, scrollbarWidth: 'none' }}>
@@ -251,7 +249,7 @@ export default function Rituals() {
         <button
           className="btn-ghost"
           style={{ fontSize: 11, padding: '3px 10px', flexShrink: 0 }}
-          onClick={() => setShowMeta(m => !m)}
+          onClick={() => showMeta ? setShowMeta(false) : openMeta()}
         >
           {showMeta ? 'Close' : 'Details'}
         </button>
@@ -319,7 +317,9 @@ export default function Rituals() {
                   <>
                     <CheckCircle done={isItemDone(item.id)} onToggle={() => toggleItem(item.id)} />
                     <div style={{ flex: 1 }}>
-                      <span style={{ fontSize: 14, color: isItemDone(item.id) ? 'var(--text-ghost)' : 'var(--text-primary)', textDecoration: isItemDone(item.id) ? 'line-through' : 'none' }}>{item.title}</span>
+                      <span style={{ fontSize: 14, color: isItemDone(item.id) ? 'var(--text-ghost)' : 'var(--text-primary)', textDecoration: isItemDone(item.id) ? 'line-through' : 'none' }}>
+                        {item.title}
+                      </span>
                       {item.time && <span style={{ fontSize: 11, color: 'var(--text-ghost)', marginLeft: 8, fontFamily: 'Space Mono, monospace' }}>{item.time}</span>}
                     </div>
                     {!isToday && <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontStyle: 'italic' }}>template</span>}
