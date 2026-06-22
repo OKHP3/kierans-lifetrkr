@@ -308,9 +308,22 @@ The shipped `types.ts` uses `RecurrenceRule` with `{ frequency, interval, startD
 | Variable | Purpose | Required | Notes |
 |---|---|---|---|
 | `VITE_GOOGLE_CLIENT_ID` | Google Calendar + Tasks OAuth | For Google features | Not a secret — safe to embed in client code. Set in Replit Secrets. |
-| `VITE_ANTHROPIC_API_KEY` | Claude oracle message generation | For AI oracle | Use Replit `external_apis` skill to provision. Set in Replit Secrets. |
+| `VITE_ANTHROPIC_API_KEY` | Claude oracle message — direct browser fetch | For AI oracle (current impl) | Use Replit `external_apis` skill to provision. Set in Replit Secrets. |
+| `VITE_ORACLE_WORKER_URL` | Claude oracle message — via Cloudflare Worker proxy | For AI oracle (alternative impl) | Only needed if switching to CF Worker approach. See architectural note below. |
 
-Both are set as Replit Secrets (not committed to repo). Both have graceful fallbacks when absent. The app is fully functional without either — Google sections show "not connected" state, oracle falls back to tarot card's upright meaning.
+`VITE_GOOGLE_CLIENT_ID` and `VITE_ANTHROPIC_API_KEY` are set as Replit Secrets. Both have graceful fallbacks when absent. The app is fully functional without either — Google sections show "not connected" state, oracle falls back to tarot card's upright meaning.
+
+`.env.example` in the repo documents all three variables with setup instructions. Never commit `.env` to the repo.
+
+**Oracle delivery — architectural decision (direct browser fetch vs Cloudflare Worker):**
+
+The original plan (pre-session plan) called for a Cloudflare Worker proxy (`VITE_ORACLE_WORKER_URL`) to hold the Anthropic API key server-side so it would never be exposed in client code. The June 22 build session implemented direct browser fetch instead, using `anthropic-dangerous-direct-browser-access: true` and `VITE_ANTHROPIC_API_KEY` in Replit Secrets/Vite env.
+
+Both approaches are architecturally valid. The tradeoff:
+- **Direct browser fetch (current):** Simpler — no Worker to deploy or maintain. The API key is embedded in the built JS bundle (visible in DevTools). Acceptable for a personal single-user app. `VITE_ANTHROPIC_API_KEY` goes in Replit Secrets.
+- **Cloudflare Worker proxy (original plan):** API key is never in client code. Better for a public app. Requires deploying a Worker and setting `VITE_ORACLE_WORKER_URL`. Worker code pattern: receive `{ system, messages }` POST, forward to Anthropic with the stored `ANTHROPIC_API_KEY` secret, return response.
+
+To switch to the CF Worker approach in a future session: (1) deploy a Worker at `lifetrkr-oracle.okhp3.workers.dev`, (2) set `ANTHROPIC_API_KEY` as a Worker secret, (3) set `VITE_ORACLE_WORKER_URL` in Replit Secrets, (4) update `oracle.ts` `generateOracleMessage()` to POST to `ORACLE_WORKER_URL` instead of calling Anthropic directly.
 
 **GCP setup for VITE_GOOGLE_CLIENT_ID (one-time manual task):**
 1. console.cloud.google.com → New Project → "LifeTrkr"
@@ -358,7 +371,119 @@ Requires GCP project, API enablement, and OAuth consent screen setup. This is a 
 
 ---
 
-## Section 13 — Build Session Checklist (for Replit agent)
+## Section 13 — External API Registry
+
+All external APIs used by the app. Before building any integration, verify CORS behavior by testing from the browser console on the production origin (`okhp3.github.io`).
+
+| API | Base URL | Auth | CORS | Rate Limit | Fallback |
+|---|---|---|---|---|---|
+| Google Calendar | `https://www.googleapis.com/calendar/v3/` | Bearer token (GIS) | Yes — via browser with token | 1M req/day free tier | Show manual events only |
+| Google Tasks | `https://tasks.googleapis.com/tasks/v1/` | Bearer token (GIS) | Yes — via browser with token | 50k req/day free tier | Hide Google Tasks sections |
+| Tarot | `https://tarotapi.dev/api/v1/cards/random?n=1` | None | Yes | Not documented | Local 12-card Major Arcana fallback array (day-of-year % length) |
+| Horoscope | `https://freehoroscopeapi.com/api/v1/get-horoscope/daily?sign={sign}` | None | Unverified — test before using | Unknown | Skip horoscope section silently |
+| Claude (direct) | `https://api.anthropic.com/v1/messages` | `VITE_ANTHROPIC_API_KEY` header | Requires `anthropic-dangerous-direct-browser-access: true` | Depends on plan | Use tarot `meaning_up` as message |
+| Claude (CF Worker) | `https://lifetrkr-oracle.okhp3.workers.dev` | None (Worker holds key) | Configured in Worker | CF free: 100k req/day | Use tarot `meaning_up` as message |
+| Moon phases | Client-side Julian date math | None | N/A | None | None needed |
+| Astro season | Hardcoded date ranges in `celestial.ts` | None | N/A | None | None needed |
+| Mercury retrograde | Hardcoded 2026–2028 dates in `celestial.ts` | None | N/A | None | None needed |
+
+**CORS verification command (run in browser console on production origin):**
+```javascript
+fetch('https://freehoroscopeapi.com/api/v1/get-horoscope/daily?sign=cancer')
+  .then(r => r.json()).then(console.log).catch(console.error)
+```
+If this returns a CORS error, route horoscope calls through the Cloudflare Worker instead.
+
+---
+
+## Section 14 — Recurrence Helper Spec
+
+The `formatRecurrence()` helper should be added to `src/lib/date.ts` if not already present. It converts a `RecurrenceRule` into a short human-readable badge string for display in list views.
+
+```typescript
+// src/lib/date.ts — add if not present
+export function formatRecurrence(rule: RecurrenceRule): string | null {
+  if (!rule || rule.frequency === 'none') return null;
+  if (rule.frequency === 'daily') return 'Daily';
+  if (rule.frequency === 'weekdays') return 'Weekdays';
+  if (rule.frequency === 'weekends') return 'Weekends';
+  if (rule.frequency === 'specific_days' && rule.daysOfWeek?.length) {
+    const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    return rule.daysOfWeek.map((d: number) => dayNames[d]).join(' · ');
+  }
+  if (rule.frequency === 'weekly') return `Every ${rule.interval ?? 1}w`;
+  if (rule.frequency === 'monthly') return 'Monthly';
+  if (rule.frequency === 'custom') return `Every ${rule.interval ?? 1} days`;
+  return null;
+}
+```
+
+Display pattern in list views: `↻ {formatRecurrence(item.recurrence)}` in `text-textMuted text-[11px]`.
+
+**Note:** The actual `RecurrenceRule` type in `src/types.ts` is the source of truth. The field names above (`daysOfWeek`, `interval`, etc.) may differ — check `src/types.ts` and adjust accordingly before implementing.
+
+---
+
+## Section 15 — Build Session Testing Checklists
+
+Comprehensive per-session acceptance tests. Run these manually after each session before marking it complete.
+
+### v0.2.0 (Google Calendar + Tasks)
+- [ ] Clicking "Connect Google Account" in Settings opens Google consent popup
+- [ ] After auth: profile name and photo appear in Settings header
+- [ ] Settings Google Account section shows email, last synced time, Disconnect button
+- [ ] Calendar tab: real events from connected Google account appear (not just manual)
+- [ ] Calendar tab: Google events show "G" source badge; manual events show pencil icon
+- [ ] Today tab: Google Tasks due today appear under "From Google Tasks" heading (if any exist)
+- [ ] Archive tab: undated Google Tasks appear when `showGoogleTasks: true`
+- [ ] Token expiry banner: appears and reconnect works (test by clearing `sessionStorage.gal_token`)
+- [ ] Disconnect in Settings: clears token, app returns to manual-only mode
+- [ ] Multi-account: switching Google accounts shows different namespaced data
+- [ ] `npm run deploy` → verify live URL, confirm no broken tabs
+
+### v0.3.0 (Close Gaps)
+- [ ] App launches in dark mode by default (no saved preference → dark, not auto/light)
+- [ ] Habit add/edit form: shows title + description field + RecurrenceEditor + CategoryPicker
+- [ ] Ritual item add/edit form: same
+- [ ] Recurrence badge shows in habit/ritual list views: `↻ Daily`, `↻ Mon · Wed · Fri`
+- [ ] Category filter pills filter the list correctly; "All" shows everything
+- [ ] `isActiveToday()`: habit with `frequency: 'weekdays'` does NOT show on Saturday
+- [ ] `isActiveToday()`: ritual item with Mon/Wed/Fri does NOT show on Tuesday
+- [ ] Calendar grid: moon phase emoji visible on every date cell
+- [ ] Calendar tab: Mercury retrograde banner shows when active (test with a past retrograde date)
+- [ ] Calendar tab: Mercury Rx banner is hidden when `showMercuryBanner` toggle is off
+- [ ] Home: moon phase + astrological season row visible below date line
+- [ ] Home: Oracle card appears in "More" section with tarot card name and message
+- [ ] Oracle card: tarot card name and oracle message both populated
+- [ ] Oracle: tarot card fetched from tarotapi.dev and cached in localStorage for the day
+- [ ] Oracle: horoscope appears if birth sign is set in Settings
+- [ ] Oracle: `VITE_ANTHROPIC_API_KEY` set → Claude message generated; page reload uses cached message, not a new API call
+- [ ] Settings: About section shows correct `APP_VERSION` (not hardcoded `v0.1.0`)
+- [ ] Settings: "Regenerate today's oracle" button clears cache and triggers re-fetch
+- [ ] SideNav footer: version string matches intended release
+- [ ] `npm run deploy` → verify live URL
+
+### v0.4.0 (PWA + Polish)
+- [ ] `public/manifest.json`: `start_url`, `display: "standalone"`, `background_color: "#0D0B14"`, `theme_color: "#C4A0E8"` all correct
+- [ ] "Add to Home Screen" prompt works on iOS Safari and Android Chrome
+- [ ] App icon (`app-icon.png`) used in PWA manifest icons array
+- [ ] `cat-accent` image appears tastefully in the UI (one placement, subtle)
+- [ ] `public/og-image.png` uses the banner asset
+- [ ] Drag-to-reorder: tasks in Today and Archive tabs can be reordered; order persists on reload
+- [ ] No unnecessary oracle re-fetches: navigate away from Home and back — oracle does not re-call API
+- [ ] `celestial.ts` calculations: typing in a form field does not trigger celestial recalculation
+- [ ] `npm run deploy` → verify live URL
+
+### v0.5.0 (OAuth Verification)
+- [ ] Privacy policy page exists at a stable URL
+- [ ] GCP OAuth consent screen: App name = "Kieran's LifeTrkr", logo = app-icon.png, privacy policy URL filled in
+- [ ] Scopes declared: `calendar.readonly`, `tasks.readonly`, `openid`, `profile`, `email`
+- [ ] Verification submitted to Google
+- [ ] After approval: move GCP app from Testing to Production mode
+
+---
+
+## Section 16 — Build Session Checklist (for Replit agent)
 
 Before starting a build session, the agent should:
 1. Read `docs/PRD-v4.0.md` (this file) in full
@@ -371,16 +496,36 @@ Before starting a build session, the agent should:
 
 ---
 
-## Section 14 — Version History
+## Section 17 — Version History
 
-| Version | Date | Session | Summary |
+**Family lineage:**
+
+| App Version | Date | Author | Notes |
 |---|---|---|---|
 | v0.0 | — | Ralph | Grandfather — generation 0 |
-| v1.0 | — | Virgil | Father — generation 1 |
+| v1.0 | — | Virgil/Vyrle | Father — generation 1 (see Section 12 re: name spelling) |
 | v2.0 | — | Jamie | Son — generation 2; original app concept |
 | v3.0 | June 21, 2026 | Kieran (session 1) | TypeScript migration, HashRouter, GIS auth, gh-pages |
-| v3.0 PRD | June 22, 2026 | Jamie + Kieran | Full PRD-v3.0 authored (1624 lines) |
-| v0.1.8 | June 22, 2026 | Agent (session 2) | Recurrence, categories, celestial engine, three-layer oracle, Calendar overhaul |
-| v4.0 PRD | June 22, 2026 | Agent (session 2) | This document — planning authority for v0.2.0+ |
+
+**Build session history:**
+
+| App Version | Date | Session | Key Deliverables |
+|---|---|---|---|
+| v0.1.0 | June 21, 2026 | Session 1 | UI shell, basic forms, localStorage, deployed to GitHub Pages |
+| v0.1.x patch | June 22, 2026 | Pre-session | Source pushed to GitHub main; README corrected; PRD-v3.0 committed |
+| v0.1.8 | June 22, 2026 | Session 2 | Recurrence, categories, celestial engine, three-layer oracle, Calendar overhaul — pulled v0.3.0 work forward |
+| v0.2.0 | TBD | Session 3 | Google Calendar + Tasks live; token expiry; Settings wired |
+| v0.3.0 | TBD | Session 4 | Close remaining gaps: dark default, first-launch, About, Regenerate oracle, Claude oracle activation |
+| v0.4.0 | TBD | Session 5 | Brand assets, PWA manifest, offline, drag-to-reorder, polish |
+| v0.5.0 | TBD | Session 6 | Privacy policy, GCP OAuth verification submission |
+| v1.0.0 | TBD | TBD | Google-verified, Kieran-owned, public stable release |
+
+**PRD document history:**
+
+| PRD | Date | Author | Notes |
+|---|---|---|---|
+| PRD-v3.0 | June 22, 2026 | Jamie + Kieran | Full product vision (1624 lines) — canonical architecture and type reference |
+| PRD-v4.0 (plan) | June 22, 2026 | Jamie (pre-session) | Pre-session plan for Sessions A/B/C — original CF Worker oracle approach |
+| PRD-v4.0 (this) | June 22, 2026 | Agent (session 2) | Post-session truth — planning authority for v0.2.0+; incorporates both sources |
 
 Built on Father's Day, Summer Solstice 2026. The fourth hill. ✦
