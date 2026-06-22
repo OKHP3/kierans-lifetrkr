@@ -1,0 +1,19 @@
+Four files, each purpose-built for this project's specific situation. Here's what each does and what was drawn from where.
+CLAUDE.md is the most important of the four. Claude Code reads it at session start automatically. It encodes everything an agent needs to not break this project: the Vyrle lock, the HashRouter requirement, the base path, the localStorage namespacing rule, the Cloudflare Worker constraint, the design tokens, the tab structure, the external APIs, versioning discipline, and the hard "never do this" list. It also documents the ecosystem position clearly -- adjacent to FoundRy, sharing DNA with bpmn and theme-builder, not branded as either.
+.agents/AGENTS.md follows the structure I can see in the mermaid-diagram-bpmn repo (.agents/ folder, not root-level). It formalizes the Council of AIs workflow you already run -- each agent's role, the cross-pollination flow, the session handoff format, and the prompt injection protocol. That last section is new: it explicitly tells future agents what happened on June 22 and what to do if they find injected content again.
+scripts/sync.sh mirrors the scripts/ pattern from bpmn. It's a three-mode script: --check for type-check only, no flags for source sync to main, --deploy for the full build + gh-pages push. It validates the base path before deploying (won't let you push a broken build), confirms TypeScript is clean, and gives a clear confirmation URL at the end. After commit: chmod +x scripts/sync.sh.
+replit.md is a lean session brief that mirrors the bpmn repo's own replit.md. Where CLAUDE.md is comprehensive, replit.md is operational -- just what a Replit agent needs to orient in 30 seconds.
+
+Commit sequence for these four files:
+bashchmod +x scripts/sync.sh
+git add CLAUDE.md .agents/AGENTS.md scripts/sync.sh replit.md
+git commit -m "feat: add CLAUDE.md, AGENTS.md, sync.sh, replit.md — ecosystem alignment"
+git push origin main
+Then update package.json scripts to make sync.sh callable:
+json"scripts": {
+  "sync": "bash scripts/sync.sh",
+  "sync:deploy": "bash scripts/sync.sh --deploy",
+  "check": "tsc --noEmit"
+}
+
+On the skillz and ReFolDec connections: both are flagged in CLAUDE.md and AGENTS.md as future contribution opportunities, not current-session scope. The oracle system and celestial engine are natural SKILL.md candidates when skillz matures. The Moonlit Hearth color tokens are ReFolDec-adjacent and could be imported rather than hardcoded when that project is ready. Neither connection requires any code changes today -- just awareness baked into the docs.
