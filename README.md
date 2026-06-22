@@ -4,7 +4,7 @@
 > and a daily oracle — one interface, no noise.
 
 **Live:** https://okhp3.github.io/kierans-lifetrkr/#/
-**Status:** v0.1.x deployed · v0.2.0 (Google Calendar + Tasks) in progress
+**Status:** v0.1.8 deployed · v0.2.0 (Google Calendar + Tasks) next
 **License:** MIT — free to use, fork, and build on
 
 ---
@@ -55,7 +55,7 @@ User's Browser
          ↕                              ↕
   Google Identity Services       Google Calendar API
   (consent popup, token grant)   Google Tasks API
-                                 Anthropic Claude API (via Cloudflare Worker)
+                                 Anthropic Claude API (direct browser fetch)
                                  tarotapi.dev
                                  freehoroscopeapi.com
 ```
@@ -73,11 +73,60 @@ User's Browser
 | Auth | Google Identity Services (GIS) — token model, Client ID only |
 | Calendar | Google Calendar API v3 (browser fetch, read-only) |
 | Tasks | Google Tasks API v1 (browser fetch, read-only) |
-| Oracle | claude-sonnet-4-6 via Cloudflare Worker proxy (holds API key server-side) |
+| Oracle | claude-sonnet-4-5 via direct browser fetch (`VITE_ANTHROPIC_API_KEY`) |
 | Tarot | tarotapi.dev (free, no auth, CORS-enabled) |
 | Horoscope | freehoroscopeapi.com (free, no auth) |
 | Moon data | Client-side Julian date math — no API required |
 | Deploy | gh-pages npm package → GitHub Pages |
+
+---
+
+## Project Structure
+
+```
+src/
+├── context/
+│   ├── AppContext.tsx          # useReducer state + localStorage persistence
+│   └── ThemeContext.tsx        # dark / light / system theme
+├── components/
+│   ├── BottomNav.tsx           # Mobile tab bar (6 tabs, ≤767px)
+│   ├── CategoryPicker.tsx      # 31-category picker (Spiritual + Daily groups)
+│   ├── CheckCircle.tsx         # Animated completion toggle
+│   ├── DescriptionField.tsx    # Multi-line description input
+│   ├── FilterBar.tsx           # Horizontal scrollable filter chips
+│   ├── GoogleConnectButton.tsx # GIS OAuth initiation + connection status
+│   ├── MobileHeader.tsx        # Mobile page header with back nav
+│   ├── OracleCard.tsx          # Daily oracle display (tarot + moon + Claude msg)
+│   ├── RecurrenceEditor.tsx    # Full recurrence rule UI
+│   ├── SideNav.tsx             # Desktop sidebar (7 items, ≥768px)
+│   ├── TagInput.tsx            # Chip-based tag input with kebab normalization
+│   ├── ThemeToggle.tsx         # Dark / Light / Auto switcher
+│   ├── Toast.tsx               # Toast notification with undo
+│   └── TokenExpiryBanner.tsx   # Global Google token expiry warning
+├── hooks/
+│   ├── useGoogleAuth.ts        # GIS token flow, sessionStorage, expiry tracking
+│   ├── useOracle.ts            # Oracle fetch orchestration (once per day)
+│   └── useToast.ts             # Toast queue and auto-dismiss
+├── lib/
+│   ├── celestial.ts            # Moon phase math, astro seasons, Mercury Rx calendar
+│   ├── cosmic.ts               # Deterministic daily cards and wisdom
+│   ├── date.ts                 # Date helpers, greeting, seasonal badge, quote
+│   ├── googleCalendar.ts       # Google Calendar API v3 fetch
+│   ├── googleTasks.ts          # Google Tasks API v1 fetch
+│   ├── oracle.ts               # Three-layer oracle stack (tarot / horoscope / Claude)
+│   └── storage.ts              # localStorage abstraction, namespaced by sub
+├── pages/
+│   ├── Home.tsx                # Dashboard: rituals, oracle, upcoming, habits, tasks
+│   ├── Rituals.tsx             # Day-of-week ritual template editor
+│   ├── Habits.tsx              # Habit list with 7-day grid and streak counter
+│   ├── Calendar.tsx            # Month grid + Google Calendar + moon phases + oracle
+│   ├── Today.tsx               # Committed tasks (status=today) + Google Tasks
+│   ├── Archive.tsx             # Backlog (status=backlog), search, sort, promote
+│   └── Settings.tsx            # Profile, Google, oracle/celestial, theme, social
+├── types.ts                    # All TypeScript types (source of truth)
+├── constants.ts                # GOOGLE_CLIENT_ID, SCOPES, APP_VERSION, categories
+└── App.tsx                     # HashRouter + 7 routes
+```
 
 ---
 
@@ -89,12 +138,17 @@ npm run dev       # http://localhost:5173
 npm run deploy    # build → push to gh-pages → live
 ```
 
-One environment variable required. It is a Client ID, not a secret, and is
-safe to embed in the built JavaScript:
+Two environment variables. Both set as Replit Secrets.
 
 ```
 VITE_GOOGLE_CLIENT_ID=your_gcp_client_id.apps.googleusercontent.com
+VITE_ANTHROPIC_API_KEY=your_anthropic_key
 ```
+
+`VITE_GOOGLE_CLIENT_ID` is a public OAuth Client ID — safe to embed in client
+code. `VITE_ANTHROPIC_API_KEY` enables the Claude daily oracle message; without
+it the oracle falls back to the tarot card's upright meaning. Both have graceful
+fallbacks — the app runs fully without either key set.
 
 See `.env.example` for the full list.
 
@@ -118,7 +172,7 @@ v1.0.0 is not a placeholder — it is earned.
 |---|---|---|
 | v0.1.x | LIVE | UI shell, localStorage, Google auth button |
 | v0.2.0 | In progress | Google Calendar + Tasks live integration |
-| v0.3.0 | Planned | Recurrence + Categories + Celestial + Oracle |
+| v0.3.0 | Planned | Close remaining gaps (dark default, About, Regenerate oracle, activate Claude) |
 | v0.4.0 | Planned | Brand assets, PWA, polish |
 | v0.5.0 | Planned | Privacy policy, Google OAuth verification |
 | v1.0.0 | Reserved | Google-verified, Kieran-owned, public stable release |

@@ -1,110 +1,133 @@
 # Kieran's LifeTrkr — Roadmap
 
+**Last updated:** June 22, 2026 — second build session  
+**Versioning:** See PRD-v3.0 Section 3 for semantic versioning discipline.
+
 ---
 
-## Phase 1 — UI Shell
-**Scope:** React SPA, Tailwind, localStorage, all 6 tabs functional
-**Hosting:** Replit (dev) — no production deployment yet
-**Unlock criteria:** Kieran uses it for one day and it feels right
+## v0.1.x — UI Shell + Core Features (SHIPPED)
+
+Phase 1 shipped June 21, 2026. Phase 1 patches (v0.1.1–v0.1.8) shipped June 22, 2026.
+
+### Shipped
+- [x] React 18 + Vite + TypeScript + Tailwind SPA
+- [x] Moonlit Hearth design system (amethyst, dark mode, Cormorant Garamond + DM Sans)
+- [x] All 7 tabs: Home, Rituals, Habits, Calendar, Today, Archive, Settings
+- [x] BottomNav (mobile) + SideNav (desktop, ≥768px)
+- [x] AppContext + useReducer + localStorage (namespaced by Google sub)
+- [x] storage.ts abstraction layer
+- [x] HashRouter (GitHub Pages compatible)
+- [x] Google Identity Services (GIS) client-side token model
+- [x] Ritual templates: day-of-week, items, edit mode, completion tracking, midnight reset
+- [x] Habits: daily toggle, 7-day grid, moon-streak counter, add/deactivate/delete
+- [x] Calendar: month grid, day expansion, manual event CRUD, Google-ready structure, moon phases
+- [x] Today: task list (status=today), complete/archive/delete, FAB
+- [x] Archive/Backlog: task list (status=backlog), promote to Today, search, sort, FAB
+- [x] Settings: profile, Google connection, oracle/celestial toggles, theme, social
+- [x] Theme toggle: Dark / Light / System (Auto)
+- [x] Seasonal badge (solstices, equinoxes, sabbats)
+- [x] Toast notifications with undo
+- [x] RecurrenceEditor component
+- [x] CategoryPicker component (31 categories: Spiritual Practice + Daily Life)
+- [x] TagInput component
+- [x] FilterBar component
+- [x] celestial.ts: moon phase math, astro season detection, Mercury retrograde calendar
+- [x] cosmic.ts: deterministic daily cards and wisdom
+- [x] oracle.ts: three-layer oracle stack (tarotapi.dev + freehoroscopeapi.com + Claude)
+- [x] useOracle.ts hook
+- [x] OracleCard component
+- [x] Oracle integration in Home "More" section and Calendar detail panel
+- [x] Settings: Oracle & Celestial section (Daily Oracle toggle, Mercury Rx banner, moon phase on calendar, sun sign picker)
+- [x] Easter egg: triple-tap ✦ reveals generational lineage modal
+
+### Known gaps (v0.1.x patch items)
+- [ ] APP_VERSION constant not bumped — displays v0.1.0, should match deployed version
+- [ ] Default theme should be Dark, not Auto
+- [ ] First-launch welcome screen (PRD-v3.0 Section 16.1)
+- [ ] Settings: About section
+- [ ] Settings: "Regenerate today's oracle" button
+- [ ] VITE_ANTHROPIC_API_KEY not set — Claude oracle falls back to card.meaning_up
+
+---
+
+## v0.2.0 — Google Calendar + Tasks Live (NEXT)
+
+**Prerequisite:** GCP project setup (see PRD-v4.0 Section 4 and PRD-v3.0 Section 19)
 
 ### Deliverables
-- [ ] Project scaffold: Vite + React + TypeScript + Tailwind
-- [ ] BottomNav with 6 tabs and Moonlit Hearth styling
-- [ ] AppContext + useReducer for shared state
-- [ ] storage.ts abstraction layer (localStorage reads/writes)
-- [ ] date.ts utility (day-of-week detection, seasonal badge logic)
-- [ ] Home: greeting (time-aware), today's ritual mirror, upcoming events (manual), More section
-- [ ] Rituals: day-of-week picker, checklist per day, edit mode, midnight reset
-- [ ] Habits: daily toggle, 7-day grid, moon-streak counter, add/deactivate
-- [ ] Calendar: month grid, day expansion, manual event CRUD, Google-ready structure
-- [ ] Today: task list (status=today), complete/delete/demote, FAB
-- [ ] Backlog: task list (status=backlog), promote to Today, search, sort, FAB
-- [ ] Starter seed data on first launch
-- [ ] Seasonal badge logic (solstices, equinoxes, sabbats)
-- [ ] Generational Easter egg (App.tsx comment + triple-tap reveal)
-- [ ] Empty states for all tabs
-- [ ] Midnight auto-reset for routine completions
-- [ ] Toast notifications (undo on delete)
+- [ ] VITE_GOOGLE_CLIENT_ID set in Replit Secrets
+- [ ] Google auth flow verified end-to-end (connect, token, expiry, reconnect, disconnect)
+- [ ] Calendar tab: real Google events loaded from primary calendar
+- [ ] Home upcoming strip: real Google events
+- [ ] Today tab: "From Google Tasks" section (tasks due today)
+- [ ] Archive tab: "From Google Tasks" section (undated tasks)
+- [ ] TokenExpiryBanner verified functional
+- [ ] Settings: Google Calendar (days ahead, refresh) and Tasks (list selection) sections
+- [ ] Deploy + test with Kieran's Google account
 
 ---
 
-## Phase 1.5 — Google Calendar
-**Scope:** Read-only Google Calendar OAuth integration
-**Hosting:** Replit Deployments (first public URL)
-**Unlock criteria:** Phase 1 UI is stable; Kieran has a Google account connected
+## v0.3.0 — Close Remaining Gaps
 
 ### Deliverables
-- [ ] Express.js server scaffold (/server)
-- [ ] concurrently dev setup (frontend + backend in one command)
-- [ ] /api/google/auth — OAuth initiation route
-- [ ] /api/google/callback — OAuth callback + session token storage
-- [ ] /api/google/events — Fetch upcoming events from primary calendar
-- [ ] Calendar.tsx updated to consume real events (source: "google")
-- [ ] Home dashboard updated to show real upcoming events
-- [ ] Google event display: read-only badge, no edit/delete controls
-- [ ] Google Cloud project setup documented in docs/SETUP.md
-- [ ] GOOGLE_* and SESSION_SECRET added to Replit Secrets
+- [ ] Dark mode as default theme (first-time users)
+- [ ] APP_VERSION bumped and kept current
+- [ ] First-launch experience screen
+- [ ] Settings About section
+- [ ] Settings "Regenerate today's oracle" button
+- [ ] VITE_ANTHROPIC_API_KEY activated via Replit external_apis
+- [ ] Claude oracle confirmed live (genuine AI-generated daily message)
+- [ ] Recurrence `isActiveToday()` filtering verified for habits and ritual items
+- [ ] Mercury retrograde banner on Calendar verified
+- [ ] Horoscope section renders when birthSign is set
 
 ---
 
-## Phase 2 — Notion Backend
-**Scope:** Replace localStorage with Notion-backed persistence
-**Hosting:** Replit Deployments (production)
-**Unlock criteria:** Data model is fully stable; no further schema changes anticipated
+## v0.4.0 — PWA + Brand + Polish
 
 ### Deliverables
-- [ ] Notion workspace + 5 databases created (schemas in PRD.md Section 5)
-- [ ] Notion integration created and linked to all 5 databases
-- [ ] /api/notion/routines — GET templates, POST/PATCH items
-- [ ] /api/notion/habits — GET habits, POST/PATCH/DELETE
-- [ ] /api/notion/completions — POST/GET habit + routine completion records
-- [ ] /api/notion/tasks — GET/POST/PATCH/DELETE (status-filtered)
-- [ ] Client-side storage.ts refactored to call /api/* instead of localStorage
-- [ ] Data migration: export localStorage JSON → import to Notion via API
-- [ ] NOTION_* variables added to Replit Secrets
-- [ ] Full end-to-end test across all 6 tabs
+- [ ] PWA manifest verified (start_url, display: standalone, theme/bg colors, icons)
+- [ ] Service worker for offline shell caching
+- [ ] "Add to Home Screen" works on iOS and Android
+- [ ] App icon integrated (app-icon.png/webp)
+- [ ] Cat accent asset placed tastefully in UI (one placement)
+- [ ] og-image.png verified
+- [ ] Drag-to-reorder tasks in Today and Archive
+- [ ] End-of-day review view (optional)
+- [ ] Performance audit (oracle, celestial, calendar recurrence)
 
 ---
 
-## Phase 3 — Handoff
-**Scope:** Transfer ownership from Jamie's accounts to Kieran's
-**Unlock criteria:** Phase 2 is stable; Kieran is ready to own it
+## v0.5.0 — OAuth Verification
 
 ### Deliverables
-- [ ] Kieran creates GitHub account (if not already)
-- [ ] Transfer GitHub repo (Settings → Transfer → Kieran's username)
-- [ ] Kieran creates Replit account (if not already)
-- [ ] Fork Repl to Kieran's account (do NOT use Transfer — it is irreversible)
-- [ ] Kieran creates Notion workspace + re-creates 5 databases
-- [ ] Kieran creates new Notion integration + new API key
-- [ ] Rotate NOTION_API_KEY in Replit Secrets (Kieran's Repl)
-- [ ] Kieran assumes ownership of Google Cloud project (add as owner, Jamie removes self)
-- [ ] Kieran creates new OAuth credentials in her GCP project
-- [ ] Update GOOGLE_* secrets in Kieran's Repl
-- [ ] Update GOOGLE_REDIRECT_URI to Kieran's Replit deployment URL
-- [ ] Update authorized redirect URIs in Kieran's GCP project
-- [ ] Verify app runs cleanly under Kieran's accounts
-- [ ] Archive Jamie's dev Repl (do not delete — keep as backup)
-- [ ] Update README ownership section
+- [ ] Privacy policy page at stable URL
+- [ ] GCP OAuth consent screen configured for production
+- [ ] App submitted to Google for verification (sensitive scopes: calendar.readonly, tasks.readonly)
+- [ ] Awaiting Google approval (4–6 weeks)
 
 ---
 
-## Post-Handoff Ideas (No Committed Timeline)
+## v1.0.0 — Production (Reserved)
 
-These are not scheduled. They become Kieran's decisions to make.
+**Criteria for v1.0.0:**
+- Google OAuth verification approved
+- App runs stably on Kieran's Google account
+- GitHub repo transferred to Kieran's account (OKHP3 → Kieran's personal account)
+- Kieran owns the GCP project
+- VITE_GOOGLE_CLIENT_ID reflects Kieran's own credential
 
-- PWA / add-to-home-screen support
+---
+
+## Post-v1.0 Ideas (Kieran's Decisions)
+
+These are not scheduled. They're captured here for future consideration.
+
 - Push notification reminders for habits and rituals
-- Recurring tasks (e.g. "Take trash out every Tuesday")
-- Habit scheduling by day-of-week (not all habits are daily)
-- Energy or mood-based ritual selection
-- End-of-week review screen
-- Drag-and-drop task prioritization
-- Custom themes (Kieran can fork Moonlit Hearth into her own colorway)
-- Backlog triage assistant (AI-powered, Phase N)
-- Calendar event creation from the app
-- Export to PDF / weekly summary
-
----
-
-*Last updated: June 2026 — Jamie Hill*
+- End-of-week review screen with stats
+- Custom themes (fork Moonlit Hearth into Kieran's own colorway)
+- Backlog triage assistant (AI-powered)
+- Calendar event creation from app (currently read-only)
+- Export: weekly summary PDF / monthly habit report
+- Notion backend sync (if Kieran wants cross-device persistence beyond one browser)
+- Multiple oracle modes: tarot-only, cosmic-only, full AI

@@ -1,1475 +1,531 @@
 # Kieran's LifeTrkr — Product Requirements Document v4.0
-**Document authority:** Supersedes REPLIT_AGENT_PROMPT.md and all prior per-session build briefs.
-**Drives:** PRD v3.0 implementation across three Replit sessions (A, B, C).
-**Date:** June 22, 2026
-**App version targets:** v0.1.x patch → v0.2.0 → v0.3.0
-**Live URL:** https://okhp3.github.io/kierans-lifetrkr/#/
-**Repo:** https://github.com/OKHP3/kierans-lifetrkr
+
+**Document authority:** Addendum to PRD-v3.0. PRD-v3.0 remains the canonical architecture reference. This document supersedes PRD-v3.0 for planning and prioritization of all sessions from June 22, 2026 onward.
+**Date:** June 22, 2026 (second session — Summer Solstice)
+**Live app:** https://okhp3.github.io/kierans-lifetrkr/#/
+**Repository:** https://github.com/OKHP3/kierans-lifetrkr
+**Notion hub:** https://app.notion.com/p/overkillhill/Kieran-s-LifeTrkr-Project-Hub-386812e0ced481878291e92d5e428ce5
+**Status:** Approved — planning authority for v0.2.0 and beyond
 
 ---
 
-## DEEP REVIEW FINDINGS — AS-DEPLOYED STATE vs. PRD v3.0 VISION
+## Section 1 — Current State Audit (v0.1.8)
 
-A full three-source review (live app + GitHub + Notion) was conducted June 22, 2026. This is the honest delta.
+The June 22, 2026 second build session advanced from v0.1.0 (UI shell only) to v0.1.8, pulling in most of the planned v0.3.0 feature set ahead of schedule.
 
-### What Is Shipped and Working (v0.1.x)
-- React 18 + Vite + TypeScript + Tailwind SPA deployed to GitHub Pages via gh-pages branch
-- HashRouter confirmed (URL uses `#/`)
-- Six tab shells: Home, Rituals, Habits, Calendar, Today, Archive
-- Moonlit Hearth design system applied
-- Basic form for adding rituals and habits (name + time fields only)
-- Manual calendar events (basic CRUD)
-- localStorage persistence (basic — unknown if properly namespaced by Google sub)
-- Google auth button present but non-functional (GCP not configured)
+### Shipped and live (v0.1.8)
 
-### What Is Confirmed Missing
+- All 7 navigation tabs functional (Home, Rituals, Habits, Calendar, Today, Archive, Settings) — both BottomNav mobile and SideNav desktop
+- `src/lib/celestial.ts` — pure client-side Julian date math for moon phase illumination/age, moon phase name/emoji, next full/new moon prediction, astrological season detection, Mercury retrograde calendar through 2027
+- `src/lib/cosmic.ts` — deterministic daily oracle data: daily cards, daily wisdom, cosmic events keyed to date
+- `src/lib/oracle.ts` — three-layer oracle stack: `fetchTarotCard()` → tarotapi.dev, `fetchHoroscope()` → freehoroscopeapi.com, `generateOracleMessage()` → Anthropic claude-sonnet-4-5 with `VITE_ANTHROPIC_API_KEY` and `anthropic-dangerous-direct-browser-access: true` header; localStorage daily cache
+- `src/hooks/useOracle.ts` — orchestrates the fetch sequence; respects `oracleEnabled` and `birthSign` from settings
+- `src/components/OracleCard.tsx` — display component; renders tarot card name, moon phase, Claude oracle message, horoscope; pulse loading state; mystical gradient
+- `src/components/RecurrenceEditor.tsx` — full recurrence UI (frequency, interval, weekday pickers, end conditions)
+- `src/components/CategoryPicker.tsx` — 31-category picker across Spiritual Practice and Daily Life groups
+- `src/components/TagInput.tsx` — chip-based tag input with kebab normalization
+- `src/components/FilterBar.tsx` — horizontal scrollable filter chips
+- Settings page: Oracle & Celestial section with Daily Oracle toggle, Mercury Rx banner toggle, Moon phase on calendar toggle, 12-sign zodiac sun sign picker
+- Calendar page: moon phase emoji on every calendar cell, oracle card panel below calendar grid for the selected date, First Quarter / phase meaning cards, "Today's Card" tarot display
+- Home page: OracleCard imported and rendered in "More" section; celestial row (moon phase + astro season badges) below date line; Mercury Rx banner; Easter egg triple-tap
 
-| Gap | Severity | Session |
-|---|---|---|
-| Vyrle vs Virgil | RESOLVED — June 22, 2026. Jamie confirmed correct spelling is VYRLE. All docs corrected. Home.tsx already had Vyrle. No further action needed. | None |
-| React source NOT in GitHub main branch — only in Replit + gh-pages build | CRITICAL | A |
-| README describes PRD v1.0 architecture (Notion, Express, Replit hosting) | HIGH | A |
-| PRD-v3.0.md not committed to docs/ | HIGH | A |
-| .env.example references old Notion/Express variable names | MEDIUM | A |
-| GCP project not created — blocks ALL Google features | BLOCKER | Before B |
-| Google Calendar API not wired | v0.2.0 | B |
-| Google Tasks API not wired | v0.2.0 | B |
-| Token expiry banner not built | v0.2.0 | B |
-| Settings Google connection not wired | v0.2.0 | B |
-| Recurrence system absent from all three features | v0.3.0 | C |
-| Category/emoji tag picker absent | v0.3.0 | C |
-| Description field absent from rituals and habits | v0.3.0 | C |
-| Celestial engine (moon phases, astro season, Mercury) absent | v0.3.0 | C |
-| Oracle of the Day absent | v0.3.0 | C |
-| Claude API oracle proxy strategy not implemented | v0.3.0 | C |
-| tarotapi.dev not wired | v0.3.0 | C |
-| freehoroscopeapi.com not wired | v0.3.0 | C |
-| Brand assets (app icon, OG card, splash) not committed | v0.4.0 | D |
+### Wired but awaiting environment keys
 
----
+- **Google Calendar / Tasks:** All library code exists (`googleCalendar.ts`, `googleTasks.ts`, `useGoogleAuth.ts`, `GoogleConnectButton.tsx`, `TokenExpiryBanner.tsx`). Blocked by `VITE_GOOGLE_CLIENT_ID` not set in Replit environment. Settings shows "VITE_GOOGLE_CLIENT_ID not set in environment."
+- **Claude oracle message:** `generateOracleMessage()` in `oracle.ts` calls Anthropic API when `VITE_ANTHROPIC_API_KEY` is present. Without it, falls back gracefully to `card.meaning_up` (the tarot card's upright meaning). The fallback is functional but generic.
+- **Horoscope:** `fetchHoroscope()` requires `birthSign` set in Settings. When set, it calls freehoroscopeapi.com. Reliability of this free API is unknown.
 
-## PREREQUISITE: GCP SETUP (15 minutes — MUST complete before Session B)
+### Known bugs / gaps from live review
 
-**This is the only prerequisite that can't be automated. Do it manually before running Session B.**
-
-1. Go to console.cloud.google.com
-2. Create new project: "LifeTrkr"
-3. APIs & Services → Library → Enable:
-   - Google Calendar API
-   - Google Tasks API
-4. APIs & Services → Credentials → Create Credentials → OAuth 2.0 Client ID
-   - Application type: Web Application
-   - Name: LifeTrkr Web Client
-   - Authorized JavaScript Origins (NOT redirect URIs):
-     ```
-     https://okhp3.github.io
-     http://localhost:5173
-     ```
-5. Copy the Client ID (looks like: `1234567890-abc.apps.googleusercontent.com`)
-6. Ignore the Client Secret completely — it is not used in this architecture
-7. OAuth Consent Screen → Testing mode → Add test users (Kieran's Gmail first)
-8. Add Client ID to Replit Secrets as: `VITE_GOOGLE_CLIENT_ID`
+- `APP_VERSION` in `src/constants.ts` is still `'v0.1.0'` — displayed version in SideNav footer says `v0.1.0` but deployed build is v0.1.8
+- Default theme is `Auto` — on most systems (light OS) this launches the app in light/parchment mode. PRD-v3.0 specifies dark as the default. The Moonlit Hearth aesthetic is intended for dark mode; light mode is "Morning Parchment" (secondary).
+- `generateOracleMessage()` uses `claude-sonnet-4-5` — confirm the correct current model name at time of activation via the Anthropic API or external_apis skill.
+- No first-launch experience (welcome screen for users without any saved data) — PRD-v3.0 Section 16.1 specifies a full-screen first-launch flow.
+- Settings page is missing the "About" section (app version, origin story, MIT license link). (Note: an About card exists but shows `v0.1.0` — it needs the `APP_VERSION` constant and a "Regenerate" button.)
+- Settings page is missing the "Regenerate today's oracle" button (clears cache key for today, triggers re-fetch).
+- No `src/lib/AppReducer.ts` split — `AppContext.tsx` contains both context and reducer.
+- The Archive tab uses "backlog" terminology in some places and "archive" in others — PRD-v3.0 calls it Archive tab with backlog tasks.
+- Vyrle vs Virgil: RESOLVED — June 22, 2026. Jamie confirmed the correct spelling is VYRLE. All doc files have been updated. Home.tsx and README.md (which already had Vyrle) are correct. PRD-v3.0 and DESIGN.md have been corrected. No further action needed.
 
 ---
 
-## SESSION A — INFRASTRUCTURE ALIGNMENT (30 minutes)
+## Section 2 — Versioning Alignment
 
-**Goal:** Get the repo into a state where it accurately represents the project.
-
-### A1. Push Source Code to GitHub Main
-
-In Replit terminal:
-```bash
-git add .
-git commit -m "feat: add React source v0.1.x — infrastructure alignment"
-git push origin main
-```
-
-This makes the source code a first-class citizen of the repo. If Replit is ever lost, the project survives.
-
-### A2. Replace README.md
-
-Replace the entire content of README.md with the content below. This corrects the architecture from PRD v1.0 to PRD v3.0.
-
-```markdown
-# Kieran's LifeTrkr
-
-> A mobile-first, dark-mode personal life OS. Rituals, habits, calendar, tasks,
-> and a daily oracle — one interface, no noise.
-
-**Live:** https://okhp3.github.io/kierans-lifetrkr/#/
-**Status:** v0.1.x deployed · v0.2.0 (Google Calendar + Tasks) in progress
-**License:** MIT — free to use, fork, and build on
+| Version | Scope | Status | Notes |
+|---|---|---|---|
+| v0.1.0 | Phase 1 UI shell | SHIPPED June 21 | First session |
+| v0.1.1–v0.1.8 | Recurrence, celestial, oracle, categories | SHIPPED June 22 | Second session — pulled v0.3.0 work forward |
+| v0.2.0 | Google Calendar + Tasks live | NEXT | Activate VITE_GOOGLE_CLIENT_ID |
+| v0.3.0 | Close remaining Phase 3 gaps | Planned | First-launch, About, Regenerate oracle, dark default, Claude oracle activation |
+| v0.4.0 | PWA + brand assets + polish | Planned | Offline, add-to-home-screen, og-image |
+| v0.5.0 | OAuth verification + privacy policy | Planned | GCP app verification submission |
+| v1.0.0 | Production — Google-verified, Kieran-owned | Reserved | Account handoff complete |
 
 ---
 
-## Origin
+## Section 3 — Immediate Priority: Oracle Activation (v0.1.9 patch)
 
-Started on Father's Day, June 21, 2026 — the Summer Solstice — as a build session
-between Jamie Hill (OverKill Hill P³) and his daughter Kieran.
+The single highest-value action that can be taken without a GCP setup is activating the Claude oracle. The entire three-layer stack is code-complete. Only a Replit Secret is needed.
 
-Ralph v0.0 → Vyrle v1.0 → Jamie v2.0 → Kieran v3.0.
+**VITE_ANTHROPIC_API_KEY:**
+Use the Replit `external_apis` skill to access Anthropic's API through Replit-managed billing. This avoids needing to create or manage an Anthropic account. The key goes into Replit Secrets as `VITE_ANTHROPIC_API_KEY`. After setting it, `npm run deploy` is required to rebuild.
 
-If this sparked something for you, a nod to where it came from is appreciated.
+**Model name:** `oracle.ts` currently uses `claude-sonnet-4-5`. Confirm the correct current Anthropic model name at the time of activation. Use whatever `claude-3-5-sonnet` or `claude-sonnet` model is available via the external_apis skill. The prompt and caching logic do not change.
 
----
+**Tarot API:** tarotapi.dev is free, no auth, CORS-enabled. The fallback (day-of-year modulo major arcana) already exists. No action needed.
 
-## What It Does
+**Horoscope API:** freehoroscopeapi.com is a free third-party with no SLA. The code already handles failure silently. No action needed — the horoscope section simply doesn't render if the API fails.
 
-One question, answered fast: **What does today require from me?**
-
-| Tab | Purpose |
-|---|---|
-| Home | Dashboard: today's ritual, upcoming events, daily oracle |
-| Rituals | Day-of-week templates with recurrence and category tags |
-| Habits | Daily tracking with moon-streak counter |
-| Calendar | Google Calendar sync + lunar phase layer |
-| Today | Committed tasks + Google Tasks due today |
-| Archive | Master backlog + someday list |
+**After activation:** The oracle card in Home "More" section will show a genuine Claude-generated daily message seeded with moon phase, astrological season, tarot card, and optionally the user's sun sign. The cache key (`lifetrkr:{sub}:oracle:{YYYY-MM-DD}`) ensures it generates once and stays stable all day.
 
 ---
 
-## Architecture
-
-**Entirely client-side. No server. No publisher-managed database.**
-
-The OAuth handshake between the user and Google happens in the user's browser
-via the Google Identity Services (GIS) library. The publisher never sees,
-stores, or touches any user credential or calendar data.
-
-All user data lives in the user's own browser (localStorage, namespaced by
-Google sub ID). Any user can visit the URL, connect their Google account, and
-the app is theirs.
-
-```
-User's Browser
-├── React app (served from GitHub Pages — static files only)
-├── localStorage: rituals, habits, tasks, settings (keyed by Google sub ID)
-└── sessionStorage: Google access token (1hr expiry, never sent to any server)
-         ↕                              ↕
-  Google Identity Services       Google Calendar API
-  (consent popup, token grant)   Google Tasks API
-                                 Anthropic Claude API (via CF Worker)
-                                 tarotapi.dev
-                                 freehoroscopeapi.com
-```
-
----
-
-## Stack
-
-| Layer | Choice |
-|---|---|
-| Framework | React 18 + Vite |
-| Language | TypeScript |
-| Styling | Tailwind CSS v3 (dark mode, mobile-first) |
-| Routing | React Router v6 — HashRouter (required for GitHub Pages) |
-| Auth | Google Identity Services (GIS) — token model, Client ID only |
-| Calendar | Google Calendar API v3 (browser fetch, read-only) |
-| Tasks | Google Tasks API v1 (browser fetch, read-only) |
-| Oracle | claude-sonnet-4-6 via Cloudflare Worker proxy |
-| Tarot | tarotapi.dev (free, no auth, CORS-enabled) |
-| Horoscope | freehoroscopeapi.com (free, no auth) |
-| Moon data | Client-side Julian date math — no API required |
-| Deploy | gh-pages npm package → GitHub Pages |
-
----
-
-## Development
-
-```bash
-npm install
-npm run dev      # http://localhost:5173
-npm run deploy   # build → push to gh-pages → live
-```
-
-Environment variable required (not a secret — safe to embed in source):
-```
-VITE_GOOGLE_CLIENT_ID=your_gcp_client_id.apps.googleusercontent.com
-```
-
----
-
-## Design System
-
-**Moonlit Hearth** — warmly mystical dark mode.
-Jewel tones: amethyst · gold · sage · ruby · sapphire.
-Not goth. Not OKHP3-branded. Stevie Nicks adjacent.
-
-Full spec in `docs/DESIGN.md`.
-
----
-
-## Pre-1.0 Versioning
-
-| Version | Status | Description |
-|---|---|---|
-| v0.1.x | LIVE | UI shell, localStorage, Google auth button |
-| v0.2.0 | In progress | Google Calendar + Tasks live integration |
-| v0.3.0 | Planned | Recurrence + Categories + Celestial + Oracle |
-| v0.4.0 | Planned | Brand assets, PWA, polish |
-| v1.0.0 | Reserved | Google-verified, Kieran-owned production release |
-
----
-
-## Docs
-
-- `docs/PRD-v4.0.md` — current agent build brief (drives v0.2.0 + v0.3.0)
-- `docs/PRD-v3.0.md` — complete product vision and type definitions
-- `docs/DESIGN.md` — Moonlit Hearth design system spec
-- `docs/HANDOFF.md` — Jamie → Kieran ownership transfer checklist
-
----
-
-## Ownership
-
-Stewarded by Jamie Hill during development.
-Intended for transfer to Kieran when stable.
-See `docs/HANDOFF.md`.
-```
-
-### A3. Update .env.example
-
-Replace with the PRD v3.0-aligned version:
-
-```bash
-# ============================================================
-# Kieran's LifeTrkr — Environment Variables
-# ============================================================
-# Copy to .env for local development.
-# In Replit, add each value to the Secrets panel.
-# NEVER commit .env to the repo.
-# ============================================================
-
-# ── Google OAuth (v0.2.0) ────────────────────────────────────
-# Client ID from GCP Console. NOT a secret — safe to embed.
-# Create at: console.cloud.google.com
-# Type: OAuth 2.0 Client ID → Web Application
-# Authorized JavaScript Origins (not redirect URIs):
-#   https://okhp3.github.io
-#   http://localhost:5173
-VITE_GOOGLE_CLIENT_ID=
-
-# ── Cloudflare Worker (v0.3.0) ───────────────────────────────
-# URL of the deployed LifeTrkr Oracle Worker.
-# Holds the Anthropic API key server-side.
-# Deploy from Cloudflare dashboard or wrangler CLI.
-VITE_ORACLE_WORKER_URL=https://lifetrkr-oracle.okhp3.workers.dev
-```
-
-### A4. Commit PRD-v3.0.md and PRD-v4.0.md
-
-Copy both PRD files into `docs/` in the Replit file tree, then:
-```bash
-git add docs/PRD-v3.0.md docs/PRD-v4.0.md README.md .env.example
-git commit -m "docs: update README to v3.0 arch, add PRD-v3.0 and PRD-v4.0"
-git push origin main
-```
-
-### A5. Session A Deploy
-
-```bash
-npm run deploy
-```
-
-Verify the live URL still resolves after source is in main.
-
----
-
-## SESSION B — v0.2.0: GOOGLE CALENDAR + TASKS (90 minutes)
+## Section 4 — v0.2.0 Build Session: Google Calendar + Tasks Activation
 
 **Prerequisites:**
-- Session A complete
-- GCP Client ID in Replit Secrets as `VITE_GOOGLE_CLIENT_ID`
-- Kieran's Gmail added as test user in GCP Console
-
-### B0. Update constants.ts
-
-```typescript
-// src/constants.ts
-
-export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
-
-export const GOOGLE_SCOPES = [
-  'https://www.googleapis.com/auth/calendar.readonly',
-  'https://www.googleapis.com/auth/tasks.readonly',
-  'openid',
-  'profile',
-  'email',
-].join(' ');
-
-export const ORACLE_WORKER_URL =
-  import.meta.env.VITE_ORACLE_WORKER_URL ||
-  'https://lifetrkr-oracle.okhp3.workers.dev';
-```
-
-### B1. Update index.html
-
-Add to `<head>` before `</head>`:
-```html
-<!-- Google Identity Services -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-```
-
-### B2. Build useGoogleAuth.ts Hook
-
-Create `src/hooks/useGoogleAuth.ts`:
-
-```typescript
-import { useState, useCallback } from 'react';
-import { GOOGLE_CLIENT_ID, GOOGLE_SCOPES } from '../constants';
-
-declare global {
-  interface Window {
-    google: any;
-  }
-}
-
-export function useGoogleAuth() {
-  const [accessToken, setAccessToken] = useState<string | null>(
-    () => sessionStorage.getItem('gal_token')
-  );
-  const [tokenExpiry, setTokenExpiry] = useState<number | null>(
-    () => Number(sessionStorage.getItem('gal_expiry')) || null
-  );
-
-  const isTokenValid = useCallback((): boolean => {
-    if (!accessToken || !tokenExpiry) return false;
-    return Date.now() < tokenExpiry - 120000; // 2-min buffer
-  }, [accessToken, tokenExpiry]);
-
-  const requestToken = useCallback((silent = false): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      if (!window.google?.accounts?.oauth2) {
-        reject(new Error('GIS library not loaded'));
-        return;
-      }
-      const client = window.google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: GOOGLE_SCOPES,
-        prompt: silent ? 'none' : '',
-        callback: (resp: any) => {
-          if (resp.error) { reject(new Error(resp.error)); return; }
-          const expiry = Date.now() + resp.expires_in * 1000;
-          sessionStorage.setItem('gal_token', resp.access_token);
-          sessionStorage.setItem('gal_expiry', String(expiry));
-          setAccessToken(resp.access_token);
-          setTokenExpiry(expiry);
-          resolve(resp.access_token);
-        },
-      });
-      client.requestAccessToken();
-    });
-  }, []);
-
-  const getToken = useCallback(async (): Promise<string> => {
-    if (isTokenValid()) return accessToken!;
-    try {
-      return await requestToken(true);  // try silent first
-    } catch {
-      return requestToken(false);       // fall back to consent popup
-    }
-  }, [isTokenValid, accessToken, requestToken]);
-
-  const fetchUserProfile = useCallback(async (token: string) => {
-    const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) throw new Error('Profile fetch failed');
-    return res.json(); // { sub, name, email, picture }
-  }, []);
-
-  const connect = useCallback(async () => {
-    const token = await requestToken(false);
-    const profile = await fetchUserProfile(token);
-    // Store profile in localStorage (not namespaced — needed to derive namespace)
-    localStorage.setItem('lifetrkr:profile', JSON.stringify(profile));
-    return { token, profile };
-  }, [requestToken, fetchUserProfile]);
-
-  const disconnect = useCallback(() => {
-    sessionStorage.removeItem('gal_token');
-    sessionStorage.removeItem('gal_expiry');
-    setAccessToken(null);
-    setTokenExpiry(null);
-    // Don't clear localStorage profile — user can reconnect cleanly
-  }, []);
-
-  return {
-    isConnected: isTokenValid(),
-    tokenExpiry,
-    connect,
-    getToken,
-    disconnect,
-  };
-}
-```
-
-### B3. Build googleCalendar.ts
-
-Create `src/lib/googleCalendar.ts`:
-
-```typescript
-export type GoogleCalendarEvent = {
-  id: string;
-  title: string;
-  start: string;     // ISO datetime or YYYY-MM-DD
-  end?: string;
-  allDay: boolean;
-  location: string | null;
-  description: string | null;
-  colorId: string | null;
-  source: 'google';
-};
-
-export async function fetchGoogleCalendarEvents(
-  token: string,
-  daysAhead = 14
-): Promise<GoogleCalendarEvent[]> {
-  const now = new Date().toISOString();
-  const cutoff = new Date(Date.now() + daysAhead * 86400000).toISOString();
-
-  const url = new URL('https://www.googleapis.com/calendar/v3/calendars/primary/events');
-  url.searchParams.set('timeMin', now);
-  url.searchParams.set('timeMax', cutoff);
-  url.searchParams.set('singleEvents', 'true');
-  url.searchParams.set('orderBy', 'startTime');
-  url.searchParams.set('maxResults', '50');
-
-  const res = await fetch(url.toString(), {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  if (res.status === 401) throw new Error('TOKEN_EXPIRED');
-  if (!res.ok) throw new Error(`Calendar API error: ${res.status}`);
-
-  const data = await res.json();
-  return (data.items || []).map((item: any) => ({
-    id: item.id,
-    title: item.summary || '(no title)',
-    start: item.start.dateTime || item.start.date,
-    end: item.end?.dateTime || item.end?.date,
-    allDay: !item.start.dateTime,
-    location: item.location || null,
-    description: item.description || null,
-    colorId: item.colorId || null,
-    source: 'google' as const,
-  }));
-}
-```
-
-### B4. Build googleTasks.ts
-
-Create `src/lib/googleTasks.ts`:
-
-```typescript
-export type GoogleTaskList = {
-  id: string;
-  title: string;
-};
-
-export type GoogleTask = {
-  id: string;
-  title: string;
-  notes: string | null;
-  due: string | null;   // RFC 3339
-  status: 'needsAction' | 'completed';
-  listId: string;
-  listTitle: string;
-  source: 'google_tasks';
-};
-
-export async function fetchGoogleTaskLists(token: string): Promise<GoogleTaskList[]> {
-  const res = await fetch(
-    'https://tasks.googleapis.com/tasks/v1/users/@me/lists?maxResults=20',
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  if (res.status === 401) throw new Error('TOKEN_EXPIRED');
-  if (!res.ok) throw new Error(`Task lists API error: ${res.status}`);
-  const data = await res.json();
-  return (data.items || []).map((l: any) => ({ id: l.id, title: l.title }));
-}
-
-export async function fetchGoogleTasks(
-  token: string,
-  lists: GoogleTaskList[]
-): Promise<GoogleTask[]> {
-  const all: GoogleTask[] = [];
-  for (const list of lists) {
-    const url = new URL(
-      `https://tasks.googleapis.com/tasks/v1/lists/${list.id}/tasks`
-    );
-    url.searchParams.set('showCompleted', 'false');
-    url.searchParams.set('maxResults', '50');
-    const res = await fetch(url.toString(), {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) continue; // skip failed list, don't break all
-    const data = await res.json();
-    const tasks = (data.items || []).map((t: any) => ({
-      id: t.id,
-      title: t.title,
-      notes: t.notes || null,
-      due: t.due || null,
-      status: t.status,
-      listId: list.id,
-      listTitle: list.title,
-      source: 'google_tasks' as const,
-    }));
-    all.push(...tasks);
-  }
-  return all;
-}
-
-export function isTaskDueToday(task: GoogleTask): boolean {
-  if (!task.due) return false;
-  const today = new Date().toISOString().split('T')[0];
-  const due = task.due.split('T')[0];
-  return due <= today; // show overdue tasks too
-}
-```
-
-### B5. Build useCalendarEvents Hook
-
-Create `src/hooks/useCalendarEvents.ts`:
-
-```typescript
-import { useState, useCallback } from 'react';
-import { fetchGoogleCalendarEvents, GoogleCalendarEvent } from '../lib/googleCalendar';
-
-export function useCalendarEvents() {
-  const [events, setEvents] = useState<GoogleCalendarEvent[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [lastSync, setLastSync] = useState<string | null>(null);
-
-  const refresh = useCallback(async (token: string, daysAhead = 14) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const fetched = await fetchGoogleCalendarEvents(token, daysAhead);
-      setEvents(fetched);
-      setLastSync(new Date().toLocaleTimeString());
-    } catch (err: any) {
-      if (err.message === 'TOKEN_EXPIRED') {
-        setError('TOKEN_EXPIRED');
-      } else {
-        setError('Calendar sync failed. Pull to refresh.');
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  return { events, loading, error, lastSync, refresh };
-}
-```
-
-### B6. Build useGoogleTasks Hook
-
-Create `src/hooks/useGoogleTasks.ts`:
-
-```typescript
-import { useState, useCallback } from 'react';
-import { fetchGoogleTaskLists, fetchGoogleTasks, GoogleTask, GoogleTaskList } from '../lib/googleTasks';
-
-export function useGoogleTasks() {
-  const [taskLists, setTaskLists] = useState<GoogleTaskList[]>([]);
-  const [tasks, setTasks] = useState<GoogleTask[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const refresh = useCallback(async (token: string, selectedListIds: string[]) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const allLists = await fetchGoogleTaskLists(token);
-      setTaskLists(allLists);
-      const activeLists = selectedListIds.length > 0
-        ? allLists.filter(l => selectedListIds.includes(l.id))
-        : allLists;
-      const fetched = await fetchGoogleTasks(token, activeLists);
-      setTasks(fetched);
-    } catch (err: any) {
-      if (err.message === 'TOKEN_EXPIRED') setError('TOKEN_EXPIRED');
-      else setError('Task sync failed.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  return { taskLists, tasks, loading, error, refresh };
-}
-```
-
-### B7. Build TokenExpiryBanner Component
-
-Create `src/components/TokenExpiryBanner.tsx`:
-
-```typescript
-import React from 'react';
-
-type Props = {
-  onReconnect: () => void;
-  onDismiss: () => void;
-};
-
-export function TokenExpiryBanner({ onReconnect, onDismiss }: Props) {
-  return (
-    <div className="flex items-center justify-between px-4 py-2
-                    bg-[#251B30] border-b border-[#3A2A4A]">
-      <button
-        onClick={onReconnect}
-        className="flex items-center gap-2 text-[12px] text-[#9B8AB0]"
-      >
-        <i className="ti ti-refresh text-[14px] text-[#C4A0E8]" />
-        Google sync paused — tap to reconnect
-      </button>
-      <button onClick={onDismiss} className="text-[#7B6A8C] text-[12px]">
-        <i className="ti ti-x text-[14px]" />
-      </button>
-    </div>
-  );
-}
-```
-
-### B8. Wire Google Connection into Settings Tab
-
-Settings.tsx must include:
-
-**Profile section:**
-- Avatar: Google profile photo (60px circle) or initials fallback
-- Display Name: editable text field (pre-filled from `profile.name`)
-- Email: read-only display
-
-**Google Account section:**
-- If connected: shows email + "Disconnect" button + last sync time
-- If disconnected: "Connect Google Account" primary button (calls `connect()`)
-- Token status: computed from `tokenExpiry`
-
-**Google Calendar section (shown when connected):**
-- Toggle: Show Google Calendar events (UserSettings.showGoogleCalendar)
-- Days ahead: 7 / 14 / 30 / 60 (UserSettings.calendarDaysAhead)
-- "Refresh Calendar" button
-
-**Google Tasks section (shown when connected):**
-- Toggle: Show Google Tasks (UserSettings.showGoogleTasks)
-- Checkbox list: task list selector (fetched from `taskLists`)
-- Toggle: Show tasks due today in Today tab
-
-**Sun Sign picker (for oracle — v0.3.0 prep, build the UI now):**
-- Label: "Sun Sign (for daily oracle)"
-- 12-sign picker with emoji
-- Note: "Stored only on your device"
-
-**App section:**
-- Timezone display
-- "Clear all app data" danger button
-
-### B9. Update Calendar Tab
-
-Replace placeholder content with:
-- Fetch events via `useCalendarEvents` on tab mount (if connected)
-- Month grid with event dots
-- Day expansion showing event list
-- Source badge: "G" dot for Google events, pencil for manual
-- No edit/delete controls on Google events
-- Manual event CRUD unchanged
-- "Not connected" placeholder with link to Settings
-
-### B10. Update Today Tab
-
-Add "From Google Tasks" section:
-- Shown below "My Tasks" when connected + `showTasksDueToday` is true
-- Lists tasks where `isTaskDueToday(task) === true`
-- Each card: task title + list name + optional note
-- "Add to My List" button: creates local Task with `source: 'google_tasks'`, `googleTaskId` set
-- Section hidden when disconnected
-
-### B11. Update Archive Tab
-
-Add optional "From Google Tasks" section:
-- Tasks without due date, from selected lists
-- Same "Add to My List" pattern
-- Controlled by `showGoogleTasks` setting toggle
-
-### B12. Update Home Dashboard
-
-Replace upcoming events placeholder:
-- Show next 3 events from `calendarEvents` (sorted by start)
-- If not connected: "Connect Google to see your calendar" tappable link
-- If token expired: token expiry banner
-
-### B13. Session B — Version Bump and Deploy
-
-```bash
-# Update version in package.json: "version": "0.2.0"
-git add -A
-git commit -m "feat(v0.2.0): Google Calendar + Tasks live integration"
-git push origin main
-npm run deploy
-```
-
-**Session B done when:**
-- Real Google Calendar events appear in Calendar tab for a connected account
-- Google Tasks due today appear in Today tab
-- Home upcoming strip shows real events
-- Token expiry banner shows and reconnect works
-- Settings fully shows connection status + task list selector
+- GCP project must exist with Calendar API and Tasks API enabled
+- OAuth 2.0 Client ID created (Web Application type)
+- Authorized JavaScript origins: `https://okhp3.github.io` and `http://localhost:5173`
+- `VITE_GOOGLE_CLIENT_ID` added to Replit Secrets
+- Kieran's Gmail added as test user in GCP OAuth consent screen (while app is in Testing mode)
+
+**What's already built (do not rebuild):**
+- `src/lib/googleCalendar.ts` — fetches events from primary calendar
+- `src/lib/googleTasks.ts` — fetches task lists and tasks
+- `src/hooks/useGoogleAuth.ts` — GIS token model, sessionStorage, expiry tracking
+- `src/components/GoogleConnectButton.tsx` — OAuth initiation and status display
+- `src/components/TokenExpiryBanner.tsx` — global expiry banner
+
+**What needs verification/completion in v0.2.0:**
+1. Verify `useGoogleAuth.ts` correctly initiates GIS token flow when Client ID is present
+2. Verify Calendar tab switches from manual-only mode to real events mode when connected
+3. Verify Today tab shows "From Google Tasks" section when connected and `showTasksDueToday: true`
+4. Verify Archive tab shows undated Google Tasks when connected and `showGoogleTasks: true`
+5. Verify Settings Google Account section shows connection status, email, last synced, Disconnect button
+6. Verify Settings Google Calendar section shows "Days ahead" control and "Refresh" button
+7. Verify Settings Google Tasks section shows task list checkboxes
+8. Verify `TokenExpiryBanner` appears when token is about to expire
+9. Verify multi-account isolation: switching Google accounts shows different data
+
+**v0.2.0 acceptance criteria:**
+- Kieran can connect her Google account
+- Her next 14 days of Google Calendar events appear in Calendar tab and Home upcoming strip
+- Her Google Tasks appear in Today tab (due today) and Archive tab (undated)
+- Disconnecting Google returns the app to manual-only mode without losing local data
+- `npm run deploy` → live at GitHub Pages
 
 ---
 
-## SESSION C — v0.3.0: RECURRENCE + CATEGORIES + CELESTIAL + ORACLE (90 minutes)
+## Section 5 — v0.3.0 Build Session: Close Remaining Gaps
 
-### C0. Cloudflare Worker — Oracle Proxy (REQUIRED before Claude oracle call)
+These items were planned for v0.3.0 in PRD-v3.0 but did not ship in the June 22 session:
 
-**Why a Cloudflare Worker:** The Anthropic API requires an API key in the `x-api-key` header. Including this in client-side JavaScript would expose it in the source bundle. A Cloudflare Worker holds the key server-side, proxies the API call, and returns only the response. Free tier: 100,000 requests/day.
+**5.1 Dark mode as default**
+Change `ThemeContext.tsx` so the initial theme is `'dark'` instead of `'auto'` when no preference is saved in localStorage. Users who have already set a preference are unaffected. The Moonlit Hearth aesthetic is optimized for dark mode; first-time visitors should see the intended experience.
 
-**Worker code** (deploy to Cloudflare dashboard as "lifetrkr-oracle"):
+**5.2 APP_VERSION constant**
+Update `src/constants.ts`: `APP_VERSION = 'v0.2.0'` after v0.2.0 ships, or set it to the correct current semantic version before each deploy. This value is displayed in the SideNav footer.
 
+**5.3 First-launch experience**
+Per PRD-v3.0 Section 16.1: if `localStorage.getItem('lifetrkr:profile')` is null AND no local data exists, show a full-screen centered welcome flow instead of the normal app shell:
+- App name in Cormorant Garamond 300, 36px
+- Tagline: "Your day. Your rituals. Your rules."
+- ✦ glyph in amethyst
+- "Connect Google Account" — primary CTA (amethyst bg, dark text)
+- "Use without Google" — secondary link (textSecondary, smaller)
+
+This should wrap the main `<App>` router, rendered in `main.tsx` or as a conditional in `App.tsx`. Once the user clicks either option, it does not appear again.
+
+**5.4 Settings — About section**
+The Settings page has an About card but it shows a hardcoded `v0.1.0`. Update it to use `APP_VERSION` from constants and add a "Regenerate today's oracle" button:
+- App name: "Kieran's LifeTrkr"
+- Version: `APP_VERSION` from constants (e.g. "v0.2.0 — pre-production")
+- "Built on Father's Day, Summer Solstice 2026"
+- "Jamie + Kieran Hill · MIT License"
+
+**5.5 Settings — Regenerate today's oracle**
+Add a "Regenerate today's oracle" button in the Oracle & Celestial settings section. On tap:
+1. Remove `lifetrkr:{sub}:oracle:{today}` and `lifetrkr:{sub}:tarot:{today}` from localStorage
+2. Dispatch `SET_ORACLE` with `null`
+3. `useOracle.ts` will re-trigger and fetch fresh data
+
+**5.6 Activate VITE_ANTHROPIC_API_KEY**
+Via the Replit `external_apis` skill, set `VITE_ANTHROPIC_API_KEY` in Replit Secrets. Confirm the Claude oracle message generates successfully. Verify the daily cache prevents re-generation on page reload.
+
+**5.7 Recurrence active-day filtering**
+Verify that `isActiveToday()` in `date.ts` correctly gates which ritual items and habits appear on the current day. A habit with `frequency: 'weekdays'` should not show on Saturday. A ritual item with `frequency: 'specific_days': [1,3,5]` (Mon/Wed/Fri) should not show on Tuesday.
+
+**5.8 Mercury retrograde banner on Calendar**
+Verify the Mercury Rx banner renders at the top of the Calendar tab when Mercury is retrograde per `getMercuryStatus()` in `celestial.ts`, and that the `showMercuryBanner` settings toggle hides it.
+
+---
+
+## Section 6 — v0.4.0 Build Session: PWA + Polish
+
+**6.1 PWA manifest**
+`public/manifest.json` already exists. Verify it has correct `start_url`, `display: "standalone"`, `background_color: "#0D0B14"`, `theme_color: "#C4A0E8"`. Add service worker (Vite PWA plugin or manual) for offline shell caching. Goal: "Add to Home Screen" works on iOS and Android.
+
+**6.2 Brand asset integration**
+The following brand assets exist in `src/assets/` but are not yet used in the app UI:
+- `app-icon.png` / `app-icon.webp` — app icon (used in manifest and og-image)
+- `cat-accent.png` / `cat-accent.webp` — decorative black cat; target placement: Home header decoration or Settings about section
+- `app-banner.png` / `app-banner.webp` — wide banner; target: og-image / social share
+- `design-system-overview.png` — dev reference only, not in app UI
+
+Integrate `app-icon` into PWA manifest icons. Surface `cat-accent` tastefully in the UI (one placement, subtle). Ensure `og-image.png` in `public/` references the banner asset.
+
+**6.3 End-of-day review (optional, v0.4.x)**
+A lightweight "wrap up" view accessible from Home (when it's evening) or Today tab:
+- Habits completed today: N of M
+- Ritual items checked: N of M
+- Tasks done: N of M
+- Optional reflective prompt (one of 3–4 rotating questions)
+
+This is optional and should not block v0.4.0 if scope is tight.
+
+**6.4 Drag-to-reorder tasks**
+Today tab and Archive tab: allow drag-and-drop reordering of tasks within their status bucket. No external drag library — use native HTML5 drag events. Order persists to localStorage.
+
+**6.5 Performance audit**
+- Verify no unnecessary re-renders in `useOracle.ts` (oracle should fetch once per day, not on every Home mount)
+- Verify `celestial.ts` calculations are not running on every keystroke
+- Verify Calendar recurrence expansion is not recalculating on every scroll
+
+---
+
+## Section 7 — v0.5.0 Build Session: OAuth Verification
+
+Before v1.0.0, the GCP OAuth consent screen must be moved from "Testing" to "Production" and submitted for Google verification. This is required to allow any Google account (not just test-listed accounts) to connect Google Calendar and Tasks.
+
+**Checklist:**
+- Privacy policy page must exist at a stable URL (GitHub Pages or custom domain). Minimum content: what data is collected (none — all local), what Google data is accessed (Calendar read-only, Tasks read-only), how it's used, contact.
+- OAuth consent screen: App name = "Kieran's LifeTrkr", App logo = app-icon.png, Privacy policy URL, Support email
+- Scopes to declare: `calendar.readonly`, `tasks.readonly`, `openid`, `profile`, `email`
+- Submit for verification. Google review typically takes 4–6 weeks for sensitive scopes.
+- After approval: move from Testing to Production in GCP console. Remove Kieran from test-user list (she'll connect as a regular user).
+
+---
+
+## Section 8 — Three-Layer Oracle Stack: Complete Specification
+
+This section is the canonical reference for the oracle system as designed and implemented. Use this as the authoritative spec for any oracle-related work.
+
+**Layer 1: Tarot (tarotapi.dev)**
+- Endpoint: `GET https://tarotapi.dev/api/v1/cards/random?n=1`
+- Response: `{ cards: [TarotCard] }` where TarotCard has `name`, `name_short`, `type`, `suit`, `value`, `meaning_up`, `meaning_rev`, `desc`
+- CORS-enabled, no auth, free
+- Cache key: `lifetrkr:{sub}:tarot:{YYYY-MM-DD}` — persists all day; no re-fetch on reload
+- Fallback: deterministic card from MAJOR_ARCANA array using `dayOfYear % 22` — card is different each day but consistent within a day
+- Code location: `src/lib/oracle.ts` → `fetchTarotCard()`
+
+**Layer 2: Daily Horoscope (freehoroscopeapi.com)**
+- Endpoint: `GET https://freehoroscopeapi.com/api/v1/get-horoscope/daily?sign={sign.toLowerCase()}`
+- Response: `{ data: { horoscope: string } }`
+- Only fetched when `settings.birthSign` is set
+- Failure is silent — horoscope section simply does not render
+- Result stored in `OracleReading.horoscope` (optional field)
+- Code location: `src/lib/oracle.ts` → `fetchHoroscope(sign)`
+
+**Layer 3: Claude Oracle Message (Anthropic)**
+- Requires `VITE_ANTHROPIC_API_KEY` in Replit Secrets
+- Endpoint: `POST https://api.anthropic.com/v1/messages`
+- Header: `anthropic-dangerous-direct-browser-access: true` (required for browser-side fetch)
+- Model: `claude-sonnet-4-5` (confirm with external_apis skill — use whatever current claude-3-5-sonnet or claude-sonnet model is available)
+- System prompt: `"You are a warm, grounded, slightly mystical daily oracle for a personal life app. Never use em dashes. Sound like someone who reads a lot and walks in the woods at dusk."`
+- User prompt (assembled in `generateOracleMessage()`):
+  - Today's date (formatted long)
+  - Moon phase name
+  - Astrological season (sign + element)
+  - Tarot card name + upright meaning
+  - Mercury retrograde status (if applicable)
+  - User's sun sign (if `settings.birthSign` is set)
+  - Instruction: "Write a 2-3 sentence daily oracle message. Warm, grounded, quietly mystical. Do not use em dashes."
+- max_tokens: 150
+- Cache key: `lifetrkr:{sub}:oracle:{YYYY-MM-DD}` — the Claude message string is stored here; generates once per day, stable all day
+- Fallback: `card.meaning_up` stored in cache key — so even if API fails, re-renders don't re-call
+- Code location: `src/lib/oracle.ts` → `generateOracleMessage()`
+
+**OracleCard display spec:**
+```
+┌─────────────────────────────────────────────────────┐
+│ ✦ Oracle                              🌗 First Quarter│
+│ ─────────────────────────────────────────────────── │
+│   The Sun                                           │
+│   major arcana · upright: clarity, joy, success     │
+│                                                     │
+│   "Today calls you toward what is already bright    │
+│    within you. The sun does not apologize for       │
+│    shining — neither should you."                   │
+│                                                     │
+│ ♋ Cancer season                    ♊ Gemini today ↗ │
+└─────────────────────────────────────────────────────┘
+```
+- Background: `var(--surface)` with subtle amethyst gradient overlay
+- Left accent bar: 3px solid `var(--accent-amethyst)`
+- Card name: Cormorant Garamond 300, 18px, textPrimary
+- Oracle message: DM Sans 400, 13px, italic, textSecondary, in quotation marks
+- Moon phase pill: Space Mono, 11px
+- Horoscope link: if available, tapping "↗" opens full horoscope text in a bottom sheet modal
+
+**Fetch sequence in `useOracle.ts`:**
+1. On Home mount, check `shouldFetch` = `oracleEnabled && !isLoadingOracle && (!oracle || oracle.date !== today)`
+2. If shouldFetch: dispatch `SET_LOADING_ORACLE` true
+3. In parallel: `fetchTarotCard()`, `getMoonPhase()`, `getAstroSeason()`, `getMercuryStatus()`
+4. If birthSign set: `fetchHoroscope(birthSign)`
+5. `generateOracleMessage(card, moon, season, mercury, birthSign)`
+6. Assemble `OracleReading`, dispatch `SET_ORACLE`
+7. `SET_LOADING_ORACLE` false
+
+---
+
+## Section 9 — Data Schema Addenda (v0.1.8 state)
+
+The following deviates from or extends PRD-v3.0 Section 9:
+
+**localStorage keys confirmed in current code:**
+```
+lifetrkr:profile                          ← GoogleProfile | null
+lifetrkr:{sub}:settings                   ← UserSettings
+lifetrkr:{sub}:routineTemplates           ← RitualTemplate[]
+lifetrkr:{sub}:routineCompletions         ← RitualCompletion[]
+lifetrkr:{sub}:habits                     ← Habit[]
+lifetrkr:{sub}:habitCompletions           ← HabitCompletion[]
+lifetrkr:{sub}:tasks                      ← Task[]
+lifetrkr:{sub}:oracle:{YYYY-MM-DD}        ← string (Claude message, daily cache)
+lifetrkr:{sub}:tarot:{YYYY-MM-DD}         ← NOT YET IMPLEMENTED as separate key
+                                          (tarot card is embedded in OracleReading)
+```
+
+Note: The PRD-v3.0 specified `lifetrkr:{sub}:tarot:{date}` as a separate key, but the current `useOracle.ts` and `oracle.ts` implementation embeds the tarot card inside the `OracleReading` object and caches the Claude message string at `oracle:{date}`. If a separate tarot cache key is desired for the "Regenerate" button to selectively clear only the message (not the card), it should be added as part of the v0.3.0 settings work.
+
+**RecurrenceRule type (actual implementation — differs from PRD-v3.0):**
+The shipped `types.ts` uses `RecurrenceRule` with `{ frequency, interval, startDate, end: { mode: 'never' | 'after_count' | 'on_date' }, exceptions: string[] }` — PRD-v3.0 specified `RecurrencePattern` with `{ frequency, interval, daysOfWeek, timesPerDay, end: { type: ... } }`. The implementation diverged. Use the actual `src/types.ts` as the source of truth for all type definitions — never PRD-v3.0 types.ts listings when they conflict.
+
+---
+
+## Section 10 — Environment Variables
+
+| Variable | Purpose | Required | Notes |
+|---|---|---|---|
+| `VITE_GOOGLE_CLIENT_ID` | Google Calendar + Tasks OAuth | For Google features | Not a secret — safe to embed in client code. Set in Replit Secrets. |
+| `VITE_ANTHROPIC_API_KEY` | Claude oracle message — direct browser fetch | For AI oracle (current impl) | Use Replit `external_apis` skill to provision. Set in Replit Secrets. |
+| `VITE_ORACLE_WORKER_URL` | Claude oracle message — via Cloudflare Worker proxy | For AI oracle (alternative impl) | Only needed if switching to CF Worker approach. See architectural note below. |
+
+`VITE_GOOGLE_CLIENT_ID` and `VITE_ANTHROPIC_API_KEY` are set as Replit Secrets. Both have graceful fallbacks when absent. The app is fully functional without either — Google sections show "not connected" state, oracle falls back to tarot card's upright meaning.
+
+`.env.example` in the repo documents all three variables with setup instructions. Never commit `.env` to the repo.
+
+**Oracle delivery — architectural decision (direct browser fetch vs Cloudflare Worker):**
+
+The original plan (pre-session plan) called for a Cloudflare Worker proxy (`VITE_ORACLE_WORKER_URL`) to hold the Anthropic API key server-side so it would never be exposed in client code. The June 22 build session implemented direct browser fetch instead, using `anthropic-dangerous-direct-browser-access: true` and `VITE_ANTHROPIC_API_KEY` in Replit Secrets/Vite env.
+
+Both approaches are architecturally valid. The tradeoff:
+- **Direct browser fetch (current):** Simpler — no Worker to deploy or maintain. The API key is embedded in the built JS bundle (visible in DevTools). Acceptable for a personal single-user app. `VITE_ANTHROPIC_API_KEY` goes in Replit Secrets.
+- **Cloudflare Worker proxy (original plan):** API key is never in client code. Better for a public app. Requires deploying a Worker and setting `VITE_ORACLE_WORKER_URL`. Worker code pattern: receive `{ system, messages }` POST, forward to Anthropic with the stored `ANTHROPIC_API_KEY` secret, return response.
+
+To switch to the CF Worker approach in a future session: (1) deploy a Worker at `lifetrkr-oracle.okhp3.workers.dev`, (2) set `ANTHROPIC_API_KEY` as a Worker secret, (3) set `VITE_ORACLE_WORKER_URL` in Replit Secrets, (4) update `oracle.ts` `generateOracleMessage()` to POST to `ORACLE_WORKER_URL` instead of calling Anthropic directly.
+
+**GCP setup for VITE_GOOGLE_CLIENT_ID (one-time manual task):**
+1. console.cloud.google.com → New Project → "LifeTrkr"
+2. APIs & Services → Library → Enable: Google Calendar API, Google Tasks API
+3. Credentials → Create OAuth 2.0 Client ID (Web Application)
+4. Authorized JavaScript Origins (NOT redirect URIs):
+   - `https://okhp3.github.io`
+   - `http://localhost:5173`
+5. OAuth Consent Screen → Testing mode → Add Kieran's Gmail as test user
+6. Copy Client ID to Replit Secrets as `VITE_GOOGLE_CLIENT_ID`
+7. Ignore the Client Secret — not used in this architecture
+
+---
+
+## Section 11 — Deployment
+
+```bash
+npm run dev       # Vite dev at localhost:5173 (or 0.0.0.0:5000 in Replit)
+npm run build     # tsc && vite build → dist/
+npm run deploy    # build + gh-pages -d dist → live at https://okhp3.github.io/kierans-lifetrkr/
+```
+
+**After every build session:** run `npm run deploy` from Replit and verify the live URL before closing the session. Confirm version string in SideNav footer matches the intended release.
+
+GitHub Actions `.github/workflows/static.yml` also auto-deploys on push to `main`. When using `npm run deploy` directly, it pushes to the `gh-pages` branch, bypassing Actions.
+
+---
+
+## Section 12 — Open Questions / Decisions Needed
+
+**1. Vyrle vs Virgil — RESOLVED**
+Jamie confirmed June 22, 2026: the correct spelling is VYRLE. All doc files updated. Home.tsx, README.md, App.tsx, DESIGN.md, PRD-v1.0.md, PRD-v2.0.md, PRD-v3.0.md corrected. No further action needed.
+
+**2. Horoscope API reliability**
+`freehoroscopeapi.com` is a free, unverified third-party API with no SLA. If it becomes unreliable, a replacement should be sourced. Candidate: Aztro API, or a simple hardcoded daily horoscope table seeded by sign + week-of-year. This decision is deferred to v0.3.0 unless the API fails before then.
+
+**3. Oracle on Home vs Calendar**
+The oracle card currently renders in both the Home "More" section (via `OracleCard` in `Home.tsx`) and on the Calendar page below the grid. This duplication is intentional per PRD-v3.0 design (oracle is a daily companion, accessible from both the dashboard and the celestial view). No change needed; just confirm both placements feel right in actual use.
+
+**4. VITE_GOOGLE_CLIENT_ID setup**
+Requires GCP project, API enablement, and OAuth consent screen setup. This is a one-time manual task that cannot be automated. Jamie or Kieran must do this in the GCP console. The Replit environment variable is then set once and persists across sessions. Until this is done, the Google Calendar/Tasks UI shows a graceful "not connected" state.
+
+**5. Claude model name**
+`claude-sonnet-4-5` is in `oracle.ts`. PRD-v3.0 said `claude-sonnet-4-6`. The correct current model should be confirmed via the Anthropic API or the external_apis skill at the time of activation. Use whatever is current.
+
+---
+
+## Section 13 — External API Registry
+
+All external APIs used by the app. Before building any integration, verify CORS behavior by testing from the browser console on the production origin (`okhp3.github.io`).
+
+| API | Base URL | Auth | CORS | Rate Limit | Fallback |
+|---|---|---|---|---|---|
+| Google Calendar | `https://www.googleapis.com/calendar/v3/` | Bearer token (GIS) | Yes — via browser with token | 1M req/day free tier | Show manual events only |
+| Google Tasks | `https://tasks.googleapis.com/tasks/v1/` | Bearer token (GIS) | Yes — via browser with token | 50k req/day free tier | Hide Google Tasks sections |
+| Tarot | `https://tarotapi.dev/api/v1/cards/random?n=1` | None | Yes | Not documented | Local 12-card Major Arcana fallback array (day-of-year % length) |
+| Horoscope | `https://freehoroscopeapi.com/api/v1/get-horoscope/daily?sign={sign}` | None | Unverified — test before using | Unknown | Skip horoscope section silently |
+| Claude (direct) | `https://api.anthropic.com/v1/messages` | `VITE_ANTHROPIC_API_KEY` header | Requires `anthropic-dangerous-direct-browser-access: true` | Depends on plan | Use tarot `meaning_up` as message |
+| Claude (CF Worker) | `https://lifetrkr-oracle.okhp3.workers.dev` | None (Worker holds key) | Configured in Worker | CF free: 100k req/day | Use tarot `meaning_up` as message |
+| Moon phases | Client-side Julian date math | None | N/A | None | None needed |
+| Astro season | Hardcoded date ranges in `celestial.ts` | None | N/A | None | None needed |
+| Mercury retrograde | Hardcoded 2026–2028 dates in `celestial.ts` | None | N/A | None | None needed |
+
+**CORS verification command (run in browser console on production origin):**
 ```javascript
-// lifetrkr-oracle/index.js
-export default {
-  async fetch(request, env) {
-    // CORS preflight
-    if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        headers: {
-          'Access-Control-Allow-Origin': 'https://okhp3.github.io',
-          'Access-Control-Allow-Methods': 'POST',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
-      });
-    }
-
-    if (request.method !== 'POST') {
-      return new Response('Method Not Allowed', { status: 405 });
-    }
-
-    const body = await request.json();
-
-    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 150,
-        system: body.system || 'You are a warm, grounded, slightly mystical daily oracle. Write 2–3 sentences. No em dashes.',
-        messages: body.messages,
-      }),
-    });
-
-    const data = await anthropicRes.json();
-
-    return new Response(JSON.stringify(data), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': 'https://okhp3.github.io',
-      },
-    });
-  },
-};
+fetch('https://freehoroscopeapi.com/api/v1/get-horoscope/daily?sign=cancer')
+  .then(r => r.json()).then(console.log).catch(console.error)
 ```
+If this returns a CORS error, route horoscope calls through the Cloudflare Worker instead.
 
-**Deployment steps:**
-1. Cloudflare dashboard → Workers & Pages → Create Worker
-2. Name: `lifetrkr-oracle`
-3. Paste the code above
-4. Settings → Variables → Add Secret: `ANTHROPIC_API_KEY` = your key
-5. Deploy. Worker URL: `https://lifetrkr-oracle.okhp3.workers.dev`
-6. Add `VITE_ORACLE_WORKER_URL` to Replit Secrets
+---
 
-**Local dev note:** During Replit dev sessions, the Worker URL will still be the Cloudflare URL. No local mock needed — just use a try/catch that shows a static fallback message if the worker call fails.
+## Section 14 — Recurrence Helper Spec
 
-### C1. Add Celestial Engine
-
-Create `src/lib/celestial.ts` with the complete implementation from PRD v3.0, Section 12.
-
-Key exports:
-- `getMoonPhase(date?: Date): MoonPhase`
-- `getAstroSeason(date?: Date): AstroSeason`
-- `getMercuryStatus(date?: Date): { retrograde: boolean; endDate: string | null }`
-- `getNextLunarEvents(count?: number): LunarEvent[]`
-
-Copy verbatim from PRD v3.0 Section 12. All math is self-contained.
-
-### C2. Add Recurrence Types and RecurrenceEditor Component
-
-Add `RecurrencePattern`, `RecurrenceFrequency`, `RecurrenceEnd`, and `DEFAULT_RECURRENCE`
-to `src/types.ts`. Copy verbatim from PRD v3.0 Section 9.
-
-Create `src/components/RecurrenceEditor.tsx`:
+The `formatRecurrence()` helper should be added to `src/lib/date.ts` if not already present. It converts a `RecurrenceRule` into a short human-readable badge string for display in list views.
 
 ```typescript
-import React from 'react';
-import { RecurrencePattern, RecurrenceFrequency, DEFAULT_RECURRENCE } from '../types';
-
-const DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-const FREQ_OPTIONS: { value: RecurrenceFrequency; label: string }[] = [
-  { value: 'none',          label: 'Does not repeat' },
-  { value: 'daily',         label: 'Daily' },
-  { value: 'weekdays',      label: 'Weekdays (Mon–Fri)' },
-  { value: 'weekends',      label: 'Weekends' },
-  { value: 'specific_days', label: 'Specific days' },
-  { value: 'weekly',        label: 'Weekly' },
-  { value: 'monthly',       label: 'Monthly' },
-  { value: 'custom',        label: 'Every N days' },
-];
-
-type Props = {
-  value: RecurrencePattern;
-  onChange: (p: RecurrencePattern) => void;
-  showTimesPerDay?: boolean;
-};
-
-export function RecurrenceEditor({ value, onChange, showTimesPerDay }: Props) {
-  const setFreq = (f: RecurrenceFrequency) =>
-    onChange({ ...value, frequency: f });
-
-  const toggleDay = (d: number) => {
-    const days = value.daysOfWeek.includes(d)
-      ? value.daysOfWeek.filter(x => x !== d)
-      : [...value.daysOfWeek, d];
-    onChange({ ...value, daysOfWeek: days });
-  };
-
-  return (
-    <div className="space-y-3">
-      {/* Frequency selector */}
-      <div>
-        <label className="text-[11px] text-textMuted uppercase tracking-wider">Repeats</label>
-        <select
-          value={value.frequency}
-          onChange={e => setFreq(e.target.value as RecurrenceFrequency)}
-          className="mt-1 w-full bg-surfaceRaised border border-border
-                     rounded-xl px-3 py-2 text-[13px] text-textPrimary"
-        >
-          {FREQ_OPTIONS.map(o => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* Day picker for specific_days */}
-      {value.frequency === 'specific_days' && (
-        <div className="flex gap-1.5">
-          {DAYS.map((d, i) => (
-            <button
-              key={i}
-              onClick={() => toggleDay(i)}
-              className={`w-8 h-8 rounded-full text-[11px] font-body transition-colors
-                ${value.daysOfWeek.includes(i)
-                  ? 'bg-amethyst text-bg'
-                  : 'bg-surfaceRaised text-textMuted border border-border'}`}
-            >
-              {d}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Interval (for weekly, monthly, custom) */}
-      {['weekly', 'monthly', 'custom'].includes(value.frequency) && (
-        <div className="flex items-center gap-2">
-          <span className="text-[12px] text-textSecondary">Every</span>
-          <input
-            type="number" min={1} max={30}
-            value={value.interval}
-            onChange={e => onChange({ ...value, interval: Number(e.target.value) })}
-            className="w-16 bg-surfaceRaised border border-border rounded-lg
-                       px-2 py-1 text-[13px] text-textPrimary text-center"
-          />
-          <span className="text-[12px] text-textSecondary">
-            {value.frequency === 'monthly' ? 'month(s)' :
-             value.frequency === 'weekly'  ? 'week(s)' : 'day(s)'}
-          </span>
-        </div>
-      )}
-
-      {/* Times per day (habits only) */}
-      {showTimesPerDay && value.frequency !== 'none' && (
-        <div className="flex items-center gap-2">
-          <span className="text-[12px] text-textSecondary">Times per day</span>
-          <input
-            type="number" min={1} max={24}
-            value={value.timesPerDay}
-            onChange={e => onChange({ ...value, timesPerDay: Number(e.target.value) })}
-            className="w-16 bg-surfaceRaised border border-border rounded-lg
-                       px-2 py-1 text-[13px] text-textPrimary text-center"
-          />
-        </div>
-      )}
-
-      {/* End condition */}
-      {value.frequency !== 'none' && (
-        <div>
-          <label className="text-[11px] text-textMuted uppercase tracking-wider">Ends</label>
-          <select
-            value={value.end.type}
-            onChange={e => {
-              const type = e.target.value as 'never' | 'after_count' | 'on_date';
-              onChange({ ...value, end: type === 'never' ? { type: 'never' } :
-                type === 'after_count' ? { type: 'after_count', count: 10 } :
-                { type: 'on_date', date: '' } });
-            }}
-            className="mt-1 w-full bg-surfaceRaised border border-border
-                       rounded-xl px-3 py-2 text-[13px] text-textPrimary"
-          >
-            <option value="never">Never</option>
-            <option value="after_count">After N occurrences</option>
-            <option value="on_date">On date</option>
-          </select>
-        </div>
-      )}
-    </div>
-  );
-}
-```
-
-### C3. Add Category System
-
-Copy CATEGORIES array from PRD v3.0 Section 13 into `src/constants.ts`.
-
-Create `src/components/CategoryPicker.tsx`:
-
-```typescript
-import React from 'react';
-import { CATEGORIES } from '../constants';
-
-type Props = {
-  selected: string[];
-  onChange: (cats: string[]) => void;
-};
-
-export function CategoryPicker({ selected, onChange }: Props) {
-  const toggle = (label: string) => {
-    if (selected.includes(label)) {
-      onChange(selected.filter(s => s !== label));
-    } else if (selected.length < 5) {
-      onChange([...selected, label]);
-    }
-  };
-
-  const spiritual = CATEGORIES.filter(c => c.group === 'Spiritual');
-  const daily = CATEGORIES.filter(c => c.group === 'Daily');
-
-  const renderGroup = (items: typeof CATEGORIES, title: string) => (
-    <div className="space-y-2">
-      <p className="text-[10px] text-textGhost uppercase tracking-wider">{title}</p>
-      <div className="flex flex-wrap gap-2">
-        {items.map(cat => (
-          <button
-            key={cat.label}
-            onClick={() => toggle(cat.label)}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px]
-              transition-colors ${selected.includes(cat.label)
-                ? 'bg-amethyst text-bg font-medium'
-                : 'bg-surfaceRaised text-textSecondary border border-border'}`}
-          >
-            <span>{cat.emoji}</span>
-            <span>{cat.label}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="space-y-4">
-      {renderGroup(spiritual, 'Spiritual Practice')}
-      {renderGroup(daily, 'Daily Life')}
-      {selected.length === 5 && (
-        <p className="text-[11px] text-rose">Maximum 5 categories selected.</p>
-      )}
-    </div>
-  );
-}
-```
-
-### C4. Add Description Fields
-
-In `src/types.ts`, add `description?: string` to `RitualItem`, `RitualTemplate`, `Habit`, and `CalendarEvent`.
-
-In habit and ritual add/edit forms, add a `<textarea>` between title and categories:
-
-```typescript
-<textarea
-  value={description}
-  onChange={e => setDescription(e.target.value)}
-  placeholder="What does showing up for this mean to you?"
-  maxLength={500}
-  rows={3}
-  className="w-full bg-surfaceRaised border border-border rounded-xl px-3 py-2
-             text-[13px] text-textPrimary resize-none
-             placeholder:text-textGhost"
-/>
-```
-
-In list views, show description as a collapsible line below item title.
-
-### C5. Update Habits and Rituals to Use RecurrenceEditor
-
-In Habit add/edit form: add RecurrenceEditor with `showTimesPerDay={true}`
-In Ritual item add/edit form: add RecurrenceEditor with `showTimesPerDay={false}`
-In Calendar event add/edit form: add RecurrenceEditor with `showTimesPerDay={false}` (manual events only)
-
-Add recurrence badge below item title in list views:
-```typescript
-// src/lib/date.ts — add this function
-export function formatRecurrence(pattern: RecurrencePattern): string | null {
-  if (pattern.frequency === 'none') return null;
-  if (pattern.frequency === 'daily') return 'Daily';
-  if (pattern.frequency === 'weekdays') return 'Weekdays';
-  if (pattern.frequency === 'weekends') return 'Weekends';
-  if (pattern.frequency === 'specific_days') {
-    const dayNames = ['S','M','T','W','T','F','S'];
-    return pattern.daysOfWeek.map(d => dayNames[d]).join(' · ');
+// src/lib/date.ts — add if not present
+export function formatRecurrence(rule: RecurrenceRule): string | null {
+  if (!rule || rule.frequency === 'none') return null;
+  if (rule.frequency === 'daily') return 'Daily';
+  if (rule.frequency === 'weekdays') return 'Weekdays';
+  if (rule.frequency === 'weekends') return 'Weekends';
+  if (rule.frequency === 'specific_days' && rule.daysOfWeek?.length) {
+    const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    return rule.daysOfWeek.map((d: number) => dayNames[d]).join(' · ');
   }
-  if (pattern.frequency === 'weekly') return `Every ${pattern.interval}w`;
-  if (pattern.frequency === 'monthly') return 'Monthly';
-  if (pattern.frequency === 'custom') return `Every ${pattern.interval} days`;
+  if (rule.frequency === 'weekly') return `Every ${rule.interval ?? 1}w`;
+  if (rule.frequency === 'monthly') return 'Monthly';
+  if (rule.frequency === 'custom') return `Every ${rule.interval ?? 1} days`;
   return null;
 }
 ```
 
-Display: `↻ {formatRecurrence(item.recurrence)}` in `text-textMuted text-[11px]`
+Display pattern in list views: `↻ {formatRecurrence(item.recurrence)}` in `text-textMuted text-[11px]`.
 
-### C6. Add Category Filter Bars
-
-Add to Rituals, Habits, and Archive tabs — horizontal scrollable strip above list:
-
-```typescript
-// Shared pattern for all three tabs
-function CategoryFilterBar({ active, onToggle }: { active: string; onToggle: (c: string) => void }) {
-  const allCategories = ['All', ...CATEGORIES.map(c => `${c.emoji} ${c.label}`)];
-  return (
-    <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-      {allCategories.map(cat => (
-        <button
-          key={cat}
-          onClick={() => onToggle(cat)}
-          className={`shrink-0 px-3 py-1 rounded-full text-[12px] transition-colors
-            ${active === cat
-              ? 'bg-amethyst text-bg font-medium'
-              : 'bg-surfaceRaised text-textMuted border border-border'}`}
-        >
-          {cat}
-        </button>
-      ))}
-    </div>
-  );
-}
-```
-
-### C7. Build Oracle System
-
-Create `src/lib/oracle.ts`:
-
-```typescript
-import { ORACLE_WORKER_URL } from '../constants';
-import { MoonPhase, AstroSeason, ZodiacSign, TarotCard, OracleReading } from '../types';
-
-// ── Tarot Card ───────────────────────────────────────────────
-
-const MAJOR_ARCANA_FALLBACK: Partial<TarotCard>[] = [
-  { name: 'The Fool', meaning_up: 'New beginnings, open heart, stepping into the unknown.' },
-  { name: 'The High Priestess', meaning_up: 'Intuition, inner knowing, the unseen.' },
-  { name: 'The Star', meaning_up: 'Hope, renewal, trust in the unfolding.' },
-  { name: 'The Moon', meaning_up: 'Cycles, dreams, what lies beneath the surface.' },
-  { name: 'The Sun', meaning_up: 'Clarity, vitality, things coming to light.' },
-  { name: 'The World', meaning_up: 'Completion, wholeness, the journey fulfilled.' },
-  { name: 'Temperance', meaning_up: 'Balance, patience, the middle path.' },
-  { name: 'The Empress', meaning_up: 'Abundance, creativity, nurturing life.' },
-  { name: 'Strength', meaning_up: 'Inner courage, gentle power, compassion.' },
-  { name: 'The Hermit', meaning_up: 'Stillness, inner guidance, turning inward.' },
-  { name: 'Judgement', meaning_up: 'Awakening, reckoning, the call toward purpose.' },
-  { name: 'Wheel of Fortune', meaning_up: 'Change, cycles, forces larger than yourself.' },
-];
-
-export async function fetchTarotCard(): Promise<TarotCard> {
-  try {
-    const res = await fetch('https://tarotapi.dev/api/v1/cards/random?n=1');
-    if (!res.ok) throw new Error('Tarot API failed');
-    const data = await res.json();
-    return data.cards[0] as TarotCard;
-  } catch {
-    // Deterministic fallback keyed to day of year
-    const doy = Math.floor(
-      (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
-    );
-    const card = MAJOR_ARCANA_FALLBACK[doy % MAJOR_ARCANA_FALLBACK.length];
-    return {
-      name: card.name!,
-      name_short: card.name!.toLowerCase().replace(/\s/g, '_'),
-      type: 'major',
-      suit: undefined,
-      meaning_up: card.meaning_up!,
-      meaning_rev: 'Resistance may be slowing what is meant to flow.',
-      desc: 'A card of insight and transformation.',
-    };
-  }
-}
-
-// ── Horoscope ────────────────────────────────────────────────
-
-export async function fetchHoroscope(sign: ZodiacSign): Promise<string | null> {
-  try {
-    const res = await fetch(
-      `https://freehoroscopeapi.com/api/v1/get-horoscope/daily?sign=${sign.toLowerCase()}`
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data?.data?.horoscope || null;
-  } catch {
-    return null;
-  }
-}
-
-// ── Claude Oracle Message (via Cloudflare Worker) ────────────
-
-export async function generateOracleMessage(
-  card: TarotCard,
-  moon: MoonPhase,
-  season: AstroSeason,
-  mercury: { retrograde: boolean; endDate: string | null },
-  birthSign?: ZodiacSign | null
-): Promise<string> {
-  const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long', month: 'long', day: 'numeric',
-  });
-
-  const userPrompt = [
-    `Today is ${today}.`,
-    `The moon is ${moon.name} (${Math.round(moon.illumination * 100)}% illuminated).`,
-    `The sun is in ${season.sign} (${season.element}).`,
-    `The tarot card for today is ${card.name}: ${card.meaning_up}`,
-    mercury.retrograde ? `Mercury is retrograde until ${mercury.endDate}.` : null,
-    birthSign ? `This person's sun sign is ${birthSign}.` : null,
-    'Write a 2–3 sentence daily oracle message. Warm, grounded, quietly mystical. No em dashes.',
-  ].filter(Boolean).join(' ');
-
-  try {
-    const res = await fetch(ORACLE_WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system: 'You are a warm, grounded, slightly mystical daily oracle. Sound like someone who reads a lot and walks in the woods at dusk. Never use em dashes.',
-        messages: [{ role: 'user', content: userPrompt }],
-      }),
-    });
-    if (!res.ok) throw new Error('Worker error');
-    const data = await res.json();
-    return data.content?.[0]?.text || card.meaning_up;
-  } catch {
-    return card.meaning_up; // graceful fallback: use card meaning
-  }
-}
-
-// ── Full Oracle Assembly ─────────────────────────────────────
-
-const getUserSub = (): string => {
-  try {
-    const p = localStorage.getItem('lifetrkr:profile');
-    return p ? JSON.parse(p).sub : 'guest';
-  } catch { return 'guest'; }
-};
-
-export async function getOrCreateOracle(
-  moon: MoonPhase,
-  season: AstroSeason,
-  mercury: { retrograde: boolean; endDate: string | null },
-  birthSign?: ZodiacSign | null
-): Promise<OracleReading> {
-  const today = new Date().toISOString().split('T')[0];
-  const sub = getUserSub();
-  const cacheKey = `lifetrkr:${sub}:oracle:${today}`;
-
-  // Return cached reading if it exists
-  const cached = localStorage.getItem(cacheKey);
-  if (cached) return JSON.parse(cached) as OracleReading;
-
-  // Generate fresh reading
-  const [card, horoscope, message] = await Promise.all([
-    fetchTarotCard(),
-    birthSign ? fetchHoroscope(birthSign) : Promise.resolve(null),
-    Promise.resolve(null), // message generated below to use card
-  ]);
-
-  const oracleMessage = await generateOracleMessage(card, moon, season, mercury, birthSign);
-
-  const reading: OracleReading = {
-    date: today,
-    tarotCard: card,
-    moonPhase: moon,
-    astroSeason: season,
-    message: oracleMessage,
-    horoscope: horoscope ?? undefined,
-  };
-
-  localStorage.setItem(cacheKey, JSON.stringify(reading));
-  return reading;
-}
-```
-
-### C8. Build OracleCard Component
-
-Create `src/components/OracleCard.tsx`:
-
-```typescript
-import React, { useState } from 'react';
-import { OracleReading } from '../types';
-
-type Props = { oracle: OracleReading | null; loading: boolean };
-
-export function OracleCard({ oracle, loading }: Props) {
-  const [expanded, setExpanded] = useState(false);
-
-  if (loading) {
-    return (
-      <div className="bg-surface border border-border rounded-2xl p-4 animate-pulse">
-        <div className="h-3 bg-surfaceRaised rounded w-1/3 mb-2" />
-        <div className="h-4 bg-surfaceRaised rounded w-2/3 mb-1" />
-        <div className="h-4 bg-surfaceRaised rounded w-full" />
-      </div>
-    );
-  }
-
-  if (!oracle) return null;
-
-  return (
-    <div className="bg-surface border border-border rounded-2xl overflow-hidden">
-      {/* Left accent bar */}
-      <div className="flex">
-        <div className="w-1 shrink-0 bg-amethyst" />
-        <div className="flex-1 p-4">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-[12px] text-amethyst">✦</span>
-              <span className="text-[11px] text-textMuted uppercase tracking-wider">Oracle</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[16px]">{oracle.moonPhase.emoji}</span>
-              <span className="text-[11px] text-textSecondary font-mono">
-                {oracle.moonPhase.name}
-              </span>
-            </div>
-          </div>
-
-          {/* Card name */}
-          <p className="font-display text-[18px] font-light text-textPrimary mb-0.5">
-            {oracle.tarotCard.name}
-          </p>
-          <p className="text-[11px] text-textGhost mb-3">
-            {oracle.tarotCard.type === 'major' ? 'Major Arcana' : oracle.tarotCard.suit}
-          </p>
-
-          {/* Oracle message */}
-          <p className="text-[13px] text-textSecondary italic leading-relaxed">
-            "{oracle.message}"
-          </p>
-
-          {/* Expand for horoscope */}
-          {oracle.horoscope && (
-            <>
-              <button
-                onClick={() => setExpanded(!expanded)}
-                className="mt-3 text-[11px] text-amethyst"
-              >
-                {expanded ? 'Less ↑' : `${oracle.astroSeason.emoji} More ↓`}
-              </button>
-              {expanded && (
-                <p className="mt-2 text-[12px] text-textSecondary leading-relaxed">
-                  {oracle.horoscope}
-                </p>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-```
-
-### C9. Update Calendar Tab with Celestial Layer
-
-Add to Calendar.tsx:
-- Moon phase emoji on each grid date cell (top-right corner, 14px)
-- Full Moon and New Moon dates: amethyst ring around date number
-- Add lunar events to `calendarEvents` array as `source: 'lunar'`
-- Mercury retrograde banner below tab header
-- Astrological season pill in tab header
-
-Mercury retrograde banner:
-```typescript
-const mercury = getMercuryStatus();
-{mercury.retrograde && (
-  <div className="mx-4 mb-3 px-4 py-2 rounded-xl
-                  bg-[#E8B86D1A] border border-[#E8B86D33]">
-    <p className="text-[12px] text-gold">
-      ☿ Mercury retrograde — ends {mercury.endDate}
-    </p>
-    <p className="text-[11px] text-textMuted mt-0.5">
-      Double-check everything. Back up your work. Give grace.
-    </p>
-  </div>
-)}
-```
-
-### C10. Update Home Dashboard with Celestial Row
-
-Below the date line, add a horizontal row of small badges:
-```typescript
-const moon = getMoonPhase();
-const season = getAstroSeason();
-const mercury = getMercuryStatus();
-
-// Render:
-<div className="flex items-center gap-2 flex-wrap">
-  <span className="text-[12px] text-amethyst">
-    {moon.emoji} {moon.name}
-  </span>
-  <span className="text-[10px] text-textGhost">·</span>
-  <span className="text-[12px] text-textSecondary">
-    {season.emoji} {season.sign} season
-  </span>
-  {mercury.retrograde && (
-    <>
-      <span className="text-[10px] text-textGhost">·</span>
-      <span className="text-[11px] text-gold bg-[#E8B86D1A] px-2 py-0.5 rounded-full">
-        ☿ Retrograde
-      </span>
-    </>
-  )}
-</div>
-```
-
-Wire OracleCard into Home "More" section using `useOracle` hook.
-
-### C11. Add Sun Sign Picker to Settings
-
-```typescript
-const ZODIAC_SIGNS: { sign: ZodiacSign; emoji: string }[] = [
-  { sign: 'Aries', emoji: '♈' },
-  { sign: 'Taurus', emoji: '♉' },
-  // ... all 12
-];
-
-// In Settings.tsx Oracle section:
-<div className="space-y-2">
-  <label className="text-[12px] text-textSecondary">
-    Sun Sign
-    <span className="text-[10px] text-textGhost ml-2">for daily oracle</span>
-  </label>
-  <div className="grid grid-cols-3 gap-2">
-    {ZODIAC_SIGNS.map(({ sign, emoji }) => (
-      <button
-        key={sign}
-        onClick={() => updateSetting('birthSign', sign)}
-        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[12px]
-          ${settings.birthSign === sign
-            ? 'bg-amethyst text-bg font-medium'
-            : 'bg-surfaceRaised text-textSecondary border border-border'}`}
-      >
-        <span>{emoji}</span>
-        <span>{sign}</span>
-      </button>
-    ))}
-  </div>
-</div>
-```
-
-### C12. Session C — Version Bump and Deploy
-
-```bash
-# Update version in package.json: "version": "0.3.0"
-git add -A
-git commit -m "feat(v0.3.0): recurrence + categories + celestial engine + oracle"
-git push origin main
-npm run deploy
-```
-
-**Session C done when:**
-- Habit and ritual forms show RecurrenceEditor and CategoryPicker
-- Recurrence badge shows in list views
-- Category filter bar filters items correctly
-- Calendar grid shows moon phase emoji on every date
-- Mercury retrograde banner shows when active (test with a past date)
-- Home dashboard shows moon phase + astrological season row
-- Oracle card appears in Home "More" section with tarot card + message
-- Claude oracle message generates via Cloudflare Worker (not exposed in source)
-- tarotapi.dev card pulled on first load, cached in localStorage
-- horoscope appears if birth sign is set in Settings
+**Note:** The actual `RecurrenceRule` type in `src/types.ts` is the source of truth. The field names above (`daysOfWeek`, `interval`, etc.) may differ — check `src/types.ts` and adjust accordingly before implementing.
 
 ---
 
-## EXTERNAL API REGISTRY
+## Section 15 — Build Session Testing Checklists
 
-| API | URL | Auth | CORS | Rate limit | Fallback |
-|---|---|---|---|---|---|
-| Google Calendar | googleapis.com/calendar/v3/... | Bearer token (GIS) | Via browser with token | 1M req/day free | Show manual events only |
-| Google Tasks | tasks.googleapis.com/tasks/v1/... | Bearer token (GIS) | Via browser with token | 50k req/day free | Hide Google Tasks sections |
-| Tarot | tarotapi.dev/api/v1/cards/random?n=1 | None | Yes | None documented | Local 12-card Major Arcana array |
-| Horoscope | freehoroscopeapi.com/api/v1/get-horoscope/daily?sign={sign} | None | Verify before build | Unknown | Skip horoscope section |
-| Oracle (Claude) | Via Cloudflare Worker (lifetrkr-oracle.okhp3.workers.dev) | Worker holds Anthropic key | Configured in Worker | CF free: 100k req/day | Use tarot meaning_up as message |
-| Moon phases | Client-side Julian date math | None | N/A | None | None needed |
-| Astro season | Hardcoded date ranges | None | N/A | None | None needed |
-| Mercury retrograde | Hardcoded 2026–2028 dates | None | N/A | None | None needed |
+Comprehensive per-session acceptance tests. Run these manually after each session before marking it complete.
 
-**Important:** Before building the horoscope fetch in Session C, verify `freehoroscopeapi.com` allows CORS from `okhp3.github.io` by testing in browser console. If CORS is blocked, wrap the horoscope call in the same Cloudflare Worker as the oracle proxy.
+### v0.2.0 (Google Calendar + Tasks)
+- [ ] Clicking "Connect Google Account" in Settings opens Google consent popup
+- [ ] After auth: profile name and photo appear in Settings header
+- [ ] Settings Google Account section shows email, last synced time, Disconnect button
+- [ ] Calendar tab: real events from connected Google account appear (not just manual)
+- [ ] Calendar tab: Google events show "G" source badge; manual events show pencil icon
+- [ ] Today tab: Google Tasks due today appear under "From Google Tasks" heading (if any exist)
+- [ ] Archive tab: undated Google Tasks appear when `showGoogleTasks: true`
+- [ ] Token expiry banner: appears and reconnect works (test by clearing `sessionStorage.gal_token`)
+- [ ] Disconnect in Settings: clears token, app returns to manual-only mode
+- [ ] Multi-account: switching Google accounts shows different namespaced data
+- [ ] `npm run deploy` → verify live URL, confirm no broken tabs
 
----
+### v0.3.0 (Close Gaps)
+- [ ] App launches in dark mode by default (no saved preference → dark, not auto/light)
+- [ ] Habit add/edit form: shows title + description field + RecurrenceEditor + CategoryPicker
+- [ ] Ritual item add/edit form: same
+- [ ] Recurrence badge shows in habit/ritual list views: `↻ Daily`, `↻ Mon · Wed · Fri`
+- [ ] Category filter pills filter the list correctly; "All" shows everything
+- [ ] `isActiveToday()`: habit with `frequency: 'weekdays'` does NOT show on Saturday
+- [ ] `isActiveToday()`: ritual item with Mon/Wed/Fri does NOT show on Tuesday
+- [ ] Calendar grid: moon phase emoji visible on every date cell
+- [ ] Calendar tab: Mercury retrograde banner shows when active (test with a past retrograde date)
+- [ ] Calendar tab: Mercury Rx banner is hidden when `showMercuryBanner` toggle is off
+- [ ] Home: moon phase + astrological season row visible below date line
+- [ ] Home: Oracle card appears in "More" section with tarot card name and message
+- [ ] Oracle card: tarot card name and oracle message both populated
+- [ ] Oracle: tarot card fetched from tarotapi.dev and cached in localStorage for the day
+- [ ] Oracle: horoscope appears if birth sign is set in Settings
+- [ ] Oracle: `VITE_ANTHROPIC_API_KEY` set → Claude message generated; page reload uses cached message, not a new API call
+- [ ] Settings: About section shows correct `APP_VERSION` (not hardcoded `v0.1.0`)
+- [ ] Settings: "Regenerate today's oracle" button clears cache and triggers re-fetch
+- [ ] SideNav footer: version string matches intended release
+- [ ] `npm run deploy` → verify live URL
 
-## VERSION TRACKING
+### v0.4.0 (PWA + Polish)
+- [ ] `public/manifest.json`: `start_url`, `display: "standalone"`, `background_color: "#0D0B14"`, `theme_color: "#C4A0E8"` all correct
+- [ ] "Add to Home Screen" prompt works on iOS Safari and Android Chrome
+- [ ] App icon (`app-icon.png`) used in PWA manifest icons array
+- [ ] `cat-accent` image appears tastefully in the UI (one placement, subtle)
+- [ ] `public/og-image.png` uses the banner asset
+- [ ] Drag-to-reorder: tasks in Today and Archive tabs can be reordered; order persists on reload
+- [ ] No unnecessary oracle re-fetches: navigate away from Home and back — oracle does not re-call API
+- [ ] `celestial.ts` calculations: typing in a form field does not trigger celestial recalculation
+- [ ] `npm run deploy` → verify live URL
 
-| App Version | Session | Key Deliverables |
-|---|---|---|
-| v0.1.x | Complete | UI shell, basic forms, localStorage, deployed |
-| v0.1.x patch | Session A | Source in GitHub, README corrected, PRD-v3.0 committed |
-| v0.2.0 | Session B | Google Calendar + Tasks live, token expiry, Settings wired |
-| v0.3.0 | Session C | Recurrence, categories, celestial, oracle via CF Worker |
-| v0.4.0 | Session D (future) | Brand assets, PWA manifest, app icon, OG card, polish |
-| v0.5.0 | Session E (future) | Privacy policy, Google OAuth verification |
-| v1.0.0 | TBD | Google-verified, Kieran-owned, public stable release |
-
----
-
-## TESTING CHECKLIST (per session)
-
-### Session A Tests
-- [ ] `git log --oneline` on main shows source files, not just docs
-- [ ] `src/`, `package.json`, `vite.config.ts` visible in repo
-- [ ] README renders correctly on GitHub — no Notion/Express references
-- [ ] `docs/PRD-v3.0.md` accessible in repo
-- [ ] Live URL still resolves after main branch push
-
-### Session B Tests
-- [ ] Clicking "Connect Google Account" opens Google consent popup
-- [ ] After auth: profile name/photo appear in Settings
-- [ ] Calendar tab: real events from connected Google account appear
-- [ ] Today tab: Google Tasks due today appear (if any)
-- [ ] Token expiry banner: appears and reconnect works (test by clearing sessionStorage)
-- [ ] Disconnect in Settings: clears token, shows disconnected state
-
-### Session C Tests
-- [ ] Habit add form: shows title + description + RecurrenceEditor + CategoryPicker
-- [ ] Ritual item add form: same
-- [ ] Recurrence badge shows in habit/ritual list: "↻ Daily", "↻ Mon · Wed · Fri"
-- [ ] Category filter pills filter the list correctly
-- [ ] Calendar grid: moon emoji visible on at least 3 date cells
-- [ ] Home: moon phase + astro season row visible
-- [ ] Mercury retrograde: test by temporarily hardcoding today's date as retrograde
-- [ ] Oracle card: appears in Home More section
-- [ ] Oracle card: tarot card name and message both populated
-- [ ] Cloudflare Worker: verify in CF dashboard that requests are being logged
+### v0.5.0 (OAuth Verification)
+- [ ] Privacy policy page exists at a stable URL
+- [ ] GCP OAuth consent screen: App name = "Kieran's LifeTrkr", logo = app-icon.png, privacy policy URL filled in
+- [ ] Scopes declared: `calendar.readonly`, `tasks.readonly`, `openid`, `profile`, `email`
+- [ ] Verification submitted to Google
+- [ ] After approval: move GCP app from Testing to Production mode
 
 ---
 
-*PRD v4.0 — Kieran's LifeTrkr*
-*June 22, 2026 · Compiled by Jamie Hill (OKHP3) with Claude Sonnet 4.6*
-*MIT License*
+## Section 16 — Build Session Checklist (for Replit agent)
+
+Before starting a build session, the agent should:
+1. Read `docs/PRD-v4.0.md` (this file) in full
+2. Read `docs/PRD-v3.0.md` for architecture and type definitions
+3. Check `src/types.ts` directly — it is the ground truth for schema
+4. Run `npm run dev` and verify the dev server starts clean
+5. After all changes: `npm run build` to confirm TypeScript compiles
+6. After build: `npm run deploy` to publish
+7. Screenshot https://okhp3.github.io/kierans-lifetrkr/#/ to confirm deploy
+
+---
+
+## Section 17 — Version History
+
+**Family lineage:**
+
+| App Version | Date | Author | Notes |
+|---|---|---|---|
+| v0.0 | — | Ralph | Grandfather — generation 0 |
+| v1.0 | — | Vyrle | Father — generation 1 |
+| v2.0 | — | Jamie | Son — generation 2; original app concept |
+| v3.0 | June 21, 2026 | Kieran (session 1) | TypeScript migration, HashRouter, GIS auth, gh-pages |
+
+**Build session history:**
+
+| App Version | Date | Session | Key Deliverables |
+|---|---|---|---|
+| v0.1.0 | June 21, 2026 | Session 1 | UI shell, basic forms, localStorage, deployed to GitHub Pages |
+| v0.1.x patch | June 22, 2026 | Pre-session | Source pushed to GitHub main; README corrected; PRD-v3.0 committed |
+| v0.1.8 | June 22, 2026 | Session 2 | Recurrence, categories, celestial engine, three-layer oracle, Calendar overhaul — pulled v0.3.0 work forward |
+| v0.2.0 | TBD | Session 3 | Google Calendar + Tasks live; token expiry; Settings wired |
+| v0.3.0 | TBD | Session 4 | Close remaining gaps: dark default, first-launch, About, Regenerate oracle, Claude oracle activation |
+| v0.4.0 | TBD | Session 5 | Brand assets, PWA manifest, offline, drag-to-reorder, polish |
+| v0.5.0 | TBD | Session 6 | Privacy policy, GCP OAuth verification submission |
+| v1.0.0 | TBD | TBD | Google-verified, Kieran-owned, public stable release |
+
+**PRD document history:**
+
+| PRD | Date | Author | Notes |
+|---|---|---|---|
+| PRD-v3.0 | June 22, 2026 | Jamie + Kieran | Full product vision (1624 lines) — canonical architecture and type reference |
+| PRD-v4.0 (plan) | June 22, 2026 | Jamie (pre-session) | Pre-session plan for Sessions A/B/C — original CF Worker oracle approach |
+| PRD-v4.0 (this) | June 22, 2026 | Agent (session 2) | Post-session truth — planning authority for v0.2.0+; incorporates both sources |
+
+Built on Father's Day, Summer Solstice 2026. The fourth hill. ✦
