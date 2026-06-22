@@ -16,10 +16,69 @@ const MONTH_NAMES = [
   'July','August','September','October','November','December',
 ]
 const DAY_LABELS = ['S','M','T','W','T','F','S']
+const DOW_NUM: Record<string, number> = {
+  sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6,
+}
 const DOW_SHORT: Record<string, string> = {
   monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', thursday: 'Thu',
   friday: 'Fri', saturday: 'Sat', sunday: 'Sun',
 }
+
+// ─── Recurrence Expansion ────────────────────────────────────────────────────
+
+function eventOccursOnDate(event: CalendarEvent, dateStr: string): boolean {
+  const startDate = event.start.split('T')[0]
+  if (startDate === dateStr) return true
+
+  const rec = event.recurrence
+  if (!rec || rec.frequency === 'none') return false
+  if (dateStr < startDate) return false
+
+  // Check recurrence end
+  if (rec.end.mode === 'onDate' && dateStr > rec.end.date) return false
+
+  // Check exception list
+  if (rec.exceptions?.includes(dateStr)) return false
+
+  const start = new Date(startDate + 'T00:00:00')
+  const check = new Date(dateStr + 'T00:00:00')
+  const msPerDay = 86400000
+  const daysDiff = Math.round((check.getTime() - start.getTime()) / msPerDay)
+  const n = rec.interval || 1
+
+  if (rec.frequency === 'daily') {
+    return daysDiff % n === 0
+  }
+
+  if (rec.frequency === 'weekly') {
+    if (rec.daysOfWeek && rec.daysOfWeek.length > 0) {
+      // Must be on a scheduled day of week AND in a valid week interval
+      const checkDow = check.getDay()
+      if (!rec.daysOfWeek.some(d => (DOW_NUM[d] ?? -1) === checkDow)) return false
+      const weeksDiff = Math.floor(daysDiff / 7)
+      return weeksDiff % n === 0
+    }
+    return daysDiff % (7 * n) === 0
+  }
+
+  if (rec.frequency === 'monthly') {
+    const monthsDiff =
+      (check.getFullYear() - start.getFullYear()) * 12 + (check.getMonth() - start.getMonth())
+    if (monthsDiff % n !== 0) return false
+    const dom = rec.dayOfMonth ?? start.getDate()
+    return check.getDate() === dom
+  }
+
+  if (rec.frequency === 'yearly') {
+    const yearsDiff = check.getFullYear() - start.getFullYear()
+    if (yearsDiff % n !== 0) return false
+    return check.getMonth() === start.getMonth() && check.getDate() === start.getDate()
+  }
+
+  return false
+}
+
+// ─── Recurrence Label ─────────────────────────────────────────────────────────
 
 function formatRecurrenceLabel(rec: RecurrenceRule | undefined): string {
   if (!rec || rec.frequency === 'none') return ''
@@ -28,29 +87,48 @@ function formatRecurrenceLabel(rec: RecurrenceRule | undefined): string {
     return n === 1 ? 'Daily' : `Every ${n} days`
   if (rec.frequency === 'weekly') {
     const base = n === 1 ? 'Weekly' : `Every ${n} weeks`
-    if (rec.daysOfWeek && rec.daysOfWeek.length > 0)
-      return `${base} · ${rec.daysOfWeek.map(d => DOW_SHORT[d] ?? d).join(', ')}`
-    return base
+    return rec.daysOfWeek?.length
+      ? `${base} · ${rec.daysOfWeek.map(d => DOW_SHORT[d] ?? d).join(', ')}`
+      : base
   }
-  if (rec.frequency === 'monthly')
-    return n === 1 ? 'Monthly' : `Every ${n} months`
-  if (rec.frequency === 'yearly')
-    return n === 1 ? 'Yearly' : `Every ${n} years`
+  if (rec.frequency === 'monthly') return n === 1 ? 'Monthly' : `Every ${n} months`
+  if (rec.frequency === 'yearly') return n === 1 ? 'Yearly' : `Every ${n} years`
   return 'Custom'
 }
 
+// ─── Date-range helpers ───────────────────────────────────────────────────────
+
+function getWeekRange(): { start: string; end: string } {
+  const now = new Date()
+  const day = now.getDay() // 0=Sun
+  const monday = new Date(now)
+  monday.setDate(now.getDate() - ((day + 6) % 7))
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+  return {
+    start: monday.toISOString().split('T')[0],
+    end: sunday.toISOString().split('T')[0],
+  }
+}
+
+function dateInRange(dateStr: string, range: 'all' | 'today' | 'this-week' | 'upcoming' | 'past', today: string): boolean {
+  if (range === 'all') return true
+  if (range === 'today') return dateStr === today
+  if (range === 'upcoming') return dateStr >= today
+  if (range === 'past') return dateStr < today
+  if (range === 'this-week') {
+    const { start, end } = getWeekRange()
+    return dateStr >= start && dateStr <= end
+  }
+  return true
+}
+
+// ─── Form type ────────────────────────────────────────────────────────────────
+
 type EventForm = {
-  title: string
-  allDay: boolean
-  time: string
-  endTime: string
-  location: string
-  desc: string
-  categoryId?: string
-  tags: string[]
-  recurrence: RecurrenceRule
-  showDetails: boolean
-  showRecurrence: boolean
+  title: string; allDay: boolean; time: string; endTime: string
+  location: string; desc: string; categoryId?: string; tags: string[]
+  recurrence: RecurrenceRule; showDetails: boolean; showRecurrence: boolean
 }
 
 function freshForm(): EventForm {
@@ -61,6 +139,8 @@ function freshForm(): EventForm {
     showDetails: false, showRecurrence: false,
   }
 }
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Calendar() {
   const { state, dispatch } = useApp()
@@ -74,12 +154,12 @@ export default function Calendar() {
   // Filter state
   const [sourceFilter, setSourceFilter] = useState('all')
   const [recurringFilter, setRecurringFilter] = useState('all')
+  const [dateRangeFilter, setDateRangeFilter] = useState<'all' | 'today' | 'this-week' | 'upcoming' | 'past'>('all')
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
   const [tagFilter, setTagFilter] = useState<string | null>(null)
   const [showCosmic, setShowCosmic] = useState(true)
 
   const today = getTodayISO()
-
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const firstDay = new Date(year, month, 1).getDay()
   const cells: (number | null)[] = [
@@ -99,52 +179,63 @@ export default function Calendar() {
     [monthStart, monthEnd]
   )
   const cosmicByDate = useMemo(() => {
-    const m: Record<string, typeof cosmicMonthEvents> = {}
+    const map: Record<string, typeof cosmicMonthEvents> = {}
     for (const ev of cosmicMonthEvents) {
-      if (!m[ev.date]) m[ev.date] = []
-      m[ev.date].push(ev)
+      if (!map[ev.date]) map[ev.date] = []
+      map[ev.date].push(ev)
     }
-    return m
+    return map
   }, [cosmicMonthEvents])
 
-  // Derive filter options from stored user events
+  // Derived filter options from stored user events
   const userEvents = state.calendarEvents.filter(e => e.source === 'manual')
   const usedCategoryIds = [...new Set(userEvents.filter(e => e.categoryId).map(e => e.categoryId!))]
   const allEventTags = [...new Set(userEvents.flatMap(e => e.tags ?? []))]
-  const googleEvents = state.calendarEvents.filter(e => e.source === 'google')
+  const googleEventsCount = state.calendarEvents.filter(e => e.source === 'google').length
 
-  // Build event list for selected day (with filters applied)
-  function getEventsForDay(day: number): (CalendarEvent & { _cosmic?: boolean })[] {
+  // ─── Filter predicate ────────────────────────────────────────────────────────
+  function passesFilters(event: CalendarEvent, dayDateStr: string): boolean {
+    if (sourceFilter === 'user' && event.source !== 'manual') return false
+    if (sourceFilter === 'google' && event.source !== 'google') return false
+    if (sourceFilter === 'mock' && event.source !== 'mock') return false
+    if (sourceFilter === 'cosmic' && event.source !== 'cosmic') return false
+    if (!dateInRange(dayDateStr, dateRangeFilter, today)) return false
+    if (categoryFilter && event.categoryId !== categoryFilter) return false
+    if (tagFilter && !(event.tags ?? []).includes(tagFilter)) return false
+    if (recurringFilter === 'recurring') {
+      if (!event.recurrence || event.recurrence.frequency === 'none') return false
+    }
+    if (recurringFilter === 'one-time') {
+      if (event.recurrence && event.recurrence.frequency !== 'none') return false
+    }
+    return true
+  }
+
+  // Events for a day (with recurrence expansion + cosmic + sort)
+  function getEventsForDay(day: number): CalendarEvent[] {
     const ds = dateStr(day)
-    const stored = state.calendarEvents.filter(e => e.start.startsWith(ds))
-    const cosmic = showCosmic
+
+    // Stored events that occur on this day (handles recurrence)
+    const stored = state.calendarEvents.filter(e => eventOccursOnDate(e, ds))
+
+    // Cosmic events (notable moon phases) for this day
+    const cosmicEvs: CalendarEvent[] = showCosmic
       ? (cosmicByDate[ds] ?? []).map(ce => ({
           id: ce.id, title: ce.title, start: ds, allDay: true,
           location: null, description: ce.description ?? null, colorId: null,
-          source: 'cosmic' as const, emoji: ce.emoji, _cosmic: true,
-        }))
+          source: 'cosmic' as const, tags: [], emoji: ce.emoji,
+        } as CalendarEvent & { emoji?: string }))
       : []
-    const all = [...stored, ...cosmic]
-    return all.filter(e => {
-      if (sourceFilter === 'user' && e.source !== 'manual') return false
-      if (sourceFilter === 'google' && e.source !== 'google') return false
-      if (sourceFilter === 'cosmic' && e.source !== 'cosmic') return false
-      if (categoryFilter && (e as CalendarEvent).categoryId !== categoryFilter) return false
-      if (tagFilter && !((e as CalendarEvent).tags ?? []).includes(tagFilter)) return false
-      if (recurringFilter === 'recurring' && !(e as CalendarEvent).recurrence?.frequency || (e as CalendarEvent).recurrence?.frequency === 'none') {
-        if (!(e as CalendarEvent).recurrence || (e as CalendarEvent).recurrence?.frequency === 'none') return false
-      }
-      if (recurringFilter === 'one-time') {
-        const rec = (e as CalendarEvent).recurrence
-        if (rec && rec.frequency !== 'none') return false
-      }
-      return true
-    })
+
+    return [...stored, ...cosmicEvs]
+      .filter(e => passesFilters(e, ds))
+      .sort((a, b) => a.start.localeCompare(b.start))
   }
 
+  // For grid dot: any stored event (incl. recurrence) occurs on this day
   function hasDayEvents(day: number): boolean {
     const ds = dateStr(day)
-    return state.calendarEvents.some(e => e.start.startsWith(ds))
+    return state.calendarEvents.some(e => e.source !== 'cosmic' && eventOccursOnDate(e, ds))
   }
 
   function patchForm(patch: Partial<EventForm>) {
@@ -159,20 +250,13 @@ export default function Calendar() {
     dispatch({
       type: 'ADD_CALENDAR_EVENT',
       payload: {
-        id: genId(),
-        title: form.title.trim(),
-        start,
-        end,
-        allDay: form.allDay,
-        location: form.location.trim() || null,
-        description: form.desc.trim() || null,
-        colorId: null,
-        source: 'manual' as const,
-        categoryId: form.categoryId,
+        id: genId(), title: form.title.trim(), start, end,
+        allDay: form.allDay, location: form.location.trim() || null,
+        description: form.desc.trim() || null, colorId: null,
+        source: 'manual' as const, categoryId: form.categoryId,
         tags: form.tags,
         recurrence: form.recurrence.frequency !== 'none' ? form.recurrence : undefined,
-        createdAt: today,
-        updatedAt: today,
+        createdAt: today, updatedAt: today,
       },
     })
     setForm(null)
@@ -198,7 +282,7 @@ export default function Calendar() {
           </button>
         ) : (
           <span style={{ fontSize: 11, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>
-            {googleEvents.length} synced
+            {googleEventsCount} synced
           </span>
         )}
       </div>
@@ -209,13 +293,14 @@ export default function Calendar() {
           { label: 'All', value: 'all', active: sourceFilter === 'all' },
           { label: 'My events', value: 'user', active: sourceFilter === 'user' },
           { label: 'Google', value: 'google', active: sourceFilter === 'google' },
+          { label: 'Mock', value: 'mock', active: sourceFilter === 'mock' },
           { label: 'Cosmic', value: 'cosmic', active: sourceFilter === 'cosmic' },
         ]}
         onChange={(val) => setSourceFilter(val)}
         className="mb-2"
       />
 
-      {/* Category filter */}
+      {/* Category filter (conditional) */}
       {usedCategoryIds.length > 0 && (
         <FilterBar
           chips={usedCategoryIds.map(id => {
@@ -227,7 +312,7 @@ export default function Calendar() {
         />
       )}
 
-      {/* Tag filter */}
+      {/* Tag filter (conditional) */}
       {allEventTags.length > 0 && (
         <FilterBar
           chips={allEventTags.map(tag => ({ label: tag, value: tag, active: tagFilter === tag }))}
@@ -235,6 +320,19 @@ export default function Calendar() {
           className="mb-2"
         />
       )}
+
+      {/* Date-range filter */}
+      <FilterBar
+        chips={[
+          { label: 'All time', value: 'all', active: dateRangeFilter === 'all' },
+          { label: 'Today', value: 'today', active: dateRangeFilter === 'today' },
+          { label: 'This week', value: 'this-week', active: dateRangeFilter === 'this-week' },
+          { label: 'Upcoming', value: 'upcoming', active: dateRangeFilter === 'upcoming' },
+          { label: 'Past', value: 'past', active: dateRangeFilter === 'past' },
+        ]}
+        onChange={(val) => setDateRangeFilter(val as typeof dateRangeFilter)}
+        className="mb-2"
+      />
 
       {/* Recurring + cosmic toggles */}
       <FilterBar
@@ -282,7 +380,7 @@ export default function Calendar() {
             const isSelected = selectedDay === day
             const isCurrent = ds === today
             const hasUserEvents = hasDayEvents(day)
-            const moonEmoji = getMoonPhaseEmoji(ds)
+            const moonEm = getMoonPhaseEmoji(ds)
             const hasNotable = !!cosmicByDate[ds]?.length
             return (
               <button
@@ -299,7 +397,7 @@ export default function Calendar() {
                 }}
               >
                 <span>{day}</span>
-                <span style={{ fontSize: 8, lineHeight: 1, opacity: hasNotable ? 1 : 0.35 }}>{moonEmoji}</span>
+                <span style={{ fontSize: 8, lineHeight: 1, opacity: hasNotable ? 1 : 0.3 }}>{moonEm}</span>
                 {hasUserEvents && (
                   <div style={{ width: 3, height: 3, borderRadius: '50%', background: isSelected ? 'rgba(255,255,255,0.7)' : 'var(--accent-amethyst)', position: 'absolute', bottom: 2, right: 4 }} />
                 )}
@@ -337,10 +435,14 @@ export default function Calendar() {
             </div>
           )}
 
-          {/* Events list */}
+          {/* Event list (filtered + sorted ascending) */}
           {selectedEvents.length === 0 ? (
             <div className="card">
-              <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: 0 }}>No events.</p>
+              <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: 0 }}>
+                {dateRangeFilter !== 'all' && !dateInRange(selectedDateStr, dateRangeFilter, today)
+                  ? `No events in this time range.`
+                  : 'No events.'}
+              </p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -348,20 +450,17 @@ export default function Calendar() {
                 const isCosmic = event.source === 'cosmic'
                 const isGoogle = event.source === 'google'
                 const isManual = event.source === 'manual'
-                const cat = (event as CalendarEvent).categoryId
-                  ? DEFAULT_CATEGORIES.find(c => c.id === (event as CalendarEvent).categoryId)
-                  : undefined
-                const recLabel = formatRecurrenceLabel((event as CalendarEvent).recurrence)
-                const eventTags = (event as CalendarEvent).tags ?? []
+                const cat = event.categoryId ? DEFAULT_CATEGORIES.find(c => c.id === event.categoryId) : undefined
+                const recLabel = formatRecurrenceLabel(event.recurrence)
+                const eventTags = event.tags ?? []
                 const barColor = isCosmic ? 'var(--accent-amethyst)' : isGoogle ? '#4285F4' : 'var(--accent-amethyst)'
 
                 return (
                   <div
-                    key={event.id}
+                    key={`${event.id}-${selectedDateStr}`}
                     className="card"
                     style={{
                       display: 'flex', alignItems: 'flex-start', gap: 10,
-                      opacity: isCosmic ? 0.9 : 1,
                       background: isCosmic ? 'rgba(196,160,232,0.06)' : undefined,
                     }}
                   >
@@ -370,33 +469,26 @@ export default function Calendar() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
                           {cat && <span style={{ fontSize: 15, flexShrink: 0 }}>{cat.emoji}</span>}
-                          {isCosmic && (event as any).emoji && !cat && (
+                          {isCosmic && !cat && (event as any).emoji && (
                             <span style={{ fontSize: 15, flexShrink: 0 }}>{(event as any).emoji}</span>
                           )}
                           <p style={{
                             fontSize: 14, margin: 0,
                             color: isCosmic ? 'var(--accent-amethyst)' : 'var(--text-primary)',
                             fontStyle: isCosmic ? 'italic' : 'normal',
+                            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                           }}>
                             {event.title}
                           </p>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                          {isGoogle && (
-                            <span style={{ fontSize: 9, color: '#4285F4', border: '0.5px solid #4285F4', borderRadius: 4, padding: '1px 5px', fontFamily: 'Space Mono, monospace' }}>G</span>
-                          )}
-                          {isCosmic && (
-                            <span style={{ fontSize: 10, color: 'var(--accent-amethyst)', fontFamily: 'Space Mono, monospace' }}>✦</span>
-                          )}
-                          {isManual && (
-                            <button onClick={() => deleteEvent(event.id)} style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: 16, padding: 0, lineHeight: 1 }}>×</button>
-                          )}
+                          {isGoogle && <span style={{ fontSize: 9, color: '#4285F4', border: '0.5px solid #4285F4', borderRadius: 4, padding: '1px 5px', fontFamily: 'Space Mono, monospace' }}>G</span>}
+                          {isCosmic && <span style={{ fontSize: 10, color: 'var(--accent-amethyst)', fontFamily: 'Space Mono, monospace' }}>✦</span>}
+                          {isManual && <button onClick={() => deleteEvent(event.id)} style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: 16, padding: 0, lineHeight: 1 }}>×</button>}
                         </div>
                       </div>
 
-                      {event.description && (
-                        <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: '3px 0 0', lineHeight: 1.4 }}>{event.description}</p>
-                      )}
+                      {event.description && <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: '3px 0 0', lineHeight: 1.4 }}>{event.description}</p>}
                       {!event.allDay && (
                         <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: '3px 0 0', fontFamily: 'Space Mono, monospace' }}>
                           {formatEventTime(event.start, false)}{event.end ? ` – ${formatEventTime(event.end, false)}` : ''}
@@ -404,9 +496,7 @@ export default function Calendar() {
                       )}
                       {event.allDay && !isCosmic && <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: '3px 0 0' }}>All day</p>}
                       {event.location && <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: '3px 0 0' }}>📍 {event.location}</p>}
-                      {recLabel && (
-                        <p style={{ fontSize: 11, color: 'var(--accent-amethyst)', margin: '3px 0 0', fontFamily: 'Space Mono, monospace' }}>↻ {recLabel}</p>
-                      )}
+                      {recLabel && <p style={{ fontSize: 11, color: 'var(--accent-amethyst)', margin: '3px 0 0', fontFamily: 'Space Mono, monospace' }}>↻ {recLabel}</p>}
                       {eventTags.length > 0 && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 5 }}>
                           {eventTags.map(tag => (
@@ -426,13 +516,7 @@ export default function Calendar() {
           {/* Add event form */}
           {form ? (
             <div className="card" style={{ marginTop: 12 }}>
-              <input
-                className="input-field"
-                placeholder="Event title"
-                value={form.title}
-                onChange={e => patchForm({ title: e.target.value })}
-                autoFocus
-              />
+              <input className="input-field" placeholder="Event title" value={form.title} onChange={e => patchForm({ title: e.target.value })} autoFocus />
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
                 <input type="checkbox" id="allday" checked={form.allDay} onChange={e => patchForm({ allDay: e.target.checked })} />
                 <label htmlFor="allday" style={{ fontSize: 13, color: 'var(--text-secondary)', cursor: 'pointer' }}>All day</label>
@@ -445,7 +529,6 @@ export default function Calendar() {
               )}
               <input className="input-field" style={{ marginTop: 8 }} placeholder="Location (optional)" value={form.location} onChange={e => patchForm({ location: e.target.value })} />
 
-              {/* Details expander */}
               <button
                 type="button"
                 onClick={() => patchForm({ showDetails: !form.showDetails })}
@@ -463,7 +546,6 @@ export default function Calendar() {
                 </div>
               )}
 
-              {/* Recurrence expander */}
               <button
                 type="button"
                 onClick={() => patchForm({ showRecurrence: !form.showRecurrence })}
