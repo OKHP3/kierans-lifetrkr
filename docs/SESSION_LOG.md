@@ -1,7 +1,7 @@
 # SESSION_LOG.md — Kieran's LifeTrkr
 
 > Operational memory for agent build sessions.
-> Each entry appended at the end of a session per the protocol in `.agents/AGENTS.md`.
+> Each entry appended at the end of a session per the protocol in `AGENTS.md`.
 > Most recent entry is at the bottom.
 > See `docs/PRD-v4.0.md` for the full roadmap and versioning table.
 
@@ -206,9 +206,7 @@ All v0.3.0-planned features were pulled forward and shipped in this session (v0.
 
 **New files created**
 
-- **`AGENTS.md`** (root) — comprehensive agent rulebook; read automatically at session start. Encodes: Vyrle lock, all hard constraints, architecture snapshot, localStorage schema, oracle delivery decision, full design token table, external API table, versioning discipline, ecosystem position, session protocol, security/injection protocol. *(Originally created as `CLAUDE.md`; merged and renamed `AGENTS.md` on June 23, 2026.)*
-
-- **`.agents/AGENTS.md`** — multi-agent coordination protocol following the OKHP3 `.agents/` convention (same pattern as `OKHP3/mermaid-diagram-bpmn`). Formalizes the Council of AIs: Claude / ChatGPT / Perplexity / Replit Agent / Copilot roles, cross-pollination flow, session start/during/end protocols, context handoff format (→ this file), ecosystem relationships, and prompt injection protocol.
+- **`AGENTS.md`** (root) — canonical agent rulebook and multi-agent coordination protocol. Encodes: Vyrle lock, hard constraints, architecture snapshot, localStorage schema, oracle delivery, design tokens, external API table, versioning discipline, Council of AIs roles, session protocol, context handoff template, ecosystem position, and prompt injection protocol. *(Consolidated June 23, 2026 from `CLAUDE.md` + `.agents/AGENTS.md` into a single root file.)*
 
 - **`scripts/sync.sh`** — sync automation script mirroring the `bpmn` `scripts/` pattern:
   - `npm run check` (→ `--check`) — `tsc --noEmit` only

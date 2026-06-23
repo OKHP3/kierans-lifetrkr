@@ -295,7 +295,7 @@ This project is **adjacent to, but not part of**, the OverKill Hill FoundRy (`OK
 - `OKHP3/mermaid-theme-builder` — similar Vite + React stack
 
 ### What to borrow from ecosystem siblings
-- `.agents/` folder pattern (this file)
+- `.agents/` folder pattern (agent memory, skills — see `.agents/`)
 - `scripts/sync.sh` pattern for GitHub sync automation
 - `.github/workflows/` CI pattern if applicable
 - `replit.md` as a Replit session brief
