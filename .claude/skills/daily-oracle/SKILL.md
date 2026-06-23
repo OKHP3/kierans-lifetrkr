@@ -10,10 +10,14 @@ description: >
 license: MIT
 metadata:
   author: Jamie Hill (OKHP3 / OverKill Hill P³)
-  version: "1.0"
+  version: "1.1"
   origin: Kieran's LifeTrkr (https://github.com/OKHP3/kierans-lifetrkr)
   published-via: OKHP3/skillz
-compatibility: Browser environment. Requires a Claude API proxy (Cloudflare Worker or similar) to avoid exposing the Anthropic API key client-side. Tarot and horoscope sources are free public APIs.
+compatibility: >
+  Browser environment. Tarot and horoscope sources are free public APIs (no key required).
+  Claude AI message: two delivery options — Cloudflare Worker proxy (recommended for production,
+  API key stays server-side) or direct browser fetch with anthropic-dangerous-direct-browser-access
+  header (acceptable for personal single-user apps). See "API key delivery" section below.
 ---
 
 # daily-oracle
@@ -21,13 +25,6 @@ compatibility: Browser environment. Requires a Claude API proxy (Cloudflare Work
 A three-layer daily reading system that combines a tarot card, a daily horoscope,
 and an AI-synthesized oracle message. Generates once per day and caches the result
 in localStorage. Degrades gracefully if any layer fails.
-
-## When to use this skill
-
-- Adding a "daily reading," "word of the day," or "daily affirmation" feature
-- Building wellness, astrology, or personal-growth apps
-- Any feature that should feel personalized, contextual, and consistent within a day
-- When you need the AI message to incorporate real data (moon phase, date, sign) naturally
 
 ## Architecture overview
 
@@ -38,7 +35,7 @@ Check localStorage cache key: myapp:{userId}:oracle:{YYYY-MM-DD}
     ↓ cache miss
 Fetch tarot card        → tarotapi.dev (free, no auth)
 Fetch daily horoscope   → freehoroscopeapi.com (free, no auth, needs birth sign)
-Generate AI message     → Claude API via proxy (holds API key server-side)
+Generate AI message     → Claude API (via proxy or direct browser fetch — see "API key delivery")
     ↓
 Combine all three → cache in localStorage → render
     ↓
@@ -53,12 +50,14 @@ Day N+1: same flow, new key, new reading
 | Daily horoscope | `freehoroscopeapi.com/api/v1/get-horoscope/daily?sign={sign}` | None | Omit section gracefully |
 | Oracle message (AI) | Your Claude proxy URL | Via proxy | Use tarot card's `meaning_up` field as fallback |
 
-## The API key problem — and how to solve it
+## API key delivery
 
-The Anthropic API requires an `x-api-key` header. Including this in client-side
-JavaScript exposes it in the browser's network panel and source bundle.
+The Anthropic API requires an `x-api-key` header. Two approaches, depending on context:
 
-**Solution: Cloudflare Worker proxy (free, 100k requests/day, ~30 lines of code)**
+### Option A — Cloudflare Worker proxy (recommended for production)
+
+Keeps the API key server-side. Free at 100k requests/day. ~30 lines of code.
+Use when: the app is public, multi-user, or you cannot accept any key exposure risk.
 
 Deploy a Worker that holds your API key in secrets and accepts POST requests from
 your app's domain:
@@ -111,6 +110,46 @@ Worker setup:
 Store the worker URL as an environment variable:
 ```
 VITE_ORACLE_WORKER_URL=https://your-app-oracle.workers.dev
+```
+
+### Option B — Direct browser fetch (personal / single-user apps only)
+
+Anthropic allows direct browser calls using a special header that signals you
+accept the risk of key exposure. The key must be stored client-side (e.g. as a
+`VITE_` env var), which is visible in your JS bundle. Only use for personal apps
+where you are the sole user and the exposure risk is acceptable to you.
+
+```typescript
+async function generateOracleMessage(card: TarotCard, context: OracleContext): Promise<string> {
+  const ANTHROPIC_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
+  // ... build userPrompt ...
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5',
+        max_tokens: 150,
+        system: 'You are a warm, grounded daily oracle. Write 2–3 sentences. No clichés.',
+        messages: [{ role: 'user', content: userPrompt }],
+      }),
+    });
+    const data = await res.json();
+    return data.content?.[0]?.text || card.meaning_up;
+  } catch {
+    return card.meaning_up;
+  }
+}
+```
+
+Environment variable (Replit Secret — not a server secret, but not shared publicly):
+```
+VITE_ANTHROPIC_API_KEY=sk-ant-...
 ```
 
 ## Implementation
@@ -187,8 +226,11 @@ async function generateOracleMessage(
     'Write a 2–3 sentence daily oracle message. Warm, grounded, quietly insightful.',
   ].filter(Boolean).join(' ');
 
+  // Option A: CF Worker proxy (VITE_ORACLE_WORKER_URL)
+  // Option B: Direct browser fetch — see "API key delivery" section above
+  const proxyUrl = import.meta.env.VITE_ORACLE_WORKER_URL;
   try {
-    const res = await fetch(import.meta.env.VITE_ORACLE_WORKER_URL, {
+    const res = await fetch(proxyUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
