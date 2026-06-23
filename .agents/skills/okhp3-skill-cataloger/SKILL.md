@@ -7,12 +7,15 @@ description: >
   contents for the skill ecosystem. Use when asked to catalog, list, inventory,
   or update skills; regenerate the skills readme or catalog; show what skills are
   installed; check skill versions; validate naming conventions; or refresh the
-  skills list. Also activates on "what skills does this project have" or
-  "is the skills catalog current".
+  skills list. Also activates on "what skills does this project have",
+  "is the skills catalog current", or "run the skill cataloger".
+  Use the full index mode when asked to catalog the distribution surface, index all
+  available skills, rebuild SKILLS.md, run a full catalog, run a full index, index
+  all skills in this repo, or show all skills available for distribution.
 license: MIT
 metadata:
   author: Jamie Hill (OverKill Hill P³)
-  version: "1.1.0"
+  version: "1.2.0"
   category: universal
   origin: okhp3/skillz
   homepage: https://overkillhill.com
@@ -25,14 +28,18 @@ metadata:
 
 `okhp3-skill-cataloger` is an OverKill Hill P³–branded Agent Skill designed to
 automatically discover, index, and catalog all Agent Skills contained within a
-repository's `.agents/skills/` directory. Its primary function is to generate
-and maintain a clean, structured `README.md` that serves as a living table of
-contents for the skill ecosystem.
+repository. Its primary function is to generate and maintain a clean, structured
+file that serves as a living table of contents for the skill ecosystem.
 
-The skill scans each skill folder, extracts metadata, normalizes naming, and
-produces an organized, human-readable catalog that reflects the current state of
-the repo. This ensures that any Agent Skill–enabled project remains
-self-documenting, navigable, and audit-friendly as it grows.
+**Two modes, one script:**
+
+| Mode | Slash command | Scans | Writes | Use when |
+|---|---|---|---|---|
+| **Catalog** (default) | `/catalog-skills` | `.agents/skills/` | `.agents/skills/README.md` | Inventorying skills active in this project |
+| **Full index** (`--full`) | `/index-skills` | Root family folders | `SKILLS.md` | Indexing the distribution surface of a skills library |
+
+In an application repo, only catalog mode is meaningful.
+In a distribution repo (skillz), both modes are useful.
 
 ---
 
@@ -40,7 +47,7 @@ self-documenting, navigable, and audit-friendly as it grows.
 
 ### Natural language (all compliant agents)
 
-Any of these phrases triggers `okhp3-skill-cataloger`:
+**Catalog mode** — any of these phrases:
 
 ```
 catalog the skills
@@ -56,37 +63,54 @@ show installed skills
 show what skills are installed
 what skills does this project have
 are the skills up to date
+run the skill cataloger
 okhp3-skill-cataloger
+```
+
+**Full index mode** — any of these phrases:
+
+```
+full catalog
+full index
+index all skills
+index all available skills
+catalog the distribution surface
+rebuild SKILLS.md
+update SKILLS.md
+show all skills available for distribution
 ```
 
 These work in Claude Code, GitHub Copilot, OpenAI Codex, Cursor, Gemini CLI,
 and any other agent client that implements the Agent Skills standard.
 
-### Slash command in Claude Code: `/catalog-skills`
+### Slash commands in Claude Code
 
-If `.claude/commands/catalog-skills.md` is present at the **project root**,
-then `/catalog-skills` is a named command in Claude Code sessions.
+Two slash commands ship with this skill:
 
-This file is bundled with this skill package at
-`.agents/skills/okhp3-skill-cataloger/.claude/commands/catalog-skills.md`.
+- **`/catalog-skills`** — catalog mode (`.agents/skills/` → `README.md`)
+- **`/index-skills`** — full index mode (root family folders → `SKILLS.md`)
 
-**Installation required** — the file must be copied to the project root to work:
+**Installation (one-time per project):**
 
 ```bash
 mkdir -p .claude/commands
 cp .agents/skills/okhp3-skill-cataloger/.claude/commands/catalog-skills.md \
    .claude/commands/catalog-skills.md
-git add .claude/commands/catalog-skills.md
-git commit -m "feat: add /catalog-skills slash command"
+cp .agents/skills/okhp3-skill-cataloger/.claude/commands/index-skills.md \
+   .claude/commands/index-skills.md
+git add .claude/commands/
+git commit -m "chore: install /catalog-skills and /index-skills commands"
 ```
 
-Then type `/catalog-skills` in any Claude Code session for this project.
+Both files ship inside this skill package. They must be copied to the project
+root's `.claude/commands/` to function — Claude Code looks there, not inside
+the skill directory. This step is required once per project.
 
 ### Built-in listing command: `/skills`
 
-In VS Code with GitHub Copilot, `/skills` lists all available skills in the
-current project. It does not run `okhp3-skill-cataloger` — it shows a menu.
-Use it to confirm the cataloger is installed and visible.
+In VS Code with GitHub Copilot, `/skills` lists available skills in the
+current project. It does not run `okhp3-skill-cataloger` — it confirms the
+cataloger is installed and visible to Copilot.
 
 ---
 
@@ -94,174 +118,165 @@ Use it to confirm the cataloger is installed and visible.
 
 Activate when the user or context requires any of:
 
+**Catalog mode:**
 - Cataloging, listing, or inventorying the skills in this project
 - Regenerating or updating `.agents/skills/README.md`
 - Checking what skills are installed and their current versions
 - Validating that every skill's `name` field matches its directory name
-- Getting a machine-readable JSON summary of all skills
-- Showing the user what capabilities are available to agents in this repo
+- Getting a machine-readable JSON summary of all installed skills
+
+**Full index mode:**
+- Indexing or cataloging the distribution surface of a skills library
+- Regenerating or updating `SKILLS.md` in a distribution repo (skillz)
+- Checking what skills are available for installation by others
+- Auditing the full family/skill structure at root level
 
 ---
 
 ## Core instructions
 
-### Step 1 — Confirm the working directory
+### Step 1 — Confirm project root
 
 This skill lives at `.agents/skills/okhp3-skill-cataloger/SKILL.md`. All
-commands run from the **project root** — two directories above this file.
+commands run from the project root, two directories up from this file.
 
 ```bash
-# Confirm you are at the project root
 ls .agents/skills/
 ```
 
 ### Step 2 — Locate the generator script
 
-Check in this order and use the first one found:
+Use the first found:
 
 1. `scripts/gen-skills-readme.py` — canonical project-level copy (preferred)
 2. `.agents/skills/okhp3-skill-cataloger/scripts/gen-skills-readme.py` — bundled fallback
 
-Assign the found path to `SCRIPT`.
+If neither exists, tell the user the script is missing. The bundled copy ships
+inside this skill package.
 
-If neither exists, tell the user the script is missing and that the bundled
-copy ships inside this skill package.
+### Step 3 — Run the generator
 
-### Step 3 — Mode is auto-detected (no flag needed)
-
-The script auto-detects whether the skills directory uses a flat layout
-(project mode) or a categorized layout (library mode). No `--mode` flag is
-required in the standard case.
-
-| Layout | Detected as |
-|---|---|
-| `skill-name/SKILL.md` directly under `.agents/skills/` | `project` |
-| `category/skill-name/SKILL.md` nested one level deeper | `library` |
-
-Override only when auto-detection gets it wrong:
-```bash
-python3 ${SCRIPT} --skills-dir .agents/skills --mode library
-```
-
-See `references/MODES.md` for the full decision guide.
-
-### Step 4 — Run the generator
+**Catalog mode** (default — scans `.agents/skills/`):
 
 ```bash
 python3 ${SCRIPT} --skills-dir .agents/skills
 ```
 
-If the script exits with errors: show the full output. Fatal errors (name
-mismatches, duplicate names, missing descriptions) must be resolved before
-the catalog is generated. Warnings (missing version) can be noted and skipped.
+Mode is auto-detected by default. Pass `--mode project` or `--mode library`
+only when you need to override. See `references/MODES.md` for guidance.
 
-### Step 5 — Report results
+**Full index mode** (scans root family folders → `SKILLS.md`):
 
-After a successful run, tell the user:
+```bash
+python3 ${SCRIPT} --full
+```
+
+Full index mode always uses library mode (family/skill/SKILL.md layout).
+`SKILLS.md` is created automatically if it doesn't exist.
+
+If the script exits with fatal errors (name mismatches, missing descriptions,
+duplicate names): show the full output and stop. Resolve errors before
+regenerating. Warnings may be shown and skipped.
+
+### Step 4 — Report results
+
+Tell the user:
 
 - How many skills were found and cataloged
-- The detected or specified mode (project or library)
-- Whether `.agents/skills/README.md` was updated or already current
+- Which mode was used (auto-detected or explicit) and what it resolved to
+- Whether the output file was updated or already current
 - Any validation warnings
-- The updated timestamp now visible in the README
-- Whether `.agents/skills/.catalog-meta.json` was written
+- That `.catalog-meta.json` was written with machine-readable state
 
-The generated section shows a visible timestamp line:
+The generated section renders as:
 
 ```
 *Catalog last updated: **June 23, 2026 at 16:36 UTC** · **5** skills indexed*
 ```
 
-A machine-readable HTML comment carries the same information:
+With an HTML comment for tooling:
 
 ```html
-<!-- Generated: 2026-06-23 16:36 UTC | Skills: 5 | Mode: project -->
+<!-- Generated: 2026-06-23 16:36 UTC | Skills: 5 | Mode: project | Surface: project-skills -->
 ```
-
-Both update on every run. A `.catalog-meta.json` file is also written
-alongside the README for programmatic consumption.
-
----
-
-## Gotchas
-
-- **Run from the project root**, not from inside `.agents/skills/` or the
-  skill directory. The script resolves `.agents/skills/` as a relative path.
-
-- **This skill catalogs itself.** `okhp3-skill-cataloger` appears as a row
-  in the generated table. This is correct — complete inventory includes the
-  cataloger.
-
-- **Missing README or markers causes an error.** If `.agents/skills/README.md`
-  does not exist, or is missing the `<!-- SKILLS_CATALOG_START -->` and
-  `<!-- SKILLS_CATALOG_END -->` markers, the script exits with an error.
-  Initialize the README manually and add the markers before first run.
-
-- **Python 3.9+ required. No external dependencies.** The script uses only
-  the standard library.
-
-- **The slash command file needs installation.** The `.claude/commands/`
-  directory must be at the project root, not inside `.agents/skills/`. Copy
-  the bundled file per the installation step above.
-
-- **Library mode is for categorized structures only.** Using `--mode library`
-  on a flat structure produces an empty table. Auto-detection handles this
-  correctly in most cases; override only if needed.
-
-- **Auto-detection reads the first non-hidden subdirectory.** If your first
-  skill directory is unusual (missing SKILL.md, only has scripts), auto-
-  detection may misfire. Override with `--mode project` or `--mode library`.
 
 ---
 
 ## Available commands
 
 ```bash
-# Standard: auto-detect mode, catalog, update README
+# Catalog mode: auto-detect, catalog .agents/skills/, update README
 python3 ${SCRIPT} --skills-dir .agents/skills
 
-# Preview without writing any files
-python3 ${SCRIPT} --skills-dir .agents/skills --dry-run
+# Full index mode: scan root family folders, write SKILLS.md
+python3 ${SCRIPT} --full
 
-# Validate only — do not write README or meta file
+# Preview what would change without writing any files
+python3 ${SCRIPT} --skills-dir .agents/skills --dry-run
+python3 ${SCRIPT} --full --dry-run
+
+# Validate only — report errors and warnings, do not write output
 python3 ${SCRIPT} --skills-dir .agents/skills --check
 
 # JSON output — machine-readable skill list to stdout
 python3 ${SCRIPT} --skills-dir .agents/skills --json
 
-# Explicit library mode — for skillz repo or categorized structures
+# Explicit mode override (catalog mode)
+python3 ${SCRIPT} --skills-dir .agents/skills --mode project
 python3 ${SCRIPT} --skills-dir .agents/skills --mode library
+
+# Override output file (both modes)
+python3 ${SCRIPT} --full --output my-index.md
 
 # Quiet — suppress output unless there are changes or errors
 python3 ${SCRIPT} --skills-dir .agents/skills --quiet
+python3 ${SCRIPT} --full --quiet
 ```
 
 ---
 
-## Output files
+## Gotchas
 
-| File | Written when |
-|---|---|
-| `.agents/skills/README.md` | Always (must pre-exist with markers) |
-| `.agents/skills/.catalog-meta.json` | Always (creates or overwrites) |
+- **Run from the project root.** The script resolves `.agents/skills/` as a
+  relative path. Running from inside the skill directory will fail.
+
+- **Catalog mode: README must exist with markers.** If `.agents/skills/README.md`
+  does not exist, or is missing the `<!-- SKILLS_CATALOG_START -->` and
+  `<!-- SKILLS_CATALOG_END -->` markers, the script exits with an error. Create
+  the README with those markers before the first catalog run.
+
+- **Full index mode: SKILLS.md is auto-created.** Unlike catalog mode, `--full`
+  creates `SKILLS.md` if it doesn't exist. The markers are part of the generated
+  content. No pre-existing file or markers needed.
+
+- **This skill catalogs itself in catalog mode.** `okhp3-skill-cataloger`
+  appears in the generated table. This is correct — a complete inventory includes
+  the cataloger. In full index mode, `.agents/` is excluded from the root scan,
+  so the cataloger does NOT include itself in the distribution index.
+
+- **Python 3.9+ required. No external dependencies.** Standard library only.
+
+- **Library mode on a flat structure produces an empty table.** Auto-detection
+  handles this correctly in most cases. See `references/MODES.md` if it does not.
+
+- **`/catalog-skills` and `/index-skills` require copying command files to the project root.**
+  See the slash command installation step above.
+
+- **`.catalog-meta.json` is written on every successful run.** Location depends
+  on mode: `.agents/skills/.catalog-meta.json` for catalog mode, `.catalog-meta.json`
+  at repo root for full index mode. Commit it for CI use; add to `.gitignore` if ephemeral.
+
+- **`--full` always uses library mode.** There is no project-mode full index.
+  The distribution surface is always organized into family/skill folders.
 
 ---
 
 ## References
 
-- `references/MODES.md` — when to use `project` vs `library` mode,
-  how auto-detection works, and how to switch between modes.
-- `assets/catalog-meta-schema.json` — JSON schema for `.catalog-meta.json`
-  for tooling that reads the machine-readable output.
+- `references/MODES.md` — when to use `project` vs `library` mode, how
+  auto-detection works, when to override, and how `--full` differs.
 
----
-
-## Changelog
-
-| Version | Changes |
-|---|---|
-| 1.1.0 | Auto-mode detection (default). `--dry-run` flag. `.catalog-meta.json` output. Slash command installation documented. |
-| 1.0.0 | Initial release. Marker injection, project/library modes, `--check`, `--json`, `--quiet`, validation. |
+- `assets/catalog-meta-schema.json` — JSON Schema for `.catalog-meta.json`.
 
 ---
 

@@ -1,150 +1,221 @@
 # okhp3-skill-cataloger — Mode Reference
 
-The `gen-skills-readme.py` script runs in one of two modes. The default is
-`auto`, which detects the correct mode from the directory layout.
-Manual override is available when auto-detection needs help.
+The `gen-skills-readme.py` script operates in three modes. Choosing the
+wrong mode produces an empty table or an incorrectly structured catalog.
 
 ---
 
 ## Mode overview
 
-| Mode | Layout | Command flag |
-|---|---|---|
-| `project` | `skill-name/SKILL.md` directly under `.agents/skills/` | `--mode project` |
-| `library` | `category/skill-name/SKILL.md` one level deeper | `--mode library` |
-| `auto` | Detected from layout (default since v1.1.0) | _(omit flag)_ |
+| Mode | Flag | Scans | Writes | Auto-detected? |
+|---|---|---|---|---|
+| `project` | (none) | `.agents/skills/` — flat layout | `.agents/skills/README.md` | Yes |
+| `library` | (none) | `.agents/skills/` — categorized layout | `.agents/skills/README.md` | Yes |
+| Full index | `--full` | Repo root family folders | `SKILLS.md` | N/A — explicit flag |
+
+`project` and `library` are both "catalog" modes — they differ only in how they
+interpret `.agents/skills/`. The `--full` flag is a distinct operation that scans
+the repo root for the distribution surface.
+
+---
+
+## Auto-detection (catalog mode)
+
+The script detects `project` vs `library` automatically when `--mode auto` is
+used (the default) and `--full` is not passed.
+
+**Algorithm:** Inspect the first non-hidden subdirectory of `.agents/skills/`.
+
+| First subdirectory contains… | Detected mode |
+|---|---|
+| `SKILL.md` directly | `project` |
+| More subdirectories (no `SKILL.md`) | `library` |
+
+Auto-detection is correct in virtually all cases. Use `--mode project` or
+`--mode library` only when you need to override — for example, when a category
+folder happens to contain a stray `SKILL.md` that tricks the detector.
+
+```bash
+# Auto-detect (recommended)
+python3 scripts/gen-skills-readme.py --skills-dir .agents/skills
+
+# Explicit override
+python3 scripts/gen-skills-readme.py --skills-dir .agents/skills --mode project
+python3 scripts/gen-skills-readme.py --skills-dir .agents/skills --mode library
+```
 
 ---
 
 ## project mode
 
-**Use when:** `.agents/skills/` contains skill folders directly.
+**Use when:** `.agents/skills/` contains skill folders directly (flat layout).
 
 ```
 .agents/skills/
-├── okhp3-skill-cataloger/      ← skill directory
+├── okhp3-skill-cataloger/
 │   └── SKILL.md
-├── celestial-data/              ← skill directory
+├── celestial-data/
 │   └── SKILL.md
-└── gis-token-model/             ← skill directory
+└── gis-token-model/
     └── SKILL.md
 ```
 
-**How to identify:** List `.agents/skills/`. If every non-hidden subdirectory
-contains a `SKILL.md` file, you are in project mode.
+**How to identify:** Every subdirectory inside `.agents/skills/` contains
+a `SKILL.md` file directly.
 
-**Command:**
-```bash
-python3 scripts/gen-skills-readme.py --skills-dir .agents/skills
-```
-_(project is auto-detected — no `--mode` flag needed in the standard case)_
-
-**README output:** A single flat table with all skills listed together, plus
-a Category column populated from each skill's `metadata.category` field.
+**README output:** A single flat table with columns Skill, Description,
+Version, Category.
 
 ---
 
 ## library mode
 
 **Use when:** `.agents/skills/` contains category folders, each of which
-contains skill folders.
+contains skill folders (categorized layout).
 
 ```
 .agents/skills/
-├── universal/                    ← category folder
+├── universal/                  ← category folder
 │   ├── vite-github-pages/
 │   │   └── SKILL.md
 │   └── gis-token-model/
 │       └── SKILL.md
-├── mermaid/                      ← category folder
+├── mermaid/                    ← category folder
 │   ├── okhp3-mermaid-core/
 │   │   └── SKILL.md
 │   └── okhp3-mermaid-bpmn/
 │       └── SKILL.md
-└── glee-fully/                   ← category folder
+└── glee-fully/                 ← category folder
     └── glee-recipe-planning/
         └── SKILL.md
 ```
 
-**How to identify:** List `.agents/skills/`. If subdirectories do NOT contain
-`SKILL.md` directly — they contain more subdirectories instead — you are in
-library mode.
+**How to identify:** Subdirectories inside `.agents/skills/` do NOT contain
+`SKILL.md` directly — they contain more subdirectories.
 
-**Command:**
-```bash
-python3 scripts/gen-skills-readme.py --skills-dir .agents/skills --mode library
-```
-
-**README output:** Skills grouped into H3 sections by category, with a count
-per category.
+**README output:** Skills grouped into sections by category, with a skill
+count per category.
 
 ---
 
-## auto mode (default since v1.1.0)
+## Full index mode (`--full`)
 
-The script examines the first non-hidden subdirectory of `.agents/skills/`:
+**Use when:** You want to catalog the **distribution surface** of a skills
+library repo — the root-level family folders that contain skills available for
+others to install (e.g., the `skillz` repo).
 
-- If it contains a `SKILL.md` file directly → **project mode**
-- If it contains subdirectories that contain `SKILL.md` → **library mode**
-- If neither applies (empty or unusual) → **project mode** (safe fallback)
+This is NOT a mode of catalog mode. It is a distinct operation triggered by the
+`--full` flag. It always uses library-style grouping (family/skill).
 
-The detected mode is printed unless `--quiet` is set:
 ```
-Auto-detected mode: project
+skillz/                         ← repo root (scanned by --full)
+├── mermaid/
+│   ├── okhp3-mermaid-core/
+│   │   └── SKILL.md            ← discovered
+│   └── okhp3-mermaid-bpmn/
+│       └── SKILL.md            ← discovered
+├── linkedin/
+│   └── okhp3-linkedin-post/
+│       └── SKILL.md            ← discovered
+├── universal/
+│   └── vite-github-pages/
+│       └── SKILL.md            ← discovered
+├── .agents/                    ← SKIPPED (in exclusion list)
+│   └── skills/
+│       └── okhp3-skill-cataloger/
+│           └── SKILL.md        ← NOT discovered (inside .agents/)
+└── SKILLS.md                   ← OUTPUT written here
 ```
 
-**Override when:** auto-detection gets it wrong (unusual first directory,
-mixed layouts during migration). Pass `--mode project` or `--mode library`
-explicitly to bypass detection.
+**Key differences from catalog mode:**
 
----
-
-## Which repos use which mode
-
-| Repo | Mode | Reason |
+| | Catalog mode | Full index mode |
 |---|---|---|
-| `kierans-lifetrkr` | project | Small, focused skill set (< 10 skills) |
-| `mermaid-diagram-bpmn` | project | Skills are project-specific tools |
-| `mermaid-theme-builder` | project | Skills are project-specific tools |
-| `skillz` | library | Skills organized by category (`mermaid/`, `linkedin/`, etc.) |
-| `Glee-fullyTools` | project → library | Starts flat; switches when categories added |
-| Any single-purpose project | project | Default; stays project indefinitely |
+| Flag | (none) | `--full` |
+| Scans | `.agents/skills/` | Repo root |
+| Output | `.agents/skills/README.md` | `SKILLS.md` |
+| Output must pre-exist | Yes (with markers) | No (auto-created) |
+| `.catalog-meta.json` location | `.agents/skills/` | Repo root |
+| Includes cataloger itself | Yes | No (`.agents/` excluded) |
+| Mode | auto-detected or explicit | Always library |
+
+```bash
+# Full index mode
+python3 scripts/gen-skills-readme.py --full
+
+# Full index, preview only
+python3 scripts/gen-skills-readme.py --full --dry-run
+
+# Full index with custom output file
+python3 scripts/gen-skills-readme.py --full --output my-index.md
+```
+
+**When to use `--full` vs catalog:**
+
+| Repo | Typical command | Reason |
+|---|---|---|
+| `kierans-lifetrkr` | (none / default) | Application repo, catalogs `.agents/skills/` |
+| `mermaid-diagram-bpmn` | (none / default) | Application repo, catalogs `.agents/skills/` |
+| `skillz` | `--full` | Distribution repo, indexes root family folders |
+| `skillz` | (none / default) | Also valid — catalogs skillz's own `.agents/skills/` |
+
+---
+
+## When repos use which mode
+
+| Repo | Catalog mode | Notes |
+|---|---|---|
+| `kierans-lifetrkr` | project | Small focused set — flat is correct |
+| `mermaid-diagram-bpmn` | project | Skills are flat in `.agents/skills/` |
+| `mermaid-theme-builder` | project | Single skill — flat is correct |
+| `skillz` | library (for `.agents/skills/`) | `.agents/skills/` may use category folders |
+| `skillz` with `--full` | library (always) | Root family folders — the distribution surface |
+| `Glee-fullyTools` | library | 50+ tools with sub-skills — category folders required |
+| Any new project repo | project | Default until category folders are added |
 
 ---
 
 ## Switching from project to library
 
-When a project's skill set grows and category organization becomes necessary:
+When a project outgrows a flat structure and you add category folders:
 
-1. Create category subfolders inside `.agents/skills/`
-2. Move skill directories into the appropriate category folder
-3. Verify auto-detection catches the new structure:
+1. Create category subfolders inside `.agents/skills/`:
    ```bash
-   python3 scripts/gen-skills-readme.py --dry-run
-   # Should print: Auto-detected mode: library
+   mkdir -p .agents/skills/core
+   mkdir -p .agents/skills/integrations
    ```
-4. Run the generator:
+2. Move skill directories into the appropriate category:
+   ```bash
+   git mv .agents/skills/celestial-data .agents/skills/core/celestial-data
+   ```
+3. Run the cataloger — auto-detection will pick up library mode:
    ```bash
    python3 scripts/gen-skills-readme.py
    ```
-5. Commit the restructured skills and updated README
+4. Commit the restructured skills and updated README.
+
+No flag or configuration change needed — auto-detection handles it.
 
 ---
 
 ## Edge cases
 
-**Mixed layout (some skills flat, some categorized):**
-Auto-detection reads the first subdirectory. If it contains a SKILL.md,
-project mode is selected even if other subdirectories are category folders.
-Resolution: finish the migration before committing, or use `--mode library`
-explicitly until the migration is complete.
+**Mixed structure (some categories, some flat skills):**
+Auto-detection inspects only the first subdirectory. If the first subdirectory
+is a category folder (no `SKILL.md`), mode resolves to `library`. Skills sitting
+flat alongside category folders will be missed in library mode. Keep the
+structure consistent: either all flat or all categorized.
 
-**Category folder that looks like a skill:**
-If a category folder accidentally contains a `SKILL.md` at its root, auto-
-detection will treat it as a skill directory (project mode) and miss the
-skills nested inside it. Avoid placing SKILL.md files directly inside
-category folders.
+**Empty `.agents/skills/` directory:**
+Auto-detection defaults to `project`. The catalog will be empty but valid.
 
-**Empty skills directory:**
-Auto-detection falls back to project mode. Run `--check` to confirm markers
-exist before the first catalog run.
+**Category folder with a stray `SKILL.md`:**
+If a category folder (e.g., `mermaid/`) accidentally contains a `SKILL.md`
+at its root, auto-detection will see it and choose `project` mode, missing
+all the nested skills. Remove the stray `SKILL.md` or pass `--mode library`
+explicitly until it is cleaned up.
+
+**Full index finds nothing:**
+If run in an application repo where no root-level family folders exist,
+`--full` writes an empty `SKILLS.md` and reports 0 skills. This is correct
+behavior — it signals that the repo has no distribution surface, not an error.
