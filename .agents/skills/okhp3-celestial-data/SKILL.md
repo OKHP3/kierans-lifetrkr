@@ -22,14 +22,12 @@ A self-contained celestial calculation library. All computations run locally usi
 the Julian Day Number system. Accurate to within hours for moon phases — sufficient
 for display and UX purposes.
 
-## When to use this skill
+## Implementation
 
-Activate when the task involves any of:
-- Displaying the current moon phase or a moon phase emoji
-- Showing the current astrological season or zodiac sign
-- Detecting or displaying Mercury retrograde status
-- Finding upcoming new moon or full moon dates
-- Adding seasonal or lunar awareness to a personal app, journal, or calendar
+The full TypeScript source is embedded below for direct use. The same implementation
+is also available at `references/celestial.ts` if your environment prefers loading
+from file rather than reading inline. Both are identical — use whichever suits your
+context loading strategy.
 
 ## Core functions
 

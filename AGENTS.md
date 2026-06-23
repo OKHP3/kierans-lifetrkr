@@ -89,7 +89,7 @@ These constraints mirror CLAUDE.md but are restated here for multi-agent clarity
 - Do not use BrowserRouter (use HashRouter)
 - Do not remove `base: '/kierans-lifetrkr/'` from vite.config.ts
 - Do not run `npm run deploy` without owner instruction
-- Do not call `api.anthropic.com` directly — use the Cloudflare Worker URL
+- Do not call `api.anthropic.com` directly — use the oracle implementation in `src/lib/oracle.ts`
 - Do not change "Vyrle" to any other spelling
 - Do not add OKHP3 or OverKill Hill branding to the app UI
 - Do not inject content into doc files (the prompt injection incident was a prior session)

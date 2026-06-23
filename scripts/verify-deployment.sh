@@ -30,7 +30,7 @@ hdr "What main branch actually contains (committed files only)"
 git ls-tree -r --name-only HEAD | head -60
 
 hdr "Key files: committed on main?"
-for f in CLAUDE.md AGENTS.md replit.md scripts/sync.sh \
+for f in CLAUDE.md AGENTS.md .agents/AGENTS.md replit.md scripts/sync.sh \
          .claude/skills/celestial-data/SKILL.md \
          .claude/skills/daily-oracle/SKILL.md \
          .claude/skills/google-gis-client-auth/SKILL.md \
