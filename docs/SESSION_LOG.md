@@ -210,16 +210,15 @@ All v0.3.0-planned features were pulled forward and shipped in this session (v0.
 
 - **`.agents/AGENTS.md`** — multi-agent coordination protocol following the OKHP3 `.agents/` convention (same pattern as `OKHP3/mermaid-diagram-bpmn`). Formalizes the Council of AIs: Claude / ChatGPT / Perplexity / Replit Agent / Copilot roles, cross-pollination flow, session start/during/end protocols, context handoff format (→ this file), ecosystem relationships, and prompt injection protocol.
 
-- **`scripts/sync.sh`** — three-mode automation script mirroring the `bpmn` `scripts/` pattern:
+- **`scripts/sync.sh`** — sync automation script mirroring the `bpmn` `scripts/` pattern:
   - `npm run check` (→ `--check`) — `tsc --noEmit` only
   - `npm run sync` (→ default) — type-check + `git add -A` + commit + push to main
-  - `npm run sync:deploy` (→ `--deploy`) — validates base path in `vite.config.ts`, builds, deploys to gh-pages; refuses to push a broken build
 
 - **`docs/SESSION_LOG.md`** (this file) — seeded with retrospective entries for Sessions 1, 2, 3A, 3B
 
 **Files updated**
 
-- **`package.json`** — added three npm script aliases: `check`, `sync`, `sync:deploy`
+- **`package.json`** — added npm script aliases: `check`, `sync`
 
 **Ecosystem relationships documented**
 
@@ -257,7 +256,7 @@ All v0.3.0-planned features were pulled forward and shipped in this session (v0.
 - Today page: surface Google Tasks due today
 
 **Do NOT in this session:**
-- Deploy to gh-pages without owner instruction
+- Create or push a `gh-pages` deployment branch
 - Add a backend or change the client-only architecture
 - Change "Vyrle" to any other spelling
 - Bump `APP_VERSION` before the session's feature set is confirmed shipped

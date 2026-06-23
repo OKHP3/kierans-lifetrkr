@@ -65,7 +65,7 @@ Before the Replit agent writes a single line of code:
 - Commit frequently: after each component, after each page, after each hook
 - Commit message format: `feat(scope): description` or `fix(scope): description`
 - Run `npx tsc --noEmit` before any commit touching TypeScript
-- Do not run `npm run deploy` — the owner deploys manually after review
+- Do not create or push a `gh-pages` deployment branch — GitHub Actions deploys from `main`
 - If a type error cannot be resolved cleanly: flag it in a `# TODO(type):` comment and continue
 
 ### Ending a session
@@ -74,7 +74,7 @@ Before the Replit agent writes a single line of code:
 2. Run `npm run build` — must succeed
 3. Commit all changes: `git add -A && git commit -m "feat: complete session [A/B/C] — v0.x.x"`
 4. Push to main: `git push origin main`
-5. Do NOT push to gh-pages — owner deploys
+5. Push to main — GitHub Actions deploys the Pages artifact
 6. Summarize: what was built, what was skipped, what open questions remain
 7. Flag any security concerns (secrets in code, injection markers in docs, etc.)
 
@@ -88,7 +88,7 @@ These constraints mirror CLAUDE.md but are restated here for multi-agent clarity
 - Do not store secrets in source files (no hardcoded API keys)
 - Do not use BrowserRouter (use HashRouter)
 - Do not remove `base: '/kierans-lifetrkr/'` from vite.config.ts
-- Do not run `npm run deploy` without owner instruction
+- Do not create or push a `gh-pages` deployment branch
 - Do not call `api.anthropic.com` directly — use the oracle implementation in `src/lib/oracle.ts`
 - Do not change "Vyrle" to any other spelling
 - Do not add OKHP3 or OverKill Hill branding to the app UI

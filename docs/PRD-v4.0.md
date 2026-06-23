@@ -68,7 +68,7 @@ The June 22, 2026 second build session advanced from v0.1.0 (UI shell only) to v
 The single highest-value action that can be taken without a GCP setup is activating the Claude oracle. The entire three-layer stack is code-complete. Only a Replit Secret is needed.
 
 **VITE_ANTHROPIC_API_KEY:**
-Use the Replit `external_apis` skill to access Anthropic's API through Replit-managed billing. This avoids needing to create or manage an Anthropic account. The key goes into Replit Secrets as `VITE_ANTHROPIC_API_KEY`. After setting it, `npm run deploy` is required to rebuild.
+Use the Replit `external_apis` skill to access Anthropic's API through Replit-managed billing. This avoids needing to create or manage an Anthropic account. The key goes into Replit Secrets as `VITE_ANTHROPIC_API_KEY`. After setting it, push to `main` so GitHub Actions rebuilds and deploys.
 
 **Model name:** `oracle.ts` currently uses `claude-sonnet-4-5`. Confirm the correct current Anthropic model name at the time of activation. Use whatever `claude-3-5-sonnet` or `claude-sonnet` model is available via the external_apis skill. The prompt and caching logic do not change.
 
@@ -112,7 +112,7 @@ Use the Replit `external_apis` skill to access Anthropic's API through Replit-ma
 - Her next 14 days of Google Calendar events appear in Calendar tab and Home upcoming strip
 - Her Google Tasks appear in Today tab (due today) and Archive tab (undated)
 - Disconnecting Google returns the app to manual-only mode without losing local data
-- `npm run deploy` → live at GitHub Pages
+- Push to `main` → GitHub Actions deploys to GitHub Pages
 
 ---
 
@@ -343,12 +343,12 @@ To switch to the CF Worker approach in a future session: (1) deploy a Worker at 
 ```bash
 npm run dev       # Vite dev at localhost:5173 (or 0.0.0.0:5000 in Replit)
 npm run build     # tsc && vite build → dist/
-npm run deploy    # build + gh-pages -d dist → live at https://okhp3.github.io/kierans-lifetrkr/
+npm run sync      # type-check + commit + push to main
 ```
 
-**After every build session:** run `npm run deploy` from Replit and verify the live URL before closing the session. Confirm version string in SideNav footer matches the intended release.
+**After every build session:** push to `main` and verify the GitHub Actions deploy plus live URL before closing the session. Confirm version string in SideNav footer matches the intended release.
 
-GitHub Actions `.github/workflows/static.yml` also auto-deploys on push to `main`. When using `npm run deploy` directly, it pushes to the `gh-pages` branch, bypassing Actions.
+GitHub Actions `.github/workflows/static.yml` auto-deploys on push to `main`. Do not create or push a `gh-pages` deployment branch.
 
 ---
 
@@ -439,7 +439,7 @@ Comprehensive per-session acceptance tests. Run these manually after each sessio
 - [ ] Token expiry banner: appears and reconnect works (test by clearing `sessionStorage.gal_token`)
 - [ ] Disconnect in Settings: clears token, app returns to manual-only mode
 - [ ] Multi-account: switching Google accounts shows different namespaced data
-- [ ] `npm run deploy` → verify live URL, confirm no broken tabs
+- [ ] Push to `main` → verify GitHub Actions deploy and live URL, confirm no broken tabs
 
 ### v0.3.0 (Close Gaps)
 - [ ] App launches in dark mode by default (no saved preference → dark, not auto/light)
@@ -461,7 +461,7 @@ Comprehensive per-session acceptance tests. Run these manually after each sessio
 - [ ] Settings: About section shows correct `APP_VERSION` (not hardcoded `v0.1.0`)
 - [ ] Settings: "Regenerate today's oracle" button clears cache and triggers re-fetch
 - [ ] SideNav footer: version string matches intended release
-- [ ] `npm run deploy` → verify live URL
+- [ ] Push to `main` → verify GitHub Actions deploy and live URL
 
 ### v0.4.0 (PWA + Polish)
 - [ ] `public/manifest.json`: `start_url`, `display: "standalone"`, `background_color: "#0D0B14"`, `theme_color: "#C4A0E8"` all correct
@@ -472,7 +472,7 @@ Comprehensive per-session acceptance tests. Run these manually after each sessio
 - [ ] Drag-to-reorder: tasks in Today and Archive tabs can be reordered; order persists on reload
 - [ ] No unnecessary oracle re-fetches: navigate away from Home and back — oracle does not re-call API
 - [ ] `celestial.ts` calculations: typing in a form field does not trigger celestial recalculation
-- [ ] `npm run deploy` → verify live URL
+- [ ] Push to `main` → verify GitHub Actions deploy and live URL
 
 ### v0.5.0 (OAuth Verification)
 - [ ] Privacy policy page exists at a stable URL
@@ -491,7 +491,7 @@ Before starting a build session, the agent should:
 3. Check `src/types.ts` directly — it is the ground truth for schema
 4. Run `npm run dev` and verify the dev server starts clean
 5. After all changes: `npm run build` to confirm TypeScript compiles
-6. After build: `npm run deploy` to publish
+6. After build: push to `main` to publish through GitHub Actions
 7. Screenshot https://okhp3.github.io/kierans-lifetrkr/#/ to confirm deploy
 
 ---
@@ -505,7 +505,7 @@ Before starting a build session, the agent should:
 | v0.0 | — | Ralph | Grandfather — generation 0 |
 | v1.0 | — | Vyrle | Father — generation 1 |
 | v2.0 | — | Jamie | Son — generation 2; original app concept |
-| v3.0 | June 21, 2026 | Kieran (session 1) | TypeScript migration, HashRouter, GIS auth, gh-pages |
+| v3.0 | June 21, 2026 | Kieran (session 1) | TypeScript migration, HashRouter, GIS auth, GitHub Pages |
 
 **Build session history:**
 

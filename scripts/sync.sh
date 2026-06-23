@@ -4,9 +4,8 @@
 # Usage:
 #   bash scripts/sync.sh           # type-check + commit + push to main
 #   bash scripts/sync.sh --check   # type-check only (no commit, no push)
-#   bash scripts/sync.sh --deploy  # type-check + build + push to gh-pages
 #
-# Never run --deploy without owner review. The owner controls production deploys.
+# Production deploys are handled by GitHub Actions on pushes to main.
 
 set -e
 
@@ -34,26 +33,6 @@ ok "TypeScript clean"
 # ── --check mode: stop here ─────────────────────────────────────────────────
 if [[ "$MODE" == "--check" ]]; then
   ok "Check complete. No files changed."
-  exit 0
-fi
-
-# ── --deploy mode: full build + gh-pages ────────────────────────────────────
-if [[ "$MODE" == "--deploy" ]]; then
-  log "Verifying base path in vite.config.ts..."
-  grep -q "kierans-lifetrkr" vite.config.ts \
-    || fail "base path '/kierans-lifetrkr/' not found in vite.config.ts — unsafe to deploy."
-  ok "Base path confirmed"
-
-  log "Building for production..."
-  npm run build || fail "Build failed — check TypeScript and Vite errors above."
-  ok "Build succeeded"
-
-  log "Deploying to gh-pages..."
-  npm run deploy || fail "gh-pages deploy failed."
-  ok "Deployed to gh-pages"
-
-  echo ""
-  ok "Live at: ${LIVE_URL}"
   exit 0
 fi
 

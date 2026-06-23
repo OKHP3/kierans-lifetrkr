@@ -17,7 +17,7 @@
 **Stack:** React 18 + Vite 6 + TypeScript + Tailwind CSS (dark-mode-first, mobile-first)
 **Router:** HashRouter (required — see constraint below)
 **State:** localStorage only, no backend
-**Deploy:** gh-pages via `npm run deploy` (owner-triggered only)
+**Deploy:** GitHub Actions deploys the built artifact from `main`
 
 ---
 
@@ -40,10 +40,10 @@ Ralph v0.0 → Vyrle v1.0 → Jamie v2.0 → Kieran v3.0
 | Constraint | Why |
 |---|---|
 | Use `HashRouter`, never `BrowserRouter` | GitHub Pages serves from a subdirectory — BrowserRouter causes 404 on refresh |
-| Keep `base: '/kierans-lifetrkr/'` in `vite.config.ts` (production only) | gh-pages deploy path — removing it breaks all asset loading |
+| Keep `base: '/kierans-lifetrkr/'` in `vite.config.ts` (production only) | GitHub Pages serves from the `/kierans-lifetrkr/` subpath |
 | Never add an Express server, backend, or database | Architecture is intentionally client-only; Vite serves the SPA |
 | Never hardcode secrets in source files | `VITE_GOOGLE_CLIENT_ID` and `VITE_ANTHROPIC_API_KEY` live in Replit Secrets / `.env` only |
-| Never run `npm run deploy` | Owner deploys manually after review — never automate this |
+| Never create or push a `gh-pages` deployment branch | Deployment is handled by GitHub Actions from `main` |
 | Never change "Vyrle" to any other spelling | See above |
 | Never add OKHP3 / OverKill Hill P³ branding to the app UI | This is Kieran's personal app, not a product |
 | Never use `pnpm` | This project uses `npm` |
@@ -212,7 +212,7 @@ This project is **adjacent to, but not part of**, the OverKill Hill FoundRy (`OK
 - Commit format: `feat(scope): description` or `fix(scope): description`
 - Run `npx tsc --noEmit` before any TypeScript commit
 - Flag unresolvable type errors with `// TODO(type):` and continue
-- Do NOT run `npm run deploy`
+- Do NOT create or push a `gh-pages` deployment branch
 
 ### Ending a session
 
@@ -220,7 +220,7 @@ This project is **adjacent to, but not part of**, the OverKill Hill FoundRy (`OK
 2. `npm run build` — must succeed
 3. Bump `APP_VERSION` in `src/constants.ts` if a milestone was reached
 4. Commit: `feat: complete session — v0.x.x`
-5. Push to `main` — do NOT push to `gh-pages`
+5. Push to `main` — GitHub Actions deploys the Pages artifact
 6. Append a session handoff note to `docs/SESSION_LOG.md` (see `.agents/AGENTS.md` for format)
 
 ---
