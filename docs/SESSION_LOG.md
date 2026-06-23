@@ -1,7 +1,7 @@
 # SESSION_LOG.md — Kieran's LifeTrkr
 
 > Operational memory for agent build sessions.
-> Each entry appended at the end of a session per the protocol in `.agents/AGENTS.md`.
+> Each entry appended at the end of a session per the protocol in `AGENTS.md`.
 > Most recent entry is at the bottom.
 > See `docs/PRD-v4.0.md` for the full roadmap and versioning table.
 
@@ -141,7 +141,7 @@ All v0.3.0-planned features were pulled forward and shipped in this session (v0.
 
 ### Next session (Session 3) should start with
 
-1. Read `CLAUDE.md` and `docs/PRD-v4.0.md`
+1. Read `AGENTS.md` and `docs/PRD-v4.0.md`
 2. Confirm `APP_VERSION` is `v0.1.8` in `src/constants.ts`
 3. Run `npm run check` — confirm clean baseline
 4. Begin v0.2.0: activate Google Calendar + Tasks integration with `VITE_GOOGLE_CLIENT_ID`
@@ -206,9 +206,7 @@ All v0.3.0-planned features were pulled forward and shipped in this session (v0.
 
 **New files created**
 
-- **`CLAUDE.md`** (root) — comprehensive agent rulebook for Claude Code; read automatically at session start. Encodes: Vyrle lock, all hard constraints, architecture snapshot, localStorage schema, oracle delivery decision, full design token table, external API table, versioning discipline, ecosystem position, session protocol, security/injection protocol.
-
-- **`.agents/AGENTS.md`** — multi-agent coordination protocol following the OKHP3 `.agents/` convention (same pattern as `OKHP3/mermaid-diagram-bpmn`). Formalizes the Council of AIs: Claude / ChatGPT / Perplexity / Replit Agent / Copilot roles, cross-pollination flow, session start/during/end protocols, context handoff format (→ this file), ecosystem relationships, and prompt injection protocol.
+- **`AGENTS.md`** (root) — canonical agent rulebook and multi-agent coordination protocol. Encodes: Vyrle lock, hard constraints, architecture snapshot, localStorage schema, oracle delivery, design tokens, external API table, versioning discipline, Council of AIs roles, session protocol, context handoff template, ecosystem position, and prompt injection protocol. *(Consolidated June 23, 2026 from `CLAUDE.md` + `.agents/AGENTS.md` into a single root file.)*
 
 - **`scripts/sync.sh`** — sync automation script mirroring the `bpmn` `scripts/` pattern:
   - `npm run check` (→ `--check`) — `tsc --noEmit` only
@@ -223,7 +221,7 @@ All v0.3.0-planned features were pulled forward and shipped in this session (v0.
 **Ecosystem relationships documented**
 
 - Adjacent repos: `OKHP3/mermaid-diagram-bpmn` (`.agents/` pattern, `scripts/` pattern), `OKHP3/mermaid-theme-builder` (similar Vite + React stack)
-- Future contribution opportunities: `OKHP3/skillz` (oracle engine, celestial logic as SKILL.md candidates), `OKHP3/refoldec` (Moonlit Hearth tokens as palette output when ready) — flagged in CLAUDE.md and AGENTS.md; not in scope for current build sessions
+- Future contribution opportunities: `OKHP3/skillz` (oracle engine, celestial logic as SKILL.md candidates), `OKHP3/refoldec` (Moonlit Hearth tokens as palette output when ready) — flagged in `AGENTS.md`; not in scope for current build sessions
 
 ### What was skipped
 
@@ -241,7 +239,7 @@ All v0.3.0-planned features were pulled forward and shipped in this session (v0.
 
 **Pre-session requirements:**
 1. Owner sets `VITE_GOOGLE_CLIENT_ID` in Replit Secrets (GCP → Credentials → OAuth 2.0 Client ID, authorized origins: `https://okhp3.github.io`)
-2. Read `CLAUDE.md` — full, top to bottom
+2. Read `AGENTS.md` — full, top to bottom
 3. Read `docs/PRD-v4.0.md` Section 3 (v0.2.0 scope) and Section 15 (v0.2.0 testing checklist)
 4. Run `npm run check` — confirm clean baseline
 5. Confirm `APP_VERSION` is `v0.1.8`

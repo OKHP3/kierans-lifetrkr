@@ -30,12 +30,12 @@ hdr "What main branch actually contains (committed files only)"
 git ls-tree -r --name-only HEAD | head -60
 
 hdr "Key files: committed on main?"
-for f in CLAUDE.md AGENTS.md .agents/AGENTS.md replit.md scripts/sync.sh \
-         .claude/skills/celestial-data/SKILL.md \
-         .claude/skills/daily-oracle/SKILL.md \
-         .claude/skills/google-gis-client-auth/SKILL.md \
-         .claude/skills/vite-github-pages/SKILL.md \
-         .claude/skills/cloudflare-worker-api-proxy/SKILL.md \
+for f in AGENTS.md replit.md scripts/sync.sh \
+         .agents/skills/okhp3-celestial-data/SKILL.md \
+         .agents/skills/okhp3-daily-oracle/SKILL.md \
+         .agents/skills/okhp3-google-gis-client-auth/SKILL.md \
+         .agents/skills/okhp3-vite-github-pages/SKILL.md \
+         .agents/skills/okhp3-cloudflare-worker-api-proxy/SKILL.md \
          src/App.tsx src/constants.ts docs/PRD-v4.0.md; do
   if git cat-file -e "HEAD:$f" 2>/dev/null; then
     ok "committed: $f"
