@@ -1,3 +1,4 @@
 - [v3.0 architecture](v3-architecture.md) — HashRouter + client-side GIS auth; no Express; gh-pages deploy; src/ at root (not client/src/)
 - [Data schema v3](data-schema-v3.md) — routineTemplates[] array (not object), completions as arrays, task status lowercase, namespaced storage lifetrkr:{sub}:entity
 - [Oracle delivery decision](oracle-delivery.md) — direct browser fetch (VITE_ANTHROPIC_API_KEY) is current impl; CF Worker (VITE_ORACLE_WORKER_URL) is documented alternative; both valid
+- [OKHP3 skill standards](okhp3-skill-standards.md) — agentskills.io uses `assertions` (not `expectations`); footer uses em dash `—` per cataloger; Gotchas sections are highest-ROI content per agentskills.io docs

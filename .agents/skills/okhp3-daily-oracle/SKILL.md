@@ -399,9 +399,37 @@ The more contextual signal you pass, the more specific and resonant the message.
 
 ---
 
+## Gotchas
+
+- **Always use ISO date for the cache key** — extract with `new Date().toISOString().split('T')[0]`, not `toLocaleDateString()`. The locale-based method produces strings like `"6/26/2026"` that vary by browser locale, silently breaking caching for non-US users and making keys non-sortable.
+
+- **Fallback uses day-of-year, not random** — `doy = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)`, then `FALLBACK[doy % FALLBACK.length]`. Never use `Math.random()` in the fallback path — the oracle's core contract is daily stability (same card on refresh).
+
+- **The Anthropic browser header is required** — direct browser fetch must include `'anthropic-dangerous-direct-browser-access': 'true'`. Without it Anthropic's API rejects with a CORS error. The env var is `VITE_ANTHROPIC_API_KEY` (not `VITE_ANTHROPIC_KEY`).
+
+- **Old cache keys accumulate silently** — yesterday's and last week's keys remain in localStorage but are never read. If storage size matters, add a periodic sweep: `Object.keys(localStorage).filter(k => k.startsWith('myapp:') && !k.includes(today)).forEach(k => localStorage.removeItem(k))`.
+
+---
+
 ## References
 
-- `references/oracle.ts` — full TypeScript implementation of all functions in this skill.
+- `references/oracle.ts` — full TypeScript implementation. Load when implementing a function from scratch or debugging a type error.
+
+---
+
+## Available scripts
+
+- **`scripts/test-oracle-apis.cjs`** — tests tarotapi.dev and freehoroscopeapi.com connectivity and response shapes. Run before deploying or after an API outage report.
+  ```bash
+  node .agents/skills/okhp3-daily-oracle/scripts/test-oracle-apis.cjs
+  node .agents/skills/okhp3-daily-oracle/scripts/test-oracle-apis.cjs --sign scorpio
+  ```
+
+---
+
+## Assets
+
+- **`assets/oracle-component-template.tsx`** — complete copy-paste React component. Load when the user wants a working `OracleCard` implementation to drop into their app.
 
 ---
 
@@ -410,4 +438,4 @@ The more contextual signal you pass, the more specific and resonant the message.
 Built by [Jamie Hill](https://overkillhill.com) · [OverKill Hill P³](https://overkillhill.com)
 Published at [github.com/OKHP3](https://github.com/OKHP3)
 Part of the [OKHP3/skillz](https://github.com/OKHP3/skillz) Agent Skill library.
-MIT License -- free to use, fork, and adapt. A nod to the source is appreciated.
+MIT License — free to use, fork, and adapt. A nod to the source is appreciated.

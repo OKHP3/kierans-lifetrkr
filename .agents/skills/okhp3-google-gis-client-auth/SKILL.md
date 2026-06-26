@@ -305,9 +305,38 @@ app verification.
 
 ---
 
+## Gotchas
+
+- **`prompt: 'none'` for silent re-auth** — call `tokenClient.requestAccessToken({ prompt: 'none' })` when refreshing an expired token automatically. Without it every token refresh forces the user through the full consent popup, breaking the seamless experience.
+
+- **Exact sessionStorage key names matter** — the hook uses `g_token` and `g_expiry` (not `access_token`, `google_token`, or `tokenExpiry`). These names are shared between `isTokenValid()`, `getToken()`, and the expiry banner. A mismatch silently breaks the refresh cycle.
+
+- **2-minute buffer, not exact expiry** — check `Date.now() < Number(expiry) - 120_000`. The buffer prevents mid-request expiry when the token is valid at check time but expires during the API call.
+
+- **Authorized JavaScript Origins only, no Redirect URIs** — in GCP Console, set your domain under **Authorized JavaScript Origins** and leave **Authorized redirect URIs completely empty**. Adding a redirect URI signals the auth code flow (which requires a server). Origin changes take a few minutes to propagate.
+
+---
+
+## References
+
+- `references/useGoogleAuth.ts` — complete hook implementation. Load when implementing the hook from scratch or debugging token lifecycle issues.
+- `assets/gcp-setup-checklist.md` — GCP Console step-by-step. Load when the user asks about GCP project setup or reports `origin_mismatch` / `invalid_client` errors.
+
+---
+
+## Available scripts
+
+- **`scripts/check-gis-setup.cjs`** — scans a project for required GIS setup elements (CDN script, Client ID, sessionStorage keys, token client usage). Run after initial setup or when auth stops working.
+  ```bash
+  node .agents/skills/okhp3-google-gis-client-auth/scripts/check-gis-setup.cjs
+  node .agents/skills/okhp3-google-gis-client-auth/scripts/check-gis-setup.cjs --root ./my-project
+  ```
+
+---
+
 ## About
 
 Built by [Jamie Hill](https://overkillhill.com) · [OverKill Hill P³](https://overkillhill.com)
 Published at [github.com/OKHP3](https://github.com/OKHP3)
 Part of the [OKHP3/skillz](https://github.com/OKHP3/skillz) Agent Skill library.
-MIT License -- free to use, fork, and adapt. A nod to the source is appreciated.
+MIT License — free to use, fork, and adapt. A nod to the source is appreciated.

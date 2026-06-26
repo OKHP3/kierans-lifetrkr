@@ -303,8 +303,23 @@ The Julian Date algorithm is universal. Port the engine in three steps:
 
 ## References
 
-- `references/celestial.ts` — identical copy of the TypeScript implementation for reference or diffing.
-- `scripts/validate-mercury-dates.cjs` — Mercury retrograde date array validator. Run after any edit.
+- `references/celestial.ts` — complete TypeScript implementation. Load when implementing a function from scratch, debugging a type error, or the user requests code to copy directly.
+- `scripts/validate-mercury-dates.cjs` — Mercury retrograde date array validator. Load and run after any edit to the `MERCURY_RETROGRADE` array.
+- `scripts/check-date.cjs` — CLI utility: prints moon phase, season, and Mercury status for any date. Load when you need to verify a specific date's output before shipping.
+
+---
+
+## Available scripts
+
+- **`scripts/check-date.cjs`** — live celestial check for any date. Useful for verifying calculation output.
+  ```bash
+  node .agents/skills/okhp3-celestial-data/scripts/check-date.cjs
+  node .agents/skills/okhp3-celestial-data/scripts/check-date.cjs 2026-07-20
+  ```
+- **`scripts/validate-mercury-dates.cjs`** — validates the MERCURY_RETROGRADE array for overlaps, ordering, and ISO format. Run after editing that array.
+  ```bash
+  node .agents/skills/okhp3-celestial-data/scripts/validate-mercury-dates.cjs
+  ```
 
 ---
 
@@ -313,4 +328,4 @@ The Julian Date algorithm is universal. Port the engine in three steps:
 Built by [Jamie Hill](https://overkillhill.com) · [OverKill Hill P³](https://overkillhill.com)
 Published at [github.com/OKHP3](https://github.com/OKHP3)
 Part of the [OKHP3/skillz](https://github.com/OKHP3/skillz) Agent Skill library.
-MIT License -- free to use, fork, and adapt. A nod to the source is appreciated.
+MIT License — free to use, fork, and adapt. A nod to the source is appreciated.
