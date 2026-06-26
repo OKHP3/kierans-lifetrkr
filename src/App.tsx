@@ -18,7 +18,6 @@ import { AppProvider } from './context/AppContext'
 import BottomNav from './components/BottomNav'
 import MobileHeader from './components/MobileHeader'
 import SideNav from './components/SideNav'
-import ThemeToggle from './components/ThemeToggle'
 import TokenExpiryBanner from './components/TokenExpiryBanner'
 import Home from './pages/Home'
 import Rituals from './pages/Rituals'
@@ -27,6 +26,7 @@ import Calendar from './pages/Calendar'
 import Today from './pages/Today'
 import Archive from './pages/Archive'
 import Settings from './pages/Settings'
+import Origin from './pages/Origin'
 import { usePageTracking } from './hooks/usePageTracking'
 
 function AppShell() {
@@ -39,7 +39,6 @@ function AppShell() {
           <SideNav />
           <div className="main-area">
             <MobileHeader />
-            <ThemeToggle />
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/rituals" element={<Rituals />} />
@@ -48,6 +47,7 @@ function AppShell() {
               <Route path="/today" element={<Today />} />
               <Route path="/archive" element={<Archive />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/origin" element={<Origin />} />
             </Routes>
             <BottomNav />
           </div>

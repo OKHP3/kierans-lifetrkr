@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { useTheme } from '../context/ThemeContext'
 
@@ -13,15 +13,16 @@ const tabs = [
 ]
 
 const THEME_OPTS = [
-  { value: 'dark' as const, label: 'Dark', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> },
-  { value: 'light' as const, label: 'Light', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> },
-  { value: 'system' as const, label: 'System', icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> },
+  { value: 'dark' as const, label: 'Dark', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> },
+  { value: 'light' as const, label: 'Light', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> },
+  { value: 'system' as const, label: 'System', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> },
 ]
 
 export default function SideNav() {
   const { state } = useApp()
   const { theme, setTheme } = useTheme()
   const location = useLocation()
+  const navigate = useNavigate()
   const displayName = state.settings.displayName || state.profile?.name
   const pronouns = state.settings.pronouns
   const isActive = (to: string) => to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
@@ -46,11 +47,18 @@ export default function SideNav() {
             </NavLink>
           )
         })}
+
+        <div style={{ marginTop: 'auto', paddingTop: 16, paddingLeft: 6 }}>
+          <div style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: 'var(--text-ghost)', letterSpacing: '0.08em', opacity: 0.6 }}>
+            v0.1.0 · the fourth hill
+          </div>
+        </div>
       </div>
 
-      <div style={{ padding: '12px 14px 20px', borderTop: '0.5px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ borderTop: '0.5px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: 0 }}>
+
         {displayName && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 2px' }}>
+          <div style={{ padding: '10px 14px 8px', display: 'flex', alignItems: 'center', gap: 8 }}>
             {state.profile?.picture ? (
               <img src={state.profile.picture} alt="" style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover' }} />
             ) : (
@@ -65,17 +73,88 @@ export default function SideNav() {
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div style={{ padding: '8px 14px 10px', display: 'flex', gap: 4 }}>
           {THEME_OPTS.map(opt => (
-            <button key={opt.value} title={opt.label} onClick={() => setTheme(opt.value)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 28, borderRadius: 8, border: 'none', cursor: 'pointer', background: theme === opt.value ? 'var(--accent-amethyst)' : 'var(--surface-raised)', color: theme === opt.value ? 'var(--bg)' : 'var(--text-ghost)', transition: 'background 0.15s ease, color 0.15s ease' }}>
+            <button
+              key={opt.value}
+              title={opt.label}
+              onClick={() => setTheme(opt.value)}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: 32,
+                borderRadius: 8,
+                border: 'none',
+                cursor: 'pointer',
+                background: theme === opt.value ? 'var(--accent-amethyst)' : 'var(--surface-raised)',
+                color: theme === opt.value ? 'var(--bg)' : 'var(--text-ghost)',
+                transition: 'background 0.15s ease, color 0.15s ease',
+              }}
+            >
               {opt.icon}
             </button>
           ))}
         </div>
 
-        <div style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: 'var(--text-ghost)', letterSpacing: '0.08em' }}>
-          v0.1.0 · the fourth hill
+        <div style={{ padding: '10px 14px 8px', borderTop: '0.5px solid var(--border-subtle)' }}>
+          <div style={{ fontSize: 9, fontFamily: 'Space Mono, monospace', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-ghost)', opacity: 0.7, marginBottom: 6 }}>
+            Agent Skills
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <a
+              href="https://github.com/OKHP3/skillz/tree/main/lifetrkr"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 2px', fontSize: 11, color: 'var(--text-ghost)', textDecoration: 'none', borderRadius: 4, transition: 'color 0.15s' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-amethyst)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-ghost)')}
+            >
+              <span style={{ fontSize: 13 }}>🧰</span>
+              <span>LifeTrkr skills on GitHub</span>
+              <span style={{ marginLeft: 'auto', opacity: 0.5, fontSize: 10 }}>→</span>
+            </a>
+            <button
+              onClick={() => navigate('/origin')}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 2px', fontSize: 11, color: 'var(--text-ghost)', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 4, textAlign: 'left', width: '100%', transition: 'color 0.15s' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-amethyst)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-ghost)')}
+            >
+              <span style={{ fontSize: 13 }}>🏛️</span>
+              <span>Origin story</span>
+              <span style={{ marginLeft: 'auto', opacity: 0.5, fontSize: 10 }}>→</span>
+            </button>
+          </div>
         </div>
+
+        <div style={{ padding: '10px 14px 16px', borderTop: '0.5px solid var(--border-subtle)' }}>
+          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 13, color: 'var(--accent-amethyst)', opacity: 0.85, marginBottom: 6, letterSpacing: '0.02em' }}>
+            OverKill Hill P³™
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {[
+              { emoji: '🌐', label: 'overkillhill.com', href: 'https://overkillhill.com' },
+              { emoji: '⌨️', label: 'github.com/OKHP3', href: 'https://github.com/OKHP3' },
+              { emoji: '✉️', label: 'contact@overkillhill.com', href: 'mailto:contact@overkillhill.com' },
+              { emoji: '☕', label: 'ko-fi.com/overkillhillp3', href: 'https://ko-fi.com/overkillhillp3' },
+            ].map(({ emoji, label, href }) => (
+              <a
+                key={href}
+                href={href}
+                target={href.startsWith('mailto') ? undefined : '_blank'}
+                rel="noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 2px', fontSize: 10, color: 'var(--text-ghost)', textDecoration: 'none', borderRadius: 4, letterSpacing: '0.02em', transition: 'color 0.15s' }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-amethyst)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-ghost)')}
+              >
+                <span style={{ fontSize: 11, flexShrink: 0 }}>{emoji}</span>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+
       </div>
     </nav>
   )
