@@ -65,8 +65,8 @@ export default function Origin() {
             feel like for a real person in their real life.
           </p>
           <p>
-            Jamie is the fourth Hill. The name carries weight — a lineage, a responsibility to pass
-            something forward. Kieran is the reason this app exists in the form it does. The aesthetic,
+            Jamie is the third Hill. The name carries weight — a lineage, a responsibility to pass
+            something forward. Kieran (Rylee) is the reason this app exists in the form it does. The aesthetic,
             the warmth, the fact that it doesn't feel like productivity software — that's Kieran.
           </p>
         </Section>
@@ -118,7 +118,7 @@ export default function Origin() {
         <Section title="How It Was Built">
           <p>
             The first versions were built by earlier members of the Hill family — Ralph started
-            the concept (v0.0), Virgil built the first working thing (v1.0), Jamie took it to a
+            the concept (v0.0), Vyrle built the first working thing (v1.0), Jamie took it to a
             full feature set (v2.0). Each version was a conversation across time.
           </p>
           <p>
@@ -138,8 +138,8 @@ export default function Origin() {
 
         <Section title="Pay It Forward">
           <p>
-            The name "the fourth hill" is a reminder. Jamie is the fourth. Kieran will be the
-            fifth. The point was never to hoard knowledge — it was to build something and hand
+            The name "the fourth hill" is a reminder. Jamie was the third. Kieran (Rylee) will be the
+            fourth. The point was never to hoard knowledge — it was to build something and hand
             it on. The skills, the code, the aesthetic decisions — all open, all documented,
             all yours to fork.
           </p>
@@ -162,7 +162,7 @@ export default function Origin() {
             OverKill Hill P³™
           </div>
           <div style={{ fontFamily: 'Space Mono, monospace', fontSize: 10, color: 'var(--text-ghost)', letterSpacing: '0.08em' }}>
-            Built by Jamie Hill · Summer Solstice 2026
+            Envisioned by Kieran (Rylee) built by OverKill Hill P³™ · Summer Solstice 2026
           </div>
           <div style={{ display: 'flex', gap: 16, marginTop: 12, flexWrap: 'wrap' }}>
             {[
