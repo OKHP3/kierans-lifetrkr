@@ -1,5 +1,6 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
+import { APP_VERSION } from '../constants'
 
 const tabs = [
   { to: '/',          label: 'Home',     Icon: HomeIcon },
@@ -44,7 +45,7 @@ export default function SideNav() {
 
         <div style={{ marginTop: 'auto', paddingTop: 16, paddingLeft: 6 }}>
           <div style={{ fontFamily: 'Space Mono, monospace', fontSize: 9, color: 'var(--text-ghost)', letterSpacing: '0.08em', opacity: 0.6 }}>
-            v0.1.0 · the fourth hill
+            {APP_VERSION} · the fourth hill
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { useTheme } from '../context/ThemeContext'
 import GoogleConnectButton from '../components/GoogleConnectButton'
 import { getMoonPhase, getAstroSeason, getMercuryStatus } from '../lib/celestial'
 import { storage } from '../lib/storage'
+import { APP_VERSION } from '../constants'
 import type { ZodiacSign } from '../types'
 
 const PRONOUNS = ['', 'she/her', 'he/him', 'they/them', 'she/they', 'he/they', 'ze/zir', 'any', 'ask me']
@@ -314,7 +315,7 @@ export default function Settings() {
       <p className="section-label" style={{ marginTop: 24 }}>ABOUT</p>
       <div className="card" style={{ textAlign: 'center' }}>
         <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 20, color: 'var(--text-primary)', margin: '0 0 4px' }}>Kieran's LifeTrkr</p>
-        <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: 0, fontFamily: 'Space Mono, monospace' }}>v0.1.0 · MIT License</p>
+        <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: 0, fontFamily: 'Space Mono, monospace' }}>{APP_VERSION} · MIT License</p>
         <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: '8px 0 0' }}>Built on Father's Day, Summer Solstice 2026 ✦</p>
         <p style={{ fontSize: 10, color: 'var(--text-ghost)', margin: '8px 0 0', fontFamily: 'Space Mono, monospace', letterSpacing: '0.04em' }}>
           Ralph · Vyrle · Jamie · Kieran
