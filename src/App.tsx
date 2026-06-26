@@ -27,32 +27,40 @@ import Calendar from './pages/Calendar'
 import Today from './pages/Today'
 import Archive from './pages/Archive'
 import Settings from './pages/Settings'
+import { usePageTracking } from './hooks/usePageTracking'
+
+function AppShell() {
+  usePageTracking()
+  return (
+    <ThemeProvider>
+      <AppProvider>
+        <TokenExpiryBanner />
+        <div className="app-container">
+          <SideNav />
+          <div className="main-area">
+            <MobileHeader />
+            <ThemeToggle />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/rituals" element={<Rituals />} />
+              <Route path="/habits" element={<Habits />} />
+              <Route path="/calendar" element={<Calendar />} />
+              <Route path="/today" element={<Today />} />
+              <Route path="/archive" element={<Archive />} />
+              <Route path="/settings" element={<Settings />} />
+            </Routes>
+            <BottomNav />
+          </div>
+        </div>
+      </AppProvider>
+    </ThemeProvider>
+  )
+}
 
 export default function App() {
   return (
     <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <ThemeProvider>
-        <AppProvider>
-          <TokenExpiryBanner />
-          <div className="app-container">
-            <SideNav />
-            <div className="main-area">
-              <MobileHeader />
-              <ThemeToggle />
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/rituals" element={<Rituals />} />
-                <Route path="/habits" element={<Habits />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/today" element={<Today />} />
-                <Route path="/archive" element={<Archive />} />
-                <Route path="/settings" element={<Settings />} />
-              </Routes>
-              <BottomNav />
-            </div>
-          </div>
-        </AppProvider>
-      </ThemeProvider>
+      <AppShell />
     </HashRouter>
   )
 }
