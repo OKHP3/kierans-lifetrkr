@@ -1,0 +1,63 @@
+Prompt: Add Google Analytics with Per-Route Tracking
+Add Google Analytics 4 to this Vite + TypeScript + React SPA so that every route navigation fires a tracked pageview. The implementation must cover both the initial page load and all in-app route changes -- because SPAs do not reload the browser on navigation, the default GA snippet alone will only capture the first visit.
+
+Step 1 -- Add the GA script to index.html
+Locate index.html in the project root. Inside the <head> block, add the following two script tags. Place them after the primary meta tags and before the favicon block, or anywhere in <head> before </head>.
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VJ1BKXS27H"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-VJ1BKXS27H', { send_page_view: false });
+</script>
+
+Important: send_page_view: false must be set. Without it, GA fires a duplicate pageview on initial load -- one from this config call and one from the hook in Step 2. The hook owns all pageview firing.
+
+Do not change any other part of index.html.
+
+Step 2 -- Create the page tracking hook
+Create a new file: src/hooks/usePageTracking.ts
+
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
+declare function gtag(...args: unknown[]): void
+function resolveTitle(pathname: string): string {
+  // Map each route path to a human-readable label for GA reporting.
+  // Add one entry per route in this app. Use the app's own route paths
+  // and your preferred display names for the GA dashboard.
+  const titles: Record<string, string> = {
+    // REPLACE THESE with this app's actual routes:
+    // '/your-path': 'Your Display Name',
+  }
+  // Wildcard fallback for dynamic segments (e.g. /items/:id)
+  for (const [prefix, label] of Object.entries(titles)) {
+    if (pathname === prefix) return label
+    if (prefix.endsWith('*') && pathname.startsWith(prefix.slice(0, -1))) return label
+  }
+  // If no match, fall back to the raw pathname
+  return pathname
+}
+export function usePageTracking(): void {
+  const location = useLocation()
+  useEffect(() => {
+    if (typeof gtag !== 'function') return
+    gtag('event', 'page_view', {
+      page_path:     location.pathname,
+      page_title:    resolveTitle(location.pathname),
+      page_location: window.location.href,
+    })
+  }, [location.pathname])
+}
+
+Fill in the titles map with this app's actual routes before finishing. Every path you want named in GA gets one entry. Any path not listed will still be tracked -- it will just show the raw pathname in GA instead of a friendly label.
+
+Step 3 -- Mount the hook
+Find the component that sits directly inside <BrowserRouter> (or <HashRouter>) -- typically a root Layout component or an App shell that renders <Outlet />. Add two lines to that component:
+
+import { usePageTracking } from '../hooks/usePageTracking'
+// Inside the component function, before the return statement:
+usePageTracking()
+
+The hook must be called inside the router context. If it is placed outside <BrowserRouter>, useLocation will throw. Layout is the correct mount point in any standard React Router v6 structure.
