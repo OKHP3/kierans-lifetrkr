@@ -1,6 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
-import { useTheme } from '../context/ThemeContext'
 
 const tabs = [
   { to: '/',          label: 'Home',     Icon: HomeIcon },
@@ -12,15 +11,9 @@ const tabs = [
   { to: '/settings',  label: 'Settings', Icon: SettingsIcon },
 ]
 
-const THEME_OPTS = [
-  { value: 'dark' as const, label: 'Dark', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> },
-  { value: 'light' as const, label: 'Light', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> },
-  { value: 'system' as const, label: 'System', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> },
-]
 
 export default function SideNav() {
   const { state } = useApp()
-  const { theme, setTheme } = useTheme()
   const location = useLocation()
   const navigate = useNavigate()
   const displayName = state.settings.displayName || state.profile?.name
@@ -72,31 +65,6 @@ export default function SideNav() {
             </div>
           </div>
         )}
-
-        <div style={{ padding: '8px 14px 10px', display: 'flex', gap: 4 }}>
-          {THEME_OPTS.map(opt => (
-            <button
-              key={opt.value}
-              title={opt.label}
-              onClick={() => setTheme(opt.value)}
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: 32,
-                borderRadius: 8,
-                border: 'none',
-                cursor: 'pointer',
-                background: theme === opt.value ? 'var(--accent-amethyst)' : 'var(--surface-raised)',
-                color: theme === opt.value ? 'var(--bg)' : 'var(--text-ghost)',
-                transition: 'background 0.15s ease, color 0.15s ease',
-              }}
-            >
-              {opt.icon}
-            </button>
-          ))}
-        </div>
 
         <div style={{ padding: '10px 14px 8px', borderTop: '0.5px solid var(--border-subtle)' }}>
           <div style={{ fontSize: 9, fontFamily: 'Space Mono, monospace', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-ghost)', opacity: 0.7, marginBottom: 6 }}>

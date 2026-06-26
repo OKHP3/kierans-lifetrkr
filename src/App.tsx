@@ -18,6 +18,7 @@ import { AppProvider } from './context/AppContext'
 import BottomNav from './components/BottomNav'
 import MobileHeader from './components/MobileHeader'
 import SideNav from './components/SideNav'
+import ThemeToggle from './components/ThemeToggle'
 import TokenExpiryBanner from './components/TokenExpiryBanner'
 import Home from './pages/Home'
 import Rituals from './pages/Rituals'
@@ -39,6 +40,7 @@ function AppShell() {
           <SideNav />
           <div className="main-area">
             <MobileHeader />
+            <ThemeToggle />
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/rituals" element={<Rituals />} />
