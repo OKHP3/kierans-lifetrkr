@@ -25,6 +25,7 @@ export default function SideNav() {
       <div className="side-nav-logo">
         <span style={{ color: 'var(--accent-amethyst)', fontSize: 18, lineHeight: 1 }}>✦</span>
         <div>
+          <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 13, fontWeight: 300, color: 'var(--text-muted)', lineHeight: 1.2, letterSpacing: '0.04em' }}>Kieran's</div>
           <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 19, fontWeight: 400, color: 'var(--text-primary)', lineHeight: 1.1 }}>LifeTrkr</div>
           <div style={{ fontSize: 9, color: 'var(--text-ghost)', letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 1 }}>personal life OS</div>
         </div>
