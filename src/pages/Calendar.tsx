@@ -440,6 +440,7 @@ export default function Calendar() {
             const isSelected = selectedDay === day
             const isCurrent = ds === today
             const hasUserEvents = hasDayEvents(day)
+            const isBirthdayDay = birthdayEvents.some(e => e.start === ds)
             const moonEm = getMoonPhaseEmoji(ds)
             const hasNotable = !!cosmicByDate[ds]?.length
             return (
@@ -458,9 +459,12 @@ export default function Calendar() {
               >
                 <span>{day}</span>
                 <span style={{ fontSize: 8, lineHeight: 1, opacity: hasNotable ? 1 : 0.3 }}>{moonEm}</span>
-                {hasUserEvents && (
-                  <div style={{ width: 3, height: 3, borderRadius: '50%', background: isSelected ? 'rgba(255,255,255,0.7)' : 'var(--accent-amethyst)', position: 'absolute', bottom: 2, right: 4 }} />
-                )}
+                {isBirthdayDay
+                  ? <span style={{ fontSize: 9, lineHeight: 1, position: 'absolute', bottom: 2, right: 3 }}>🎂</span>
+                  : hasUserEvents && (
+                      <div style={{ width: 3, height: 3, borderRadius: '50%', background: isSelected ? 'rgba(255,255,255,0.7)' : 'var(--accent-amethyst)', position: 'absolute', bottom: 2, right: 4 }} />
+                    )
+                }
               </button>
             )
           })}
