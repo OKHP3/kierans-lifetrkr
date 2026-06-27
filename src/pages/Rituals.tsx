@@ -143,9 +143,6 @@ export default function Rituals() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <h1 className="page-title">Rituals</h1>
-        <button className="btn-ghost" onClick={() => { setEditMode(e => !e); setShowAdd(false); setShowMeta(false) }}>
-          {editMode ? 'Done' : 'Edit'}
-        </button>
       </div>
 
       {/* Status filter */}
@@ -246,13 +243,22 @@ export default function Rituals() {
             </div>
           )}
         </div>
-        <button
-          className="btn-ghost"
-          style={{ fontSize: 11, padding: '3px 10px', flexShrink: 0 }}
-          onClick={() => showMeta ? setShowMeta(false) : openMeta()}
-        >
-          {showMeta ? 'Close' : 'Details'}
-        </button>
+        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+          <button
+            className="btn-ghost"
+            style={{ fontSize: 11, padding: '3px 10px' }}
+            onClick={() => { setEditMode(e => !e); setShowAdd(false); setShowMeta(false) }}
+          >
+            {editMode ? 'Done' : 'Edit'}
+          </button>
+          <button
+            className="btn-ghost"
+            style={{ fontSize: 11, padding: '3px 10px' }}
+            onClick={() => showMeta ? setShowMeta(false) : openMeta()}
+          >
+            {showMeta ? 'Close' : 'Details'}
+          </button>
+        </div>
       </div>
 
       {/* Metadata edit panel */}
