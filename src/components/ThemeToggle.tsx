@@ -24,7 +24,6 @@ export default function ThemeToggle() {
         border: '0.5px solid var(--border)',
         borderRadius: 20,
         padding: '3px 4px',
-        display: 'flex',
         alignItems: 'center',
         gap: 2,
         zIndex: 150,

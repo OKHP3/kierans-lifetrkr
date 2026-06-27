@@ -96,15 +96,19 @@ type Action =
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
-    case 'LOAD_STATE':
+    case 'LOAD_STATE': {
+      const loadedSettings = { ...defaultSettings, ...(action.payload.settings || {}) }
       return {
         ...state,
         ...action.payload,
-        settings: { ...defaultSettings, ...(action.payload.settings || {}) },
+        settings: loadedSettings,
         routineTemplates: action.payload.routineTemplates?.length
           ? action.payload.routineTemplates
           : defaultTemplates,
+        // Restore isGoogleConnected from persisted settings or presence of profile
+        isGoogleConnected: loadedSettings.googleConnected || action.payload.profile != null,
       }
+    }
 
     case 'SET_PROFILE':
       return {
