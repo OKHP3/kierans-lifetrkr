@@ -3,7 +3,7 @@ import type { LifeTrkrCategory, RecurrenceRule } from './types'
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
 export const SCOPES = [
-  'https://www.googleapis.com/auth/calendar.readonly',
+  'https://www.googleapis.com/auth/calendar.events',
   'https://www.googleapis.com/auth/tasks.readonly',
   'openid',
   'profile',

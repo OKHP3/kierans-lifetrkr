@@ -1,10 +1,10 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp, genId } from '../context/AppContext'
 import { getTodayISO, formatEventTime } from '../lib/date'
 import { getMoonPhaseEmoji, getDailyCard, getDailyWisdom, getCosmicEventsForDateRange } from '../lib/cosmic'
 import { useGoogleAuth } from '../hooks/useGoogleAuth'
-import { fetchCalendarEvents } from '../lib/googleCalendar'
+import { fetchCalendarEvents, createGoogleEvent, deleteGoogleEvent } from '../lib/googleCalendar'
 import FilterBar from '../components/FilterBar'
 import CategoryPicker from '../components/CategoryPicker'
 import TagInput from '../components/TagInput'
@@ -228,6 +228,15 @@ export default function Calendar() {
     }
   }, [isConnected, syncing, getToken, state.settings.calendarDaysAhead, dispatch])
 
+  // Auto-sync when Google connects
+  const prevConnected = useRef(false)
+  useEffect(() => {
+    if (isConnected && !prevConnected.current) {
+      handleSync()
+    }
+    prevConnected.current = isConnected
+  }, [isConnected, handleSync])
+
   // ─── Filter predicate ────────────────────────────────────────────────────────
   function passesFilters(event: CalendarEvent, dayDateStr: string): boolean {
     if (sourceFilter === 'user' && event.source !== 'manual') return false
@@ -311,28 +320,55 @@ export default function Calendar() {
     setForm(f => f ? { ...f, ...patch } : null)
   }
 
-  function saveEvent() {
+  async function saveEvent() {
     if (!form || !form.title.trim() || !selectedDay) return
     const ds = dateStr(selectedDay)
     const start = form.allDay ? ds : `${ds}T${form.time || '00:00'}:00`
     const end = form.allDay ? undefined : form.endTime ? `${ds}T${form.endTime}:00` : undefined
-    dispatch({
-      type: 'ADD_CALENDAR_EVENT',
-      payload: {
-        id: genId(), title: form.title.trim(), start, end,
-        allDay: form.allDay, location: form.location.trim() || null,
-        description: form.desc.trim() || null, colorId: null,
-        source: 'manual' as const, categoryId: form.categoryId,
-        tags: form.tags,
-        recurrence: form.recurrence.frequency !== 'none' ? form.recurrence : undefined,
-        createdAt: today, updatedAt: today,
-      },
-    })
+    const localId = genId()
+    const newEvent: CalendarEvent = {
+      id: localId, title: form.title.trim(), start, end,
+      allDay: form.allDay, location: form.location.trim() || null,
+      description: form.desc.trim() || null, colorId: null,
+      source: 'manual' as const, categoryId: form.categoryId,
+      tags: form.tags,
+      recurrence: form.recurrence.frequency !== 'none' ? form.recurrence : undefined,
+      createdAt: today, updatedAt: today,
+    }
+    dispatch({ type: 'ADD_CALENDAR_EVENT', payload: newEvent })
     setForm(null)
+    // Push to Google Calendar if connected
+    if (isConnected) {
+      try {
+        const token = await getToken()
+        await createGoogleEvent(token, {
+          title: newEvent.title,
+          start: newEvent.start,
+          end: newEvent.end,
+          allDay: newEvent.allDay,
+          location: newEvent.location,
+          description: newEvent.description,
+        })
+      } catch {
+        // Silent — event is already saved locally
+      }
+    }
   }
 
-  function deleteEvent(id: string) {
+  async function deleteEvent(id: string) {
     dispatch({ type: 'DELETE_CALENDAR_EVENT', payload: id })
+    // If this is a Google-sourced event, delete from Google too
+    if (isConnected) {
+      const event = state.calendarEvents.find(e => e.id === id)
+      if (event?.source === 'google') {
+        try {
+          const token = await getToken()
+          await deleteGoogleEvent(token, id)
+        } catch {
+          // Silent — removed locally regardless
+        }
+      }
+    }
   }
 
   const selectedEvents = selectedDay ? getEventsForDay(selectedDay) : []
