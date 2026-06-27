@@ -167,6 +167,7 @@ export default function Calendar() {
   const [selectedDay, setSelectedDay] = useState<number | null>(now.getDate())
   const [form, setForm] = useState<EventForm | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [cardExpanded, setCardExpanded] = useState(false)
 
   // Filter state
   const [sourceFilter, setSourceFilter] = useState('all')
@@ -520,11 +521,6 @@ export default function Calendar() {
               const bg = e.source === 'google' ? 'rgba(66,133,244,0.12)' : 'rgba(196,160,232,0.14)'
               dayEvents.push({ id: e.id, label: e.title, emoji, color, bg })
             }
-            if (showCosmic) {
-              for (const ce of (cosmicByDate[ds] ?? [])) {
-                dayEvents.push({ id: ce.id, label: ce.title, emoji: ce.emoji ?? '✦', color: 'var(--accent-amethyst)', bg: 'rgba(196,160,232,0.14)' })
-              }
-            }
             const visiblePills = dayEvents.slice(0, 2)
             const overflow = dayEvents.length - 2
 
@@ -612,15 +608,62 @@ export default function Calendar() {
           {/* Cosmic section */}
           {showCosmic && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
-              {dailyCard && (
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(196,160,232,0.07)', border: '0.5px solid rgba(196,160,232,0.2)' }}>
-                  <span style={{ fontSize: 18, flexShrink: 0 }}>🃏</span>
-                  <div>
-                    <p style={{ fontSize: 10, color: 'var(--text-ghost)', margin: '0 0 2px', fontFamily: 'Space Mono, monospace', letterSpacing: '0.05em' }}>TODAY'S CARD</p>
-                    <p style={{ fontSize: 15, color: 'var(--accent-amethyst)', margin: 0, fontStyle: 'italic', fontFamily: 'Cormorant Garamond, serif' }}>{dailyCard.title}</p>
+              {dailyCard && (() => {
+                const isToday = selectedDateStr === today
+                const richCard = isToday ? state.oracle?.tarotCard : null
+                return (
+                  <div
+                    onClick={() => setCardExpanded(x => !x)}
+                    style={{
+                      padding: '10px 14px', borderRadius: 10,
+                      background: 'rgba(196,160,232,0.07)', border: '0.5px solid rgba(196,160,232,0.2)',
+                      cursor: 'pointer', userSelect: 'none',
+                    }}
+                  >
+                    {/* Header row */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 18, flexShrink: 0 }}>🃏</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 10, color: 'var(--text-ghost)', margin: '0 0 2px', fontFamily: 'Space Mono, monospace', letterSpacing: '0.05em' }}>TODAY'S CARD</p>
+                        <p style={{ fontSize: 15, color: 'var(--accent-amethyst)', margin: 0, fontStyle: 'italic', fontFamily: 'Cormorant Garamond, serif' }}>{dailyCard.title}</p>
+                      </div>
+                      <span style={{ fontSize: 11, color: 'var(--text-ghost)', flexShrink: 0 }}>{cardExpanded ? '▾' : '▸'}</span>
+                    </div>
+
+                    {/* Expanded detail */}
+                    {cardExpanded && (
+                      <div style={{ marginTop: 12, paddingTop: 12, borderTop: '0.5px solid rgba(196,160,232,0.2)' }}>
+                        {richCard ? (
+                          <>
+                            {(richCard.type || richCard.suit) && (
+                              <p style={{ fontSize: 10, color: 'var(--text-ghost)', margin: '0 0 8px', fontFamily: 'Space Mono, monospace', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                                {richCard.type}{richCard.suit ? ` · ${richCard.suit}` : ''}
+                              </p>
+                            )}
+                            {richCard.desc && (
+                              <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 10px', lineHeight: 1.55 }}>{richCard.desc}</p>
+                            )}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                              <div style={{ padding: '7px 10px', borderRadius: 7, background: 'rgba(196,160,232,0.08)' }}>
+                                <p style={{ fontSize: 9, color: 'var(--accent-amethyst)', margin: '0 0 3px', fontFamily: 'Space Mono, monospace', letterSpacing: '0.06em' }}>UPRIGHT</p>
+                                <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>{richCard.meaning_up}</p>
+                              </div>
+                              <div style={{ padding: '7px 10px', borderRadius: 7, background: 'rgba(196,160,232,0.05)' }}>
+                                <p style={{ fontSize: 9, color: 'var(--text-ghost)', margin: '0 0 3px', fontFamily: 'Space Mono, monospace', letterSpacing: '0.06em' }}>REVERSED</p>
+                                <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>{richCard.meaning_rev}</p>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: 0, fontStyle: 'italic' }}>
+                            Full card details are available for today's reading. Select today to see the full meaning.
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                )
+              })()}
               {dailyWisdom && (
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(196,160,232,0.05)', border: '0.5px solid rgba(196,160,232,0.15)' }}>
                   <span style={{ fontSize: 14, flexShrink: 0, color: 'var(--accent-amethyst)' }}>✦</span>
