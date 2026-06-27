@@ -75,7 +75,7 @@ Set this as a Replit Secret or in a `.env` file. The app runs fully without it (
 
 ## Navigation
 
-- **Mobile (< 768px):** BottomNav with 6 tabs (Home, Rituals, Habits, Calendar, Today, Archive)
+- **Mobile (< 768px):** BottomNav with 6 tabs (Home, Calendar, Today, Someday, Rituals, Habits)
 - **Desktop (≥ 768px):** SideNav with 7 items (all 6 + Settings), bottom nav hidden
 - **Settings:** Accessible via gear icon in Home header AND as 7th SideNav item (not in BottomNav)
 
