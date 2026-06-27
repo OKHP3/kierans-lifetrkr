@@ -47,7 +47,8 @@ export default function Home() {
   ).length
 
   const upcomingEvents = state.calendarEvents
-    .filter(e => e.start >= today)
+    .filter(e => e.start.slice(0, 10) >= today)
+    .sort((a, b) => a.start.localeCompare(b.start))
     .slice(0, 3)
 
   function handleStarTap() {
@@ -125,12 +126,14 @@ export default function Home() {
       <section style={{ marginTop: 20 }}>
         <p className="section-label">UPCOMING</p>
         <div className="card">
-          {!state.isGoogleConnected ? (
-            <button onClick={() => navigate('/settings')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', width: '100%' }}>
-              <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: 0 }}>✦ Connect Google to see your calendar →</p>
-            </button>
-          ) : upcomingEvents.length === 0 ? (
-            <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: 0 }}>No upcoming events.</p>
+          {upcomingEvents.length === 0 ? (
+            !state.isGoogleConnected ? (
+              <button onClick={() => navigate('/settings')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', width: '100%' }}>
+                <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: 0 }}>✦ Connect Google to see your calendar →</p>
+              </button>
+            ) : (
+              <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: 0 }}>No upcoming events.</p>
+            )
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {upcomingEvents.map(event => (
