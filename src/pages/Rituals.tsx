@@ -141,7 +141,7 @@ export default function Rituals() {
   return (
     <div className="page-content">
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
         <h1 className="page-title">Rituals</h1>
       </div>
 
@@ -149,7 +149,7 @@ export default function Rituals() {
       <FilterBar
         chips={[
           { label: 'All', value: 'all', active: statusFilter === 'all' },
-          { label: 'Has items', value: 'active', active: statusFilter === 'active' },
+          { label: 'Active', value: 'active', active: statusFilter === 'active' },
           { label: 'Empty', value: 'inactive', active: statusFilter === 'inactive' },
         ]}
         onChange={(val) => setStatusFilter(val as typeof statusFilter)}
@@ -190,7 +190,7 @@ export default function Rituals() {
       <FilterBar
         chips={[
           { label: 'day ↕', value: 'default', active: sortBy === 'default' },
-          { label: 'title', value: 'title', active: sortBy === 'title' },
+          { label: 'name', value: 'title', active: sortBy === 'title' },
           { label: 'next', value: 'next-occ', active: sortBy === 'next-occ' },
           { label: 'category', value: 'category', active: sortBy === 'category' },
         ]}

@@ -235,7 +235,7 @@ export default function Habits() {
   return (
     <div className="page-content">
       {/* Header */}
-      <div style={{ marginBottom: 6 }}>
+      <div style={{ marginBottom: 8 }}>
         <h1 className="page-title">Habits</h1>
       </div>
 
@@ -243,8 +243,8 @@ export default function Habits() {
       <FilterBar
         chips={[
           { label: 'All', value: 'all', active: statusFilter === 'all' },
-          { label: 'Done today', value: 'done', active: statusFilter === 'done' },
-          { label: 'Not done', value: 'not-done', active: statusFilter === 'not-done' },
+          { label: 'Done', value: 'done', active: statusFilter === 'done' },
+          { label: 'Remaining', value: 'not-done', active: statusFilter === 'not-done' },
         ]}
         onChange={(val) => setStatusFilter(val)}
         className="mb-2"
@@ -285,8 +285,8 @@ export default function Habits() {
         <FilterBar
           chips={[
             { label: 'name', value: 'name', active: sortBy === 'name' },
-            { label: 'progress', value: 'progress', active: sortBy === 'progress' },
-            { label: 'next due', value: 'next-due', active: sortBy === 'next-due' },
+            { label: 'streak', value: 'progress', active: sortBy === 'progress' },
+            { label: 'next', value: 'next-due', active: sortBy === 'next-due' },
             { label: 'category', value: 'category', active: sortBy === 'category' },
           ]}
           onChange={(val) => setSortBy(val as SortKey)}

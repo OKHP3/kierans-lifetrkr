@@ -78,7 +78,7 @@ export default function Someday() {
             <button key={s} onClick={() => setSort(s)} style={{ padding: '4px 10px', borderRadius: 20, border: sort === s ? 'none' : '0.5px solid var(--border)', background: sort === s ? 'var(--surface-raised)' : 'transparent', color: sort === s ? 'var(--accent-amethyst)' : 'var(--text-ghost)', fontSize: 11, cursor: 'pointer' }}>{s}</button>
           ))}
         </div>
-        <span style={{ fontSize: 11, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>{backlogTasks.length}</span>
+        <span style={{ fontSize: 11, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>{backlogTasks.length} tasks</span>
       </div>
 
       {backlogTasks.length === 0 && !showAdd && (
@@ -115,10 +115,44 @@ export default function Someday() {
         ))}
       </div>
 
+      {/* Google Tasks — undated or future-due */}
+      {state.isGoogleConnected && state.settings.showGoogleTasks && (
+        <div style={{ marginTop: 20 }}>
+          <p className="section-label">FROM GOOGLE TASKS</p>
+          <div className="card">
+            {state.googleTasks.filter(t => (!t.due || t.due > today) && t.status === 'needsAction').length === 0 ? (
+              <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: 0 }}>No future Google Tasks.</p>
+            ) : (
+              state.googleTasks
+                .filter(t => (!t.due || t.due > today) && t.status === 'needsAction')
+                .map(gt => (
+                  <div key={gt.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '0.5px solid var(--border-subtle)' }}>
+                    <span style={{ color: 'var(--text-ghost)', fontSize: 14 }}>○</span>
+                    <span style={{ flex: 1, fontSize: 13, color: 'var(--text-secondary)' }}>{gt.title}</span>
+                    {gt.due && (
+                      <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>{gt.due}</span>
+                    )}
+                    <button
+                      className="btn-ghost"
+                      style={{ fontSize: 11, padding: '2px 8px' }}
+                      onClick={() => dispatch({
+                        type: 'ADD_TASK',
+                        payload: { id: genId(), title: gt.title, notes: gt.notes || undefined, status: 'backlog', priority: 'normal', createdAt: today, source: 'manual', googleTaskId: gt.id },
+                      })}
+                    >
+                      + Add to Someday
+                    </button>
+                  </div>
+                ))
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Add form */}
       {showAdd && (
         <div className="card" style={{ marginTop: 12 }}>
-          <input className="input-field" placeholder="Task title" value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTask()} autoFocus />
+          <input className="input-field" placeholder="What's worth doing someday?" value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTask()} autoFocus />
           <input className="input-field" style={{ marginTop: 8 }} placeholder="Notes (optional)" value={newNotes} onChange={e => setNewNotes(e.target.value)} />
           <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
             {(['high', 'normal', 'low'] as TaskPriority[]).map(p => (
