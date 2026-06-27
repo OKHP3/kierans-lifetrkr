@@ -343,13 +343,8 @@ export default function Calendar() {
   return (
     <div className="page-content">
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+      <div style={{ marginBottom: 12 }}>
         <h1 className="page-title">Calendar</h1>
-        {!state.isGoogleConnected && (
-          <button className="btn-ghost" style={{ fontSize: 12 }} onClick={() => navigate('/settings')}>
-            Connect Google →
-          </button>
-        )}
       </div>
 
       {/* Source filter */}
@@ -418,14 +413,14 @@ export default function Calendar() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <button className="btn-ghost" style={{ padding: '4px 8px' }} onClick={() => {
           if (month === 0) { setMonth(11); setYear(y => y - 1) } else setMonth(m => m - 1)
-          setSelectedDay(null)
+          setSelectedDay(1)
         }}>‹</button>
         <span style={{ fontSize: 18, color: 'var(--text-primary)', fontFamily: 'Cormorant Garamond, serif' }}>
           {MONTH_NAMES[month]} {year}
         </span>
         <button className="btn-ghost" style={{ padding: '4px 8px' }} onClick={() => {
           if (month === 11) { setMonth(0); setYear(y => y + 1) } else setMonth(m => m + 1)
-          setSelectedDay(null)
+          setSelectedDay(1)
         }}>›</button>
       </div>
 
