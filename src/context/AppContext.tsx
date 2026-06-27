@@ -69,6 +69,7 @@ type Action =
   | { type: 'SET_GOOGLE_CONNECTED'; payload: boolean }
   | { type: 'SET_CALENDAR_EVENTS'; payload: CalendarEvent[] }
   | { type: 'ADD_CALENDAR_EVENT'; payload: CalendarEvent }
+  | { type: 'UPDATE_CALENDAR_EVENT'; payload: CalendarEvent }
   | { type: 'DELETE_CALENDAR_EVENT'; payload: string }
   | { type: 'SET_GOOGLE_TASKS'; payload: GoogleTask[] }
   | { type: 'SET_TASK_LISTS'; payload: TaskList[] }
@@ -154,6 +155,9 @@ function reducer(state: AppState, action: Action): AppState {
 
     case 'ADD_CALENDAR_EVENT':
       return { ...state, calendarEvents: [...state.calendarEvents, action.payload] }
+
+    case 'UPDATE_CALENDAR_EVENT':
+      return { ...state, calendarEvents: state.calendarEvents.map(e => e.id === action.payload.id ? action.payload : e) }
 
     case 'DELETE_CALENDAR_EVENT':
       return { ...state, calendarEvents: state.calendarEvents.filter(e => e.id !== action.payload) }

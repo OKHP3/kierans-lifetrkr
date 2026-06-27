@@ -166,6 +166,7 @@ export default function Calendar() {
   const [month, setMonth] = useState(now.getMonth())
   const [selectedDay, setSelectedDay] = useState<number | null>(now.getDate())
   const [form, setForm] = useState<EventForm | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
 
   // Filter state
   const [sourceFilter, setSourceFilter] = useState('all')
@@ -320,11 +321,49 @@ export default function Calendar() {
     setForm(f => f ? { ...f, ...patch } : null)
   }
 
+  function openEdit(event: CalendarEvent) {
+    const timeFromISO = (iso: string) => iso.includes('T') ? iso.substring(11, 16) : ''
+    setEditingId(event.id)
+    setForm({
+      title: event.title,
+      allDay: event.allDay,
+      time: event.allDay ? '' : timeFromISO(event.start),
+      endTime: event.end ? timeFromISO(event.end) : '',
+      location: event.location ?? '',
+      desc: event.description ?? '',
+      categoryId: event.categoryId,
+      tags: event.tags ?? [],
+      recurrence: event.recurrence ?? { ...makeDefaultRecurrence(), frequency: 'none' },
+      showDetails: !!(event.description || event.categoryId || (event.tags ?? []).length > 0),
+      showRecurrence: !!(event.recurrence && event.recurrence.frequency !== 'none'),
+    })
+  }
+
   async function saveEvent() {
     if (!form || !form.title.trim() || !selectedDay) return
     const ds = dateStr(selectedDay)
     const start = form.allDay ? ds : `${ds}T${form.time || '00:00'}:00`
     const end = form.allDay ? undefined : form.endTime ? `${ds}T${form.endTime}:00` : undefined
+
+    if (editingId) {
+      // Update existing event
+      const existing = state.calendarEvents.find(e => e.id === editingId)
+      if (!existing) { setForm(null); setEditingId(null); return }
+      const updated: CalendarEvent = {
+        ...existing,
+        title: form.title.trim(), start, end,
+        allDay: form.allDay, location: form.location.trim() || null,
+        description: form.desc.trim() || null,
+        categoryId: form.categoryId, tags: form.tags,
+        recurrence: form.recurrence.frequency !== 'none' ? form.recurrence : undefined,
+        updatedAt: today,
+      }
+      dispatch({ type: 'UPDATE_CALENDAR_EVENT', payload: updated })
+      setForm(null)
+      setEditingId(null)
+      return
+    }
+
     const localId = genId()
     const newEvent: CalendarEvent = {
       id: localId, title: form.title.trim(), start, end,
@@ -337,36 +376,26 @@ export default function Calendar() {
     }
     dispatch({ type: 'ADD_CALENDAR_EVENT', payload: newEvent })
     setForm(null)
-    // Push to Google Calendar if connected
     if (isConnected) {
       try {
         const token = await getToken()
         await createGoogleEvent(token, {
-          title: newEvent.title,
-          start: newEvent.start,
-          end: newEvent.end,
-          allDay: newEvent.allDay,
-          location: newEvent.location,
-          description: newEvent.description,
+          title: newEvent.title, start: newEvent.start, end: newEvent.end,
+          allDay: newEvent.allDay, location: newEvent.location, description: newEvent.description,
         })
-      } catch {
-        // Silent — event is already saved locally
-      }
+      } catch { /* silent — saved locally */ }
     }
   }
 
   async function deleteEvent(id: string) {
     dispatch({ type: 'DELETE_CALENDAR_EVENT', payload: id })
-    // If this is a Google-sourced event, delete from Google too
     if (isConnected) {
       const event = state.calendarEvents.find(e => e.id === id)
       if (event?.source === 'google') {
         try {
           const token = await getToken()
           await deleteGoogleEvent(token, id)
-        } catch {
-          // Silent — removed locally regardless
-        }
+        } catch { /* silent */ }
       }
     }
   }
@@ -468,39 +497,74 @@ export default function Calendar() {
       </div>
 
       {/* Grid */}
-      <div className="card" style={{ padding: 8 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
+      <div className="card" style={{ padding: 4 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1 }}>
           {cells.map((day, i) => {
-            if (!day) return <div key={i} />
+            if (!day) return <div key={i} style={{ minHeight: 58 }} />
             const ds = dateStr(day)
             const isSelected = selectedDay === day
             const isCurrent = ds === today
-            const hasUserEvents = hasDayEvents(day)
-            const isBirthdayDay = birthdayEvents.some(e => e.start === ds)
             const moonEm = getMoonPhaseEmoji(ds)
             const hasNotable = !!cosmicByDate[ds]?.length
+
+            // Build event pills for this day
+            const dayEvents: Array<{ id: string; label: string; emoji: string; color: string; bg: string }> = []
+            if (birthdayEvents.some(e => e.start === ds)) {
+              dayEvents.push({ id: 'bday', label: 'Birthday', emoji: '🎂', color: '#e8a0c4', bg: 'rgba(232,160,196,0.18)' })
+            }
+            const storedDay = state.calendarEvents.filter(e => eventOccursOnDate(e, ds))
+            for (const e of storedDay) {
+              const cat = e.categoryId ? DEFAULT_CATEGORIES.find(c => c.id === e.categoryId) : undefined
+              const emoji = cat?.emoji ?? (e.source === 'google' ? 'G' : '')
+              const color = e.source === 'google' ? '#4285F4' : 'var(--accent-amethyst)'
+              const bg = e.source === 'google' ? 'rgba(66,133,244,0.12)' : 'rgba(196,160,232,0.14)'
+              dayEvents.push({ id: e.id, label: e.title, emoji, color, bg })
+            }
+            if (showCosmic) {
+              for (const ce of (cosmicByDate[ds] ?? [])) {
+                dayEvents.push({ id: ce.id, label: ce.title, emoji: ce.emoji ?? '✦', color: 'var(--accent-amethyst)', bg: 'rgba(196,160,232,0.14)' })
+              }
+            }
+            const visiblePills = dayEvents.slice(0, 2)
+            const overflow = dayEvents.length - 2
+
             return (
               <button
                 key={i}
                 onClick={() => setSelectedDay(day === selectedDay ? null : day)}
                 style={{
-                  aspectRatio: '1', borderRadius: 8, border: 'none', cursor: 'pointer',
-                  position: 'relative',
-                  background: isSelected ? 'var(--accent-amethyst)' : isCurrent ? 'var(--surface-raised)' : 'transparent',
-                  color: isSelected ? 'var(--bg)' : isCurrent ? 'var(--accent-amethyst)' : 'var(--text-primary)',
-                  fontSize: 12, fontWeight: isCurrent ? 600 : 400,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  flexDirection: 'column', gap: 1, paddingBottom: 2,
+                  minHeight: 58, borderRadius: 6, border: isSelected ? '1.5px solid var(--accent-amethyst)' : '1px solid transparent',
+                  cursor: 'pointer', position: 'relative',
+                  background: isSelected ? 'rgba(196,160,232,0.12)' : isCurrent ? 'var(--surface-raised)' : 'transparent',
+                  display: 'flex', flexDirection: 'column', alignItems: 'stretch',
+                  padding: '3px 3px 3px', gap: 1, textAlign: 'left', overflow: 'hidden',
                 }}
               >
-                <span>{day}</span>
-                <span style={{ fontSize: 8, lineHeight: 1, opacity: hasNotable ? 1 : 0.3 }}>{moonEm}</span>
-                {isBirthdayDay
-                  ? <span style={{ fontSize: 9, lineHeight: 1, position: 'absolute', bottom: 2, right: 3 }}>🎂</span>
-                  : hasUserEvents && (
-                      <div style={{ width: 3, height: 3, borderRadius: '50%', background: isSelected ? 'rgba(255,255,255,0.7)' : 'var(--accent-amethyst)', position: 'absolute', bottom: 2, right: 4 }} />
-                    )
-                }
+                {/* Top row: moon left, day number right */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 1 }}>
+                  <span style={{ fontSize: 8, lineHeight: 1, opacity: hasNotable ? 0.9 : 0.25 }}>{moonEm}</span>
+                  <span style={{
+                    fontSize: 11, fontWeight: isCurrent ? 700 : 400, lineHeight: 1,
+                    color: isSelected ? 'var(--accent-amethyst)' : isCurrent ? 'var(--accent-amethyst)' : 'var(--text-primary)',
+                  }}>{day}</span>
+                </div>
+                {/* Event pills */}
+                {visiblePills.map(pill => (
+                  <div key={pill.id} style={{
+                    fontSize: 8, lineHeight: 1.3, padding: '1px 3px', borderRadius: 3,
+                    background: pill.bg, color: pill.color,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    display: 'flex', alignItems: 'center', gap: 2,
+                  }}>
+                    <span style={{ flexShrink: 0, fontSize: 8 }}>{pill.emoji}</span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {pill.label.slice(0, 8)}{pill.label.length > 8 ? '…' : ''}
+                    </span>
+                  </div>
+                ))}
+                {overflow > 0 && (
+                  <div style={{ fontSize: 7, color: 'var(--text-ghost)', paddingLeft: 3 }}>+{overflow} more</div>
+                )}
               </button>
             )
           })}
@@ -617,6 +681,13 @@ export default function Calendar() {
                           {isGoogle && <span style={{ fontSize: 9, color: '#4285F4', border: '0.5px solid #4285F4', borderRadius: 4, padding: '1px 5px', fontFamily: 'Space Mono, monospace' }}>G</span>}
                           {isCosmic && <span style={{ fontSize: 10, color: 'var(--accent-amethyst)', fontFamily: 'Space Mono, monospace' }}>✦</span>}
                           {isBirthday && <span style={{ fontSize: 9, color: '#e8a0c4', border: '0.5px solid #e8a0c4', borderRadius: 4, padding: '1px 5px', fontFamily: 'Space Mono, monospace' }}>bday</span>}
+                          {(isManual || isGoogle) && (
+                            <button
+                              onClick={e => { e.stopPropagation(); openEdit(event) }}
+                              style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: 13, padding: 0, lineHeight: 1 }}
+                              title="Edit event"
+                            >✎</button>
+                          )}
                           {isManual && <button onClick={() => deleteEvent(event.id)} style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: 16, padding: 0, lineHeight: 1 }}>×</button>}
                         </div>
                       </div>
@@ -696,8 +767,8 @@ export default function Calendar() {
               )}
 
               <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-                <button className="btn-primary" style={{ flex: 1 }} onClick={saveEvent}>Add event</button>
-                <button className="btn-ghost" onClick={() => setForm(null)}>Cancel</button>
+                <button className="btn-primary" style={{ flex: 1 }} onClick={saveEvent}>{editingId ? 'Update event' : 'Add event'}</button>
+                <button className="btn-ghost" onClick={() => { setForm(null); setEditingId(null) }}>Cancel</button>
               </div>
             </div>
           ) : (
