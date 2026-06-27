@@ -235,11 +235,8 @@ export default function Habits() {
   return (
     <div className="page-content">
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+      <div style={{ marginBottom: 6 }}>
         <h1 className="page-title">Habits</h1>
-        <span style={{ fontSize: 12, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>
-          {doneToday}/{activeHabits.length} today
-        </span>
       </div>
 
       {/* Status filter */}
@@ -283,17 +280,21 @@ export default function Habits() {
         />
       )}
 
-      {/* Sort */}
-      <FilterBar
-        chips={[
-          { label: 'name', value: 'name', active: sortBy === 'name' },
-          { label: 'progress', value: 'progress', active: sortBy === 'progress' },
-          { label: 'next due', value: 'next-due', active: sortBy === 'next-due' },
-          { label: 'category', value: 'category', active: sortBy === 'category' },
-        ]}
-        onChange={(val) => setSortBy(val as SortKey)}
-        className="mb-4"
-      />
+      {/* Sort + progress counter */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <FilterBar
+          chips={[
+            { label: 'name', value: 'name', active: sortBy === 'name' },
+            { label: 'progress', value: 'progress', active: sortBy === 'progress' },
+            { label: 'next due', value: 'next-due', active: sortBy === 'next-due' },
+            { label: 'category', value: 'category', active: sortBy === 'category' },
+          ]}
+          onChange={(val) => setSortBy(val as SortKey)}
+        />
+        <span style={{ fontSize: 11, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', flexShrink: 0, marginLeft: 8 }}>
+          {doneToday}/{activeHabits.length} today
+        </span>
+      </div>
 
       {/* Empty state */}
       {activeHabits.length === 0 && !addForm && (
