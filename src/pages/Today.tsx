@@ -56,15 +56,17 @@ export default function Today() {
 
   return (
     <div className="page-content">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+      <div style={{ marginBottom: 6 }}>
         <h1 className="page-title">Today</h1>
-        <span style={{ fontSize: 12, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>
-          {doneTasks.length}/{activeTasks.length + doneTasks.length} done
-        </span>
       </div>
 
       {/* My Tasks */}
-      <p className="section-label">MY TASKS</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+        <p className="section-label" style={{ margin: 0 }}>MY TASKS</p>
+        <span style={{ fontSize: 11, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>
+          {doneTasks.length}/{activeTasks.length + doneTasks.length} done
+        </span>
+      </div>
       {activeTasks.length === 0 && !showAdd ? (
         <div className="card" style={{ textAlign: 'center', padding: '32px 20px' }}>
           <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: '0 0 12px' }}>Nothing on the list. Add something.</p>
