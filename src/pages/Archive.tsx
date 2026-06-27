@@ -55,9 +55,8 @@ export default function Archive() {
 
   return (
     <div className="page-content">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <div style={{ marginBottom: 16 }}>
         <h1 className="page-title">Archive</h1>
-        <span style={{ fontSize: 12, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>{backlogTasks.length}</span>
       </div>
 
       {/* Search */}
@@ -72,11 +71,14 @@ export default function Archive() {
         />
       </div>
 
-      {/* Sort pills */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
-        {(['Priority', 'Date Added', 'Title'] as SortKey[]).map(s => (
-          <button key={s} onClick={() => setSort(s)} style={{ padding: '4px 10px', borderRadius: 20, border: sort === s ? 'none' : '0.5px solid var(--border)', background: sort === s ? 'var(--surface-raised)' : 'transparent', color: sort === s ? 'var(--accent-amethyst)' : 'var(--text-ghost)', fontSize: 11, cursor: 'pointer' }}>{s}</button>
-        ))}
+      {/* Sort pills + count */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {(['Priority', 'Date Added', 'Title'] as SortKey[]).map(s => (
+            <button key={s} onClick={() => setSort(s)} style={{ padding: '4px 10px', borderRadius: 20, border: sort === s ? 'none' : '0.5px solid var(--border)', background: sort === s ? 'var(--surface-raised)' : 'transparent', color: sort === s ? 'var(--accent-amethyst)' : 'var(--text-ghost)', fontSize: 11, cursor: 'pointer' }}>{s}</button>
+          ))}
+        </div>
+        <span style={{ fontSize: 11, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', flexShrink: 0 }}>{backlogTasks.length}</span>
       </div>
 
       {backlogTasks.length === 0 && !showAdd && (
