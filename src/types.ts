@@ -192,7 +192,7 @@ export type CalendarEvent = {
   location: string | null
   description: string | null
   colorId: string | null
-  source: 'google' | 'manual' | 'mock' | 'cosmic'
+  source: 'google' | 'manual' | 'mock' | 'cosmic' | 'birthday'
   // v2 fields (optional for backward compat)
   recurrence?: RecurrenceRule
   categoryId?: string

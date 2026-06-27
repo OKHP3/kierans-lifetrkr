@@ -246,7 +246,29 @@ export default function Calendar() {
     return true
   }
 
-  // Events for a day (with recurrence expansion + cosmic + sort)
+  // Birthday events — derived from settings, generated for this year + next year
+  const birthdayEvents = useMemo((): CalendarEvent[] => {
+    const { birthMonth, birthDay, displayName } = state.settings
+    if (!birthMonth || !birthDay) return []
+    const name = displayName.trim()
+    const title = `🎂 ${name ? `${name}'s Birthday` : 'Birthday'}`
+    const thisYear = new Date().getFullYear()
+    return [thisYear, thisYear + 1].map(y => {
+      const ds = `${y}-${birthMonth.padStart(2, '0')}-${birthDay.padStart(2, '0')}`
+      return {
+        id: `birthday-${y}`,
+        title,
+        start: ds,
+        allDay: true,
+        location: null,
+        description: null,
+        colorId: null,
+        source: 'birthday' as const,
+      }
+    })
+  }, [state.settings.birthMonth, state.settings.birthDay, state.settings.displayName])
+
+  // Events for a day (with recurrence expansion + cosmic + birthday + sort)
   function getEventsForDay(day: number): CalendarEvent[] {
     const ds = dateStr(day)
 
@@ -262,21 +284,27 @@ export default function Calendar() {
         } as CalendarEvent & { emoji?: string }))
       : []
 
+    // Birthday event for this day (if one exists)
+    const bdayEvs = birthdayEvents.filter(e => e.start === ds)
+
     // Sort key: occurrence date + original time component (all-day sorts before timed events)
     function sortKey(e: CalendarEvent): string {
       if (e.allDay) return ds + 'T00:00:00'
       const timePart = e.start.includes('T') ? e.start.substring(10) : 'T00:00:00'
       return ds + timePart
     }
-    return [...stored, ...cosmicEvs]
+    return [...bdayEvs, ...stored, ...cosmicEvs]
       .filter(e => passesFilters(e, ds))
       .sort((a, b) => sortKey(a).localeCompare(sortKey(b)))
   }
 
-  // For grid dot: any stored event (incl. recurrence) occurs on this day
+  // For grid dot: any stored event (incl. recurrence) or birthday occurs on this day
   function hasDayEvents(day: number): boolean {
     const ds = dateStr(day)
-    return state.calendarEvents.some(e => e.source !== 'cosmic' && eventOccursOnDate(e, ds))
+    return (
+      state.calendarEvents.some(e => e.source !== 'cosmic' && eventOccursOnDate(e, ds)) ||
+      birthdayEvents.some(e => e.start === ds)
+    )
   }
 
   function patchForm(patch: Partial<EventForm>) {
@@ -518,10 +546,11 @@ export default function Calendar() {
                 const isCosmic = event.source === 'cosmic'
                 const isGoogle = event.source === 'google'
                 const isManual = event.source === 'manual'
+                const isBirthday = event.source === 'birthday'
                 const cat = event.categoryId ? DEFAULT_CATEGORIES.find(c => c.id === event.categoryId) : undefined
                 const recLabel = formatRecurrenceLabel(event.recurrence)
                 const eventTags = event.tags ?? []
-                const barColor = isCosmic ? 'var(--accent-amethyst)' : isGoogle ? '#4285F4' : 'var(--accent-amethyst)'
+                const barColor = isBirthday ? '#e8a0c4' : isCosmic ? 'var(--accent-amethyst)' : isGoogle ? '#4285F4' : 'var(--accent-amethyst)'
 
                 return (
                   <div
@@ -529,7 +558,7 @@ export default function Calendar() {
                     className="card"
                     style={{
                       display: 'flex', alignItems: 'flex-start', gap: 10,
-                      background: isCosmic ? 'rgba(196,160,232,0.06)' : undefined,
+                      background: isBirthday ? 'rgba(232,160,196,0.06)' : isCosmic ? 'rgba(196,160,232,0.06)' : undefined,
                     }}
                   >
                     <div style={{ width: 3, borderRadius: 2, background: barColor, alignSelf: 'stretch', flexShrink: 0 }} />
@@ -542,7 +571,7 @@ export default function Calendar() {
                           )}
                           <p style={{
                             fontSize: 14, margin: 0,
-                            color: isCosmic ? 'var(--accent-amethyst)' : 'var(--text-primary)',
+                            color: isBirthday ? '#e8a0c4' : isCosmic ? 'var(--accent-amethyst)' : 'var(--text-primary)',
                             fontStyle: isCosmic ? 'italic' : 'normal',
                             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                           }}>
@@ -552,6 +581,7 @@ export default function Calendar() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                           {isGoogle && <span style={{ fontSize: 9, color: '#4285F4', border: '0.5px solid #4285F4', borderRadius: 4, padding: '1px 5px', fontFamily: 'Space Mono, monospace' }}>G</span>}
                           {isCosmic && <span style={{ fontSize: 10, color: 'var(--accent-amethyst)', fontFamily: 'Space Mono, monospace' }}>✦</span>}
+                          {isBirthday && <span style={{ fontSize: 9, color: '#e8a0c4', border: '0.5px solid #e8a0c4', borderRadius: 4, padding: '1px 5px', fontFamily: 'Space Mono, monospace' }}>bday</span>}
                           {isManual && <button onClick={() => deleteEvent(event.id)} style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: 16, padding: 0, lineHeight: 1 }}>×</button>}
                         </div>
                       </div>
@@ -562,7 +592,7 @@ export default function Calendar() {
                           {formatEventTime(event.start, false)}{event.end ? ` – ${formatEventTime(event.end, false)}` : ''}
                         </p>
                       )}
-                      {event.allDay && !isCosmic && <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: '3px 0 0' }}>All day</p>}
+                      {event.allDay && !isCosmic && !isBirthday && <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: '3px 0 0' }}>All day</p>}
                       {event.location && <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: '3px 0 0' }}>📍 {event.location}</p>}
                       {recLabel && <p style={{ fontSize: 11, color: 'var(--accent-amethyst)', margin: '3px 0 0', fontFamily: 'Space Mono, monospace' }}>↻ {recLabel}</p>}
                       {eventTags.length > 0 && (
