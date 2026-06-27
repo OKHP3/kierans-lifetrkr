@@ -1,8 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp, genId } from '../context/AppContext'
 import { getTodayISO, formatEventTime } from '../lib/date'
 import { getMoonPhaseEmoji, getDailyCard, getDailyWisdom, getCosmicEventsForDateRange } from '../lib/cosmic'
+import { useGoogleAuth } from '../hooks/useGoogleAuth'
+import { fetchCalendarEvents } from '../lib/googleCalendar'
 import FilterBar from '../components/FilterBar'
 import CategoryPicker from '../components/CategoryPicker'
 import TagInput from '../components/TagInput'
@@ -206,6 +208,25 @@ export default function Calendar() {
   const usedCategoryIds = [...new Set(userEvents.filter(e => e.categoryId).map(e => e.categoryId!))]
   const allEventTags = [...new Set(userEvents.flatMap(e => e.tags ?? []))]
   const googleEventsCount = state.calendarEvents.filter(e => e.source === 'google').length
+  const { isConnected, getToken } = useGoogleAuth()
+  const [syncing, setSyncing] = useState(false)
+  const [syncError, setSyncError] = useState<string | null>(null)
+
+  const handleSync = useCallback(async () => {
+    if (!isConnected || syncing) return
+    setSyncing(true)
+    setSyncError(null)
+    try {
+      const token = await getToken()
+      const events = await fetchCalendarEvents(token, state.settings.calendarDaysAhead ?? 14)
+      dispatch({ type: 'SET_CALENDAR_EVENTS', payload: events })
+      dispatch({ type: 'SET_LAST_SYNC', payload: new Date().toISOString() })
+    } catch {
+      setSyncError('Sync failed — tap to retry')
+    } finally {
+      setSyncing(false)
+    }
+  }, [isConnected, syncing, getToken, state.settings.calendarDaysAhead, dispatch])
 
   // ─── Filter predicate ────────────────────────────────────────────────────────
   function passesFilters(event: CalendarEvent, dayDateStr: string): boolean {
@@ -296,14 +317,10 @@ export default function Calendar() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <h1 className="page-title">Calendar</h1>
-        {!state.isGoogleConnected ? (
+        {!state.isGoogleConnected && (
           <button className="btn-ghost" style={{ fontSize: 12 }} onClick={() => navigate('/settings')}>
             Connect Google →
           </button>
-        ) : (
-          <span style={{ fontSize: 11, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>
-            {googleEventsCount} synced
-          </span>
         )}
       </div>
 
@@ -426,6 +443,37 @@ export default function Calendar() {
           })}
         </div>
       </div>
+
+      {/* Google sync status bar */}
+      {state.isGoogleConnected && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, padding: '6px 2px' }}>
+          <span style={{ fontSize: 11, color: syncError ? '#e07070' : 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', letterSpacing: '0.04em' }}>
+            {syncError
+              ? syncError
+              : syncing
+              ? '↻ syncing…'
+              : googleEventsCount > 0
+              ? `${googleEventsCount} Google event${googleEventsCount !== 1 ? 's' : ''} synced`
+              : 'no Google events yet'}
+          </span>
+          <button
+            onClick={handleSync}
+            disabled={syncing || !isConnected}
+            style={{
+              fontSize: 11,
+              fontFamily: 'Space Mono, monospace',
+              color: syncing ? 'var(--text-ghost)' : 'var(--accent-amethyst)',
+              background: 'none',
+              border: 'none',
+              cursor: syncing ? 'default' : 'pointer',
+              padding: '2px 0',
+              letterSpacing: '0.04em',
+            }}
+          >
+            {syncing ? '…' : '↻ refresh'}
+          </button>
+        </div>
+      )}
 
       {/* Selected day detail */}
       {selectedDay && selectedDateStr && (
