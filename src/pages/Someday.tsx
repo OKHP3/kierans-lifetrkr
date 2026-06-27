@@ -7,7 +7,7 @@ type SortKey = 'Priority' | 'Date Added' | 'Title'
 const PRIORITY_ORDER: Record<TaskPriority, number> = { high: 0, normal: 1, low: 2 }
 const PRIORITY_COLORS: Record<TaskPriority, string> = { high: '#e07070', normal: 'var(--text-ghost)', low: 'var(--text-ghost)' }
 
-export default function Archive() {
+export default function Someday() {
   const { state, dispatch } = useApp()
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<SortKey>('Priority')
@@ -56,7 +56,7 @@ export default function Archive() {
   return (
     <div className="page-content">
       <div style={{ marginBottom: 16 }}>
-        <h1 className="page-title">Archive</h1>
+        <h1 className="page-title">Someday</h1>
       </div>
 
       {/* Search */}
@@ -65,7 +65,7 @@ export default function Archive() {
         <input
           className="input-field"
           style={{ paddingLeft: 34 }}
-          placeholder="Search backlog…"
+          placeholder="Search someday…"
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
@@ -84,9 +84,9 @@ export default function Archive() {
       {backlogTasks.length === 0 && !showAdd && (
         <div className="card" style={{ textAlign: 'center', padding: '32px 20px' }}>
           <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: '0 0 12px' }}>
-            {search ? 'No results.' : 'Backlog is clear.'}
+            {search ? 'No results.' : 'Nothing queued for someday.'}
           </p>
-          {!search && <button className="btn-primary" onClick={() => setShowAdd(true)}>Add to backlog</button>}
+          {!search && <button className="btn-primary" onClick={() => setShowAdd(true)}>Add to someday</button>}
         </div>
       )}
 
@@ -126,7 +126,7 @@ export default function Archive() {
             ))}
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-            <button className="btn-primary" style={{ flex: 1 }} onClick={addTask}>Add to Backlog</button>
+            <button className="btn-primary" style={{ flex: 1 }} onClick={addTask}>Add to Someday</button>
             <button className="btn-ghost" onClick={() => { setShowAdd(false); setNewTitle('') }}>Cancel</button>
           </div>
         </div>

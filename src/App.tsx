@@ -25,7 +25,7 @@ import Rituals from './pages/Rituals'
 import Habits from './pages/Habits'
 import Calendar from './pages/Calendar'
 import Today from './pages/Today'
-import Archive from './pages/Archive'
+import Someday from './pages/Someday'
 import Settings from './pages/Settings'
 import Origin from './pages/Origin'
 import { usePageTracking } from './hooks/usePageTracking'
@@ -47,7 +47,7 @@ function AppShell() {
               <Route path="/habits" element={<Habits />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/today" element={<Today />} />
-              <Route path="/archive" element={<Archive />} />
+              <Route path="/someday" element={<Someday />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/origin" element={<Origin />} />
             </Routes>

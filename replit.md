@@ -12,7 +12,7 @@ kieran-lifetrkr/
 │   │                        #   GoogleConnectButton, TokenExpiryBanner
 │   ├── hooks/               # useGoogleAuth, useToast
 │   ├── lib/                 # storage.ts, date.ts, googleCalendar.ts, googleTasks.ts
-│   ├── pages/               # Home, Rituals, Habits, Calendar, Today, Archive, Settings
+│   ├── pages/               # Home, Calendar, Today, Someday, Rituals, Habits, Settings
 │   ├── types.ts             # All TypeScript types
 │   ├── constants.ts         # GOOGLE_CLIENT_ID, SCOPES, DAILY_QUOTES, SEASONAL_DATES
 │   ├── App.tsx              # HashRouter + Routes (7 routes incl. /settings)

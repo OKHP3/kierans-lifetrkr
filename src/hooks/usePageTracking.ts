@@ -10,7 +10,7 @@ function resolveTitle(pathname: string): string {
     '/habits':   'Habits',
     '/calendar': 'Calendar',
     '/today':    'Today',
-    '/archive':  'Archive',
+    '/someday':  'Someday',
     '/settings': 'Settings',
   }
   for (const [prefix, label] of Object.entries(titles)) {

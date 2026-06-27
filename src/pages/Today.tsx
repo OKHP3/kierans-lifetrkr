@@ -95,7 +95,7 @@ export default function Today() {
               </div>
               {expandedId === task.id && (
                 <div style={{ display: 'flex', gap: 8, marginTop: 10, paddingLeft: 34 }}>
-                  <button className="btn-ghost" style={{ fontSize: 12 }} onClick={() => { dispatch({ type: 'SET_TASK_STATUS', payload: { taskId: task.id, status: 'backlog' } }); setExpandedId(null) }}>→ Archive</button>
+                  <button className="btn-ghost" style={{ fontSize: 12 }} onClick={() => { dispatch({ type: 'SET_TASK_STATUS', payload: { taskId: task.id, status: 'backlog' } }); setExpandedId(null) }}>→ Someday</button>
                   <button className="btn-ghost" style={{ fontSize: 12, color: '#e07070' }} onClick={() => { dispatch({ type: 'DELETE_TASK', payload: task.id }); setExpandedId(null) }}>Delete</button>
                 </div>
               )}
