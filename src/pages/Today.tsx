@@ -56,15 +56,17 @@ export default function Today() {
 
   return (
     <div className="page-content">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+      <div style={{ marginBottom: 6 }}>
         <h1 className="page-title">Today</h1>
-        <span style={{ fontSize: 12, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>
-          {doneTasks.length}/{activeTasks.length + doneTasks.length} done
-        </span>
       </div>
 
       {/* My Tasks */}
-      <p className="section-label">MY TASKS</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+        <p className="section-label" style={{ margin: 0 }}>MY TASKS</p>
+        <span style={{ fontSize: 11, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>
+          {doneTasks.length}/{activeTasks.length + doneTasks.length} done
+        </span>
+      </div>
       {activeTasks.length === 0 && !showAdd ? (
         <div className="card" style={{ textAlign: 'center', padding: '32px 20px' }}>
           <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: '0 0 12px' }}>Nothing on the list. Add something.</p>
@@ -93,7 +95,7 @@ export default function Today() {
               </div>
               {expandedId === task.id && (
                 <div style={{ display: 'flex', gap: 8, marginTop: 10, paddingLeft: 34 }}>
-                  <button className="btn-ghost" style={{ fontSize: 12 }} onClick={() => { dispatch({ type: 'SET_TASK_STATUS', payload: { taskId: task.id, status: 'backlog' } }); setExpandedId(null) }}>→ Archive</button>
+                  <button className="btn-ghost" style={{ fontSize: 12 }} onClick={() => { dispatch({ type: 'SET_TASK_STATUS', payload: { taskId: task.id, status: 'backlog' } }); setExpandedId(null) }}>→ Someday</button>
                   <button className="btn-ghost" style={{ fontSize: 12, color: '#e07070' }} onClick={() => { dispatch({ type: 'DELETE_TASK', payload: task.id }); setExpandedId(null) }}>Delete</button>
                 </div>
               )}

@@ -1,50 +1,77 @@
 ---
 name: okhp3-celestial-data
 description: >
-  Calculate moon phase, astrological season, and Mercury retrograde status
-  for any date using pure client-side Julian date math -- no API, no network,
-  no dependencies. Activate whenever a task needs to display the current moon
-  phase, lunar emoji, illumination percentage, days until next phase, current
-  zodiac season, element label, Mercury retrograde status, or upcoming new/full
-  moon dates. Use for apps with moon phase calendars, astrology features, nature
-  journals, wellness trackers, lunar awareness widgets, or any UI referencing
-  the night sky or seasonal cycles. Returns structured data ready for immediate
-  display -- no parsing required. Also activate when anyone asks "is Mercury
-  retrograde?", "what moon phase is it?", "what zodiac season are we in?",
-  "when is the next full moon?", or wants lunar or celestial data without a
-  backend -- even if they don't mention this skill by name.
+  OverKill Hill P³ pure-client-side celestial calculation engine for moon phase,
+  astrological season, and Mercury retrograde — no API, no network, no dependencies.
+  Use when a task needs to display the current moon phase, lunar emoji, illumination
+  percentage, days until next phase, zodiac season, element label, Mercury retrograde
+  status, or upcoming new/full moon dates. Also activate when building moon phase
+  calendars, astrology features, wellness trackers, nature journals, lunar awareness
+  widgets, or any UI referencing the night sky or seasonal cycles. Activate when
+  anyone asks "is Mercury retrograde?", "what moon phase is it?", "what zodiac season
+  are we in?", or "when is the next full moon?" — even if they don't mention this
+  skill by name. This is the authoritative celestial calculation skill for this repo;
+  use it instead of calling an external astrology API.
 license: MIT
 metadata:
   author: Jamie Hill (OverKill Hill P³)
-  version: "1.1.0"
+  version: "1.2.0"
   category: wellness-astrology
-  origin: okhp3/abrahamic-reference-engine
+  origin: okhp3/skillz
   homepage: https://overkillhill.com
   author-github: https://github.com/OKHP3
-compatibility: Any JavaScript or TypeScript environment. No network access required.
+  compatibility: Any JavaScript or TypeScript environment. No network access required.
+  in_scope:
+    - Moon phase name, emoji, illumination fraction, and days until next phase
+    - Astrological/zodiac season with sign, emoji, element, and date range
+    - Mercury retrograde status lookup (hardcoded ephemeris 2026–2031)
+    - Upcoming New Moon and Full Moon date prediction
+    - Copy-paste TypeScript implementation (toJulianDate + all four exports)
+    - Mercury date validation script (validate-mercury-dates.cjs)
+    - Porting guidance for non-TypeScript environments
+  out_of_scope:
+    - Observatory-grade astronomical accuracy (display accuracy ±12h is the design goal)
+    - Planetary positions beyond Mercury retrograde
+    - Eclipse, solstice, or equinox exact timestamps
+    - Ephemeris data beyond 2031 (update the MERCURY_RETROGRADE array annually)
+    - Server-side or API-backed celestial data services
 ---
 
-# Celestial Engine Skill
+# okhp3-celestial-data
 
 **OverKill Hill P³** · [overkillhill.com](https://overkillhill.com) · [github.com/OKHP3](https://github.com/OKHP3) · [OKHP3/skillz](https://github.com/OKHP3/skillz)
 
 A self-contained celestial calculation library. All computations run locally using
-the Julian Day Number system. Accurate to within hours for moon phases -- sufficient
-for display and UX purposes.
+the Julian Day Number system — no network call, no API key, no external dependency.
+Accurate to within hours for moon phases, which is the right bar for display and UX.
+Copy the implementation once; it runs everywhere JavaScript runs.
+
+---
+
+## Scope
+
+| In scope | Out of scope |
+|---|---|
+| Moon phase: name, emoji, illumination, days until next | Observatory-grade accuracy (±12h is intentional design) |
+| Astrological season: sign, emoji, element, date range | Planetary positions beyond Mercury retrograde |
+| Mercury retrograde status, 2026–2031 ephemeris | Eclipse / solstice / equinox exact timestamps |
+| Next New Moon and Full Moon dates | Ephemeris data beyond 2031 (update annually) |
+| TypeScript implementation — copy-paste ready | Server-side or API-backed celestial services |
+| Mercury date validation script | |
+
+---
 
 ## Validation scripts
 
 Two scripts ship with this skill for maintaining data integrity:
 
-- `scripts/validate-mercury-dates.cjs` -- validates the `MERCURY_RETROGRADE` array for ordering, overlaps, and large gaps. Run after any date update.
-- `scripts/validate-easter.js` -- in the `okhp3-tradition-observance-calendar` skill -- validates the Computus algorithm against known good Easter dates.
+- `scripts/validate-mercury-dates.cjs` — validates the `MERCURY_RETROGRADE` array for correct date ordering, no overlaps, and no unexpected large gaps. Run after any date update.
 
-Run:
 ```bash
 node .agents/skills/okhp3-celestial-data/scripts/validate-mercury-dates.cjs
 ```
 
-Exit 0 = clean. Exit 1 = errors (see stdout for details).
+Exit 0 = clean. Exit 1 = errors listed on stdout. Always run this after editing the Mercury dates array.
 
 ---
 
@@ -56,7 +83,9 @@ Returns the moon phase for a given date (defaults to today).
 
 ```typescript
 type MoonPhase = {
-  name: MoonPhaseName;    // 'New Moon' | 'Waxing Crescent' | ... | 'Waning Crescent'
+  name: MoonPhaseName;    // 'New Moon' | 'Waxing Crescent' | 'First Quarter' |
+                          // 'Waxing Gibbous' | 'Full Moon' | 'Waning Gibbous' |
+                          // 'Last Quarter' | 'Waning Crescent'
   emoji: string;          // '🌑' | '🌒' | '🌓' | '🌔' | '🌕' | '🌖' | '🌗' | '🌘'
   illumination: number;   // 0.0 to 1.0 (fraction of visible surface lit)
   daysUntilNext: number;  // days until next named phase transition
@@ -78,27 +107,29 @@ type AstroSeason = {
 
 ### getMercuryStatus(date?)
 
-Returns Mercury retrograde status.
+Returns Mercury retrograde status. Comparison is pure ISO string lexicography — no year-boundary edge cases.
 
 ```typescript
 type MercuryStatus = {
   retrograde: boolean;
-  endDate: string | null;   // ISO date string or null if not retrograde
+  endDate: string | null;   // ISO date string, or null if not currently retrograde
 };
 ```
 
 ### getNextLunarEvents(count?)
 
-Returns upcoming New Moon and Full Moon dates.
+Returns the next `count * 2` upcoming New Moon and Full Moon dates (alternating).
 
 ```typescript
-// Returns array of { type: 'New Moon' | 'Full Moon', date: Date, emoji: string }
-getNextLunarEvents(count = 3)
+// Returns: { type: 'New Moon' | 'Full Moon', date: Date, emoji: string }[]
+getNextLunarEvents(count = 3)   // returns up to 6 events by default
 ```
+
+---
 
 ## Complete Implementation (TypeScript)
 
-Copy this directly into `src/lib/celestial.ts`. A fully-typed copy is also available at `references/celestial.ts` in this skill directory -- either source is identical.
+Copy this directly into `src/lib/celestial.ts`. An identical copy lives at `references/celestial.ts` in this skill directory.
 
 ```typescript
 // ── Julian Date conversion ──────────────────────────────────────────────────
@@ -126,6 +157,8 @@ const MOON_PHASES = [
   { name: 'Last Quarter',    emoji: '🌗', min: 0.75,   max: 0.875  },
   { name: 'Waning Crescent', emoji: '🌘', min: 0.875,  max: 1.0    },
 ] as const;
+
+export type MoonPhaseName = typeof MOON_PHASES[number]['name'];
 
 export function getMoonPhase(date: Date = new Date()) {
   const jd = toJulianDate(date);
@@ -168,26 +201,28 @@ const ASTRO_SEASONS = [
   { sign: 'Sagittarius', emoji: '♐', element: 'Fire'  as const, dates: 'Nov 22 – Dec 21', startMD: 1122, endMD: 1221 },
 ];
 
+export type ZodiacSign = typeof ASTRO_SEASONS[number]['sign'];
+
 export function getAstroSeason(date: Date = new Date()) {
   const md = (date.getMonth() + 1) * 100 + date.getDate();
   const found = ASTRO_SEASONS.find(s =>
-    s.startMD > s.endMD ? md >= s.startMD || md <= s.endMD : md >= s.startMD && md <= s.endMD
+    s.startMD > s.endMD
+      ? md >= s.startMD || md <= s.endMD   // Capricorn wraps Dec→Jan
+      : md >= s.startMD && md <= s.endMD
   );
   return found ?? ASTRO_SEASONS[0];
 }
 
 // ── Mercury Retrograde ──────────────────────────────────────────────────────
-// Hardcoded through 2031. Update this array annually.
+// Hardcoded through 2031. Update this array annually using a published ephemeris.
 // Sources:
-//   2026-2028 -- published ephemeris (original data set).
-//   2029      -- Cafe Astrology and cross-referenced sources (4 periods this year).
-//   2030      -- Astro-Seek Swiss Ephemeris planetary motion calendar; Dec period
-//                also confirmed by Cafe Astrology (station Rx Dec 6, sD Dec 25).
-//   2031      -- Astro-Seek Swiss Ephemeris (horoscopes.astro-seek.com/mercury-
-//                retrograde-astrology-calendar-2031; 6 station events confirmed).
-// Note: the 2029-12-22 entry straddles the year boundary (sD Jan 11, 2030).
-//   getMercuryStatus handles this correctly -- ISO string comparison is
-//   purely lexicographic and has no year-boundary edge case.
+//   2026–2028 — published ephemeris (original data set)
+//   2029      — Cafe Astrology + cross-referenced sources (4 periods this year)
+//   2030      — Astro-Seek Swiss Ephemeris; Dec period confirmed by Cafe Astrology
+//   2031      — Astro-Seek Swiss Ephemeris (6 station events confirmed)
+// Note: the 2029-12-22 entry straddles the year boundary (station direct Jan 11, 2030).
+//   getMercuryStatus handles this correctly — ISO string comparison is purely
+//   lexicographic and has no year-boundary edge case.
 const MERCURY_RETROGRADE = [
   { start: '2026-03-15', end: '2026-04-07' },
   { start: '2026-07-17', end: '2026-08-11' },
@@ -198,10 +233,10 @@ const MERCURY_RETROGRADE = [
   { start: '2028-02-15', end: '2028-03-09' },
   { start: '2028-06-16', end: '2028-07-11' },
   { start: '2028-10-09', end: '2028-10-30' },
-  { start: '2029-01-07', end: '2029-01-27' },  // 2029 has 4 periods
+  { start: '2029-01-07', end: '2029-01-27' },
   { start: '2029-05-01', end: '2029-05-25' },
   { start: '2029-09-02', end: '2029-09-25' },
-  { start: '2029-12-22', end: '2030-01-11' },  // straddles year; sD Jan 11 2030
+  { start: '2029-12-22', end: '2030-01-11' },
   { start: '2030-04-13', end: '2030-05-06' },
   { start: '2030-08-16', end: '2030-09-08' },
   { start: '2030-12-06', end: '2030-12-25' },
@@ -216,6 +251,8 @@ export function getMercuryStatus(date: Date = new Date()) {
   return { retrograde: !!period, endDate: period?.end ?? null };
 }
 ```
+
+---
 
 ## Usage Examples
 
@@ -243,19 +280,46 @@ const events = getNextLunarEvents(2);
 events.forEach(e => console.log(`${e.emoji} ${e.type}: ${e.date.toDateString()}`));
 ```
 
-## Notes on accuracy
+---
 
-- Moon phase accuracy: ±12 hours of exact phase
-- Astrological season boundaries: ±1 day (solar longitude not calculated exactly)
-- Mercury retrograde: all entries 2026-2031 sourced from published ephemeris (Cafe Astrology / Astro-Seek Swiss Ephemeris); update the array annually
-- All calculations are local, instant, and work offline
+## Accuracy notes
 
-## Extending to other languages
+- **Moon phase:** ±12 hours of the exact phase transition — correct for display and UX purposes.
+- **Astrological season boundaries:** ±1 day (uses month/day lookup, not solar longitude).
+- **Mercury retrograde:** 2026–2031 sourced from Cafe Astrology and Astro-Seek Swiss Ephemeris. Update the array annually; run `validate-mercury-dates.cjs` after each update.
+- **All calculations are local, instant, and work fully offline.**
 
-The Julian date algorithm is universal. Port by:
-1. Implementing `toJulianDate(date)` using the formula above
-2. Computing `phase = ((jd - 2451550.1) % 29.53058867) / 29.53058867`
-3. Looking up the phase in the MOON_PHASES table
+---
+
+## Porting to other languages
+
+The Julian Date algorithm is universal. Port the engine in three steps:
+
+1. Implement `toJulianDate(date)` using the formula in the implementation above.
+2. Compute `phase = (((jd - 2451550.1) % 29.53058867) / 29.53058867 % 1 + 1) % 1`.
+3. Look up the result in the MOON_PHASES table (8 buckets, 0.0–1.0).
+
+---
+
+## References
+
+- `references/celestial.ts` — complete TypeScript implementation. Load when implementing a function from scratch, debugging a type error, or the user requests code to copy directly.
+- `scripts/validate-mercury-dates.cjs` — Mercury retrograde date array validator. Load and run after any edit to the `MERCURY_RETROGRADE` array.
+- `scripts/check-date.cjs` — CLI utility: prints moon phase, season, and Mercury status for any date. Load when you need to verify a specific date's output before shipping.
+
+---
+
+## Available scripts
+
+- **`scripts/check-date.cjs`** — live celestial check for any date. Useful for verifying calculation output.
+  ```bash
+  node .agents/skills/okhp3-celestial-data/scripts/check-date.cjs
+  node .agents/skills/okhp3-celestial-data/scripts/check-date.cjs 2026-07-20
+  ```
+- **`scripts/validate-mercury-dates.cjs`** — validates the MERCURY_RETROGRADE array for overlaps, ordering, and ISO format. Run after editing that array.
+  ```bash
+  node .agents/skills/okhp3-celestial-data/scripts/validate-mercury-dates.cjs
+  ```
 
 ---
 
@@ -264,4 +328,4 @@ The Julian date algorithm is universal. Port by:
 Built by [Jamie Hill](https://overkillhill.com) · [OverKill Hill P³](https://overkillhill.com)
 Published at [github.com/OKHP3](https://github.com/OKHP3)
 Part of the [OKHP3/skillz](https://github.com/OKHP3/skillz) Agent Skill library.
-MIT License -- free to use, fork, and adapt. A nod to the source is appreciated.
+MIT License — free to use, fork, and adapt. A nod to the source is appreciated.

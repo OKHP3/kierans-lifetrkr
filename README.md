@@ -31,7 +31,7 @@ One question, answered fast: **What does today require from me?**
 | Habits | Daily tracking with moon-streak counter |
 | Calendar | Google Calendar sync + lunar phase calendar layer |
 | Today | Committed tasks + Google Tasks due today |
-| Archive | Master backlog + someday list |
+| Someday | Deferred tasks — the "I'll get to it" backlog |
 
 ---
 

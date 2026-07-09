@@ -765,11 +765,11 @@ select:focus {
   }
 
   .home-gear-desktop {
-    display: flex;
+    display: none;
   }
 
   .theme-toggle-float {
-    display: none;
+    display: flex;
   }
 
   .page-content {

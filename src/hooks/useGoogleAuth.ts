@@ -2,17 +2,25 @@ import { useState, useCallback } from 'react'
 import { GOOGLE_CLIENT_ID, SCOPES } from '../constants'
 
 export function useGoogleAuth() {
-  const [accessToken, setAccessToken] = useState<string | null>(
-    sessionStorage.getItem('gal_token')
-  )
-  const [tokenExpiry, setTokenExpiry] = useState<number | null>(
-    Number(sessionStorage.getItem('gal_expiry')) || null
-  )
+  // State exists only to trigger re-renders after connect/disconnect.
+  // The actual validity check reads live from sessionStorage every render
+  // so all hook instances (GoogleConnectButton, TokenExpiryBanner, etc.)
+  // see the same truth without a shared context.
+  const [, setTick] = useState(0)
+  const rerender = useCallback(() => setTick(n => n + 1), [])
+
+  const storedToken = sessionStorage.getItem('gal_token')
+  const storedExpiry = Number(sessionStorage.getItem('gal_expiry')) || 0
+  const isConnected = Boolean(storedToken) && Date.now() < storedExpiry
+  const minutesUntilExpiry = storedExpiry
+    ? Math.max(0, Math.floor((storedExpiry - Date.now()) / 60000))
+    : null
 
   const isTokenValid = useCallback(() => {
-    if (!accessToken || !tokenExpiry) return false
-    return Date.now() < tokenExpiry
-  }, [accessToken, tokenExpiry])
+    const t = sessionStorage.getItem('gal_token')
+    const e = Number(sessionStorage.getItem('gal_expiry')) || 0
+    return Boolean(t) && Date.now() < e
+  }, [])
 
   const requestToken = useCallback((silent = false): Promise<string> => {
     return new Promise<string>((resolve, reject) => {
@@ -32,37 +40,32 @@ export function useGoogleAuth() {
           const expiry = Date.now() + (response.expires_in * 1000)
           sessionStorage.setItem('gal_token', response.access_token)
           sessionStorage.setItem('gal_expiry', String(expiry))
-          setAccessToken(response.access_token)
-          setTokenExpiry(expiry)
+          rerender()
           resolve(response.access_token)
         },
       })
       client.requestAccessToken()
     })
-  }, [])
+  }, [rerender])
 
   const getToken = useCallback(async (): Promise<string> => {
-    if (isTokenValid()) return accessToken!
+    if (isTokenValid()) return sessionStorage.getItem('gal_token')!
     return requestToken(true).catch(() => requestToken(false))
-  }, [isTokenValid, accessToken, requestToken])
+  }, [isTokenValid, requestToken])
 
   const disconnect = useCallback(() => {
-    if (accessToken) {
-      window.google?.accounts?.oauth2?.revoke(accessToken, () => {})
+    const token = sessionStorage.getItem('gal_token')
+    if (token) {
+      window.google?.accounts?.oauth2?.revoke(token, () => {})
     }
     sessionStorage.removeItem('gal_token')
     sessionStorage.removeItem('gal_expiry')
-    setAccessToken(null)
-    setTokenExpiry(null)
-  }, [accessToken])
-
-  const minutesUntilExpiry = tokenExpiry
-    ? Math.max(0, Math.floor((tokenExpiry - Date.now()) / 60000))
-    : null
+    rerender()
+  }, [rerender])
 
   return {
-    isConnected: isTokenValid(),
-    accessToken,
+    isConnected,
+    accessToken: storedToken,
     minutesUntilExpiry,
     connect: () => requestToken(false),
     getToken,

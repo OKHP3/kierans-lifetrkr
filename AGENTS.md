@@ -62,7 +62,7 @@ src/
   hooks/         useGoogleAuth.ts, useToast.ts
   lib/           storage.ts, date.ts, googleCalendar.ts, googleTasks.ts,
                  celestial.ts, oracle.ts, recurrence.ts
-  pages/         Home, Rituals, Habits, Calendar, Today, Archive, Settings
+  pages/         Home, Calendar, Today, Someday, Rituals, Habits, Settings
   types.ts       Single source of truth for all TypeScript types
   constants.ts   APP_VERSION, GOOGLE_CLIENT_ID, SCOPES, DAILY_QUOTES,
                  SEASONAL_DATES, CATEGORIES, DEFAULT_RECURRENCE
@@ -79,10 +79,10 @@ src/
 | `/habits` | Habits | Habits |
 | `/calendar` | Calendar | Calendar |
 | `/today` | Today | Today |
-| `/archive` | Archive | Archive |
+| `/someday`  | Someday  | Someday  |
 | `/settings` | Settings | (SideNav only, not BottomNav) |
 
-**Mobile (< 768px):** BottomNav — 6 tabs (Home → Archive). Settings via gear icon in Home header.
+**Mobile (< 768px):** BottomNav — 6 tabs (Home, Calendar, Today, Someday, Rituals, Habits). Settings via gear icon in Home header.
 **Desktop (≥ 768px):** SideNav — 7 items including Settings. BottomNav hidden.
 
 ---

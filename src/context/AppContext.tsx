@@ -69,6 +69,7 @@ type Action =
   | { type: 'SET_GOOGLE_CONNECTED'; payload: boolean }
   | { type: 'SET_CALENDAR_EVENTS'; payload: CalendarEvent[] }
   | { type: 'ADD_CALENDAR_EVENT'; payload: CalendarEvent }
+  | { type: 'UPDATE_CALENDAR_EVENT'; payload: CalendarEvent }
   | { type: 'DELETE_CALENDAR_EVENT'; payload: string }
   | { type: 'SET_GOOGLE_TASKS'; payload: GoogleTask[] }
   | { type: 'SET_TASK_LISTS'; payload: TaskList[] }
@@ -96,15 +97,19 @@ type Action =
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
-    case 'LOAD_STATE':
+    case 'LOAD_STATE': {
+      const loadedSettings = { ...defaultSettings, ...(action.payload.settings || {}) }
       return {
         ...state,
         ...action.payload,
-        settings: { ...defaultSettings, ...(action.payload.settings || {}) },
+        settings: loadedSettings,
         routineTemplates: action.payload.routineTemplates?.length
           ? action.payload.routineTemplates
           : defaultTemplates,
+        // Restore isGoogleConnected from persisted settings or presence of profile
+        isGoogleConnected: loadedSettings.googleConnected || action.payload.profile != null,
       }
+    }
 
     case 'SET_PROFILE':
       return {
@@ -150,6 +155,9 @@ function reducer(state: AppState, action: Action): AppState {
 
     case 'ADD_CALENDAR_EVENT':
       return { ...state, calendarEvents: [...state.calendarEvents, action.payload] }
+
+    case 'UPDATE_CALENDAR_EVENT':
+      return { ...state, calendarEvents: state.calendarEvents.map(e => e.id === action.payload.id ? action.payload : e) }
 
     case 'DELETE_CALENDAR_EVENT':
       return { ...state, calendarEvents: state.calendarEvents.filter(e => e.id !== action.payload) }

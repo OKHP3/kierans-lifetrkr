@@ -2,11 +2,11 @@ import { NavLink, useLocation } from 'react-router-dom'
 
 const tabs = [
   { to: '/',         label: 'Home',     Icon: HomeIcon },
-  { to: '/rituals',  label: 'Rituals',  Icon: RitualsIcon },
-  { to: '/habits',   label: 'Habits',   Icon: HabitsIcon },
   { to: '/calendar', label: 'Calendar', Icon: CalendarIcon },
   { to: '/today',    label: 'Today',    Icon: TodayIcon },
-  { to: '/archive',  label: 'Archive',  Icon: ArchiveIcon },
+  { to: '/someday',  label: 'Someday',  Icon: SomedayIcon },
+  { to: '/rituals',  label: 'Rituals',  Icon: RitualsIcon },
+  { to: '/habits',   label: 'Habits',   Icon: HabitsIcon },
 ]
 
 export default function BottomNav() {
@@ -43,6 +43,6 @@ function CalendarIcon({ active }: { active: boolean }) {
 function TodayIcon({ active }: { active: boolean }) {
   return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2 : 1.6} strokeLinecap="round" strokeLinejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>
 }
-function ArchiveIcon({ active }: { active: boolean }) {
-  return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2 : 1.6} strokeLinecap="round" strokeLinejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+function SomedayIcon({ active }: { active: boolean }) {
+  return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2 : 1.6} strokeLinecap="round" strokeLinejoin="round"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 1 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg>
 }
