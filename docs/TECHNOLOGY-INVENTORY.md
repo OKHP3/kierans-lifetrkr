@@ -1,10 +1,10 @@
 # LifeTrkr Technology Inventory
 
-**Audit date:** July 13, 2026  
-**Application version:** `v0.1.9` (`src/constants.ts`)  
+**Audit date:** July 13, 2026
+**Application version:** `v0.1.10` (`src/constants.ts`)
 **Scope:** Technologies present in the shipped source, package manifest/lockfile, build configuration, CI, and external browser integrations.
 
-This inventory separates the version actually resolved in the local lockfile/install from the latest stable release available at audit time. Major-version targets are recorded for planning; this audit does not upgrade them automatically because React, React Router, Tailwind, Vite, and TypeScript major upgrades can require source/configuration changes.
+This inventory records the version resolved in the current lockfile/install and the latest stable release available at audit time. The July 13, 2026 foundation upgrade is applied in the current working tree; future major framework/toolchain upgrades remain review-required because they can require source/configuration changes.
 
 ## Application and build stack
 
@@ -17,9 +17,10 @@ This inventory separates the version actually resolved in the local lockfile/ins
 | React Router DOM | Hash-based client routing and navigation | `6.30.4` | `7.18.1` | Major upgrade; preserve `HashRouter` for GitHub Pages. |
 | Vite | Dev server, bundler, and production build | `6.4.3` | `8.1.4` | Major upgrade; review Vite 7/8 migration notes and plugin compatibility. |
 | `@vitejs/plugin-react` | React JSX transform and Fast Refresh integration | `4.7.0` | `6.0.3` | Upgrade with Vite and verify React 18 compatibility if React is not upgraded yet. |
-| Tailwind CSS | Utility-first CSS generation and design tokens | `3.4.19` | `4.3.2` | Major upgrade; v4 changes configuration and PostCSS integration. |
-| PostCSS | CSS transformation pipeline | `8.5.15` | `8.5.19` | Patch update is low risk; used by Tailwind config. |
-| Autoprefixer | Browser vendor-prefix processing in PostCSS | `10.5.0` | `10.5.2` | Patch update is low risk. |
+| Tailwind CSS | Utility-first CSS generation and design tokens | `4.3.2` | `4.3.2` | Upgraded; v4 configuration is loaded through the CSS `@config` directive. |
+| `@tailwindcss/postcss` | Tailwind CSS v4 PostCSS plugin | `4.3.2` | `4.3.2` | Added as the supported v4 PostCSS integration. |
+| PostCSS | CSS transformation pipeline | `8.5.19` | `8.5.19` | Updated; used by the Tailwind v4 PostCSS plugin. |
+| Autoprefixer | Browser vendor-prefix processing in PostCSS | Removed during Tailwind v4 migration | `10.5.2` | Tailwind v4 handles the required CSS compatibility work without this separate plugin. |
 | `@types/react` | React TypeScript declarations | `18.3.31` | `19.2.17` | Upgrade with React types and React. |
 | `@types/react-dom` | React DOM TypeScript declarations | `18.3.7` | `19.2.3` | Upgrade with React DOM types and React. |
 | `@replit/connectors-sdk` | Installed connector SDK dependency | `0.4.1` | `0.4.1` | No newer npm `latest` version found at audit time; no direct source import was found. |
@@ -58,13 +59,13 @@ The versions in the “in-place” column come from `package-lock.json`/`npm ls`
 | Technology | How LifeTrkr uses it | In-place version | Latest stable at audit |
 |---|---|---:|---:|
 | GitHub Pages | Static hosting at the `/kierans-lifetrkr/` subpath | GitHub-managed service | Service; no app-pinned version |
-| GitHub Actions: `actions/checkout` | Checks out the repository | `v7` tag | `v7.0.0` |
-| GitHub Actions: `actions/setup-node` | Installs Node and caches npm | `v6` tag | `v6.4.0` |
-| GitHub Actions: `actions/configure-pages` | Configures Pages metadata | `v6` tag | `v6.0.0` |
-| GitHub Actions: `actions/upload-pages-artifact` | Packages the `dist` directory | `v5` tag | `v5.0.0` |
-| GitHub Actions: `actions/deploy-pages` | Publishes the Pages artifact | `v5` tag | `v5.0.0` |
+| GitHub Actions: `actions/checkout` | Checks out the repository | `v7.0.0` | `v7.0.0` |
+| GitHub Actions: `actions/setup-node` | Installs Node and caches npm | `v6.4.0` | `v6.4.0` |
+| GitHub Actions: `actions/configure-pages` | Configures Pages metadata | `v6.0.0` | `v6.0.0` |
+| GitHub Actions: `actions/upload-pages-artifact` | Packages the `dist` directory | `v5.0.0` | `v5.0.0` |
+| GitHub Actions: `actions/deploy-pages` | Publishes the Pages artifact | `v5.0.0` | `v5.0.0` |
 
-The workflow currently uses major tags. Dependabot is configured to keep these action references current, and the Pages workflow is being pinned to the current exact tags so each update is reviewable.
+The workflows use exact release tags. Dependabot is configured to keep these action references current so each update is reviewable.
 
 ## Not used / stale references
 

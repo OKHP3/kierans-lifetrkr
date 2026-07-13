@@ -16,7 +16,7 @@ export const DAYS_OF_WEEK = [
 
 export const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
-export const APP_VERSION = 'v0.1.9'
+export const APP_VERSION = 'v0.1.10'
 
 export const DAILY_QUOTES = [
   'Every day is a new ritual. Begin again.',
