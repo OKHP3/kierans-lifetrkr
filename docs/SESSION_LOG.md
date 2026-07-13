@@ -281,7 +281,7 @@ All v0.3.0-planned features were pulled forward and shipped in this session (v0.
 - None.
 
 **Known issues:**
-- Historical failed workflow notifications remain until marked read after the replacement deployment succeeds.
+- Historical failed workflow notifications were moved to Done after the replacement deployment succeeded.
 
 **Files changed:**
 - `.npmrc`
