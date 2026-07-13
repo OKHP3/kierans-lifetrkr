@@ -260,3 +260,35 @@ All v0.3.0-planned features were pulled forward and shipped in this session (v0.
 - Bump `APP_VERSION` before the session's feature set is confirmed shipped
 
 **End of session target:** `APP_VERSION = 'v0.2.0'`
+
+---
+
+## Session Handoff Note — 2026-07-13
+
+**Session completed:** CI/deployment maintenance
+**Version shipped:** v0.1.9 (no application version bump; infrastructure-only fix)
+**APP_VERSION in constants.ts:** v0.1.9
+
+**What was built:**
+- Investigated nine unresolved GitHub Actions notifications for this repository.
+- Confirmed every failure was `npm ci` resolving Replit-internal `package-firewall.replit.local` tarball URLs on GitHub-hosted runners.
+- Added a repository npm registry policy and workflow normalization for portable public-registry URLs.
+
+**What was skipped / deferred:**
+- No application feature work; no milestone version bump.
+
+**Open questions requiring owner decision:**
+- None.
+
+**Known issues:**
+- Historical failed workflow notifications remain until marked read after the replacement deployment succeeds.
+
+**Files changed:**
+- `.npmrc`
+- `.github/workflows/static.yml`
+- `docs/SESSION_LOG.md`
+
+**Next session should start with:**
+- Read AGENTS.md and docs/PRD-v4.0.md
+- Confirm baseline compiles: `npx tsc --noEmit`
+- Confirm the Pages workflow remains green before beginning feature work.
