@@ -1,0 +1,38 @@
+{
+  "skill_name": "frontend-design",
+  "skill_version": "1.0.0",
+  "status": "designed_not_run",
+  "notes": "Three discriminating evals are defined; no live benchmark results are claimed.",
+  "evals": [
+    {
+      "id": "frontend-1",
+      "prompt": "Plan and implement a responsive React settings panel inside an existing application with a custom design system. The request does not specify a visual style beyond wanting it polished and production-ready.",
+      "expectations": [
+        "Inspects the existing routes, components, tokens, and technical constraints before proposing changes.",
+        "Commits to one context-appropriate visual direction and identifies hierarchy, typography, color, spacing, and states.",
+        "Covers semantic structure, keyboard operation, visible focus, contrast, touch targets, and reduced-motion behavior.",
+        "Returns changed files, design decisions, covered states, and validation results or blockers."
+      ]
+    },
+    {
+      "id": "frontend-2",
+      "prompt": "Refine a visually generic dashboard component without changing its data contract or route. Explain what you would change and how you would validate the result.",
+      "expectations": [
+        "Preserves the existing data ownership, route, and behavior while limiting the edit to the requested UI scope.",
+        "Avoids interchangeable card-grid treatment, generic system typography, and unmotivated decoration in favor of product-specific choices.",
+        "Includes loading, empty, error, disabled, hover, focus, narrow-screen, and reduced-motion states.",
+        "Calls for responsive inspection plus the repository’s relevant checks/build and a diff review for scope expansion."
+      ]
+    },
+    {
+      "id": "frontend-3",
+      "prompt": "Review a proposed frontend implementation that looks attractive but has tiny controls, poor keyboard focus, and no empty or error states. Give an actionable revision plan.",
+      "expectations": [
+        "Treats accessibility and complete interaction states as release requirements rather than optional polish.",
+        "Requests semantic HTML, accessible names, keyboard flow, visible focus, contrast, and adequate touch targets.",
+        "Separates visual direction from implementation complexity and keeps motion purposeful and interruptible.",
+        "Defines a concise output contract that reports changes, decisions, coverage, validation, assumptions, and risks."
+      ]
+    }
+  ]
+}

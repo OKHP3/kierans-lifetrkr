@@ -6,9 +6,12 @@
  * Usage:
  *   node .agents/skills/okhp3-google-gis-client-auth/scripts/check-gis-setup.cjs
  *   node .agents/skills/okhp3-google-gis-client-auth/scripts/check-gis-setup.cjs --root ./my-app
+ *   node .agents/skills/okhp3-google-gis-client-auth/scripts/check-gis-setup.cjs --token-key my_token --expiry-key my_expiry
  *
  * Options:
- *   --root <path>   project root to scan (default: current working directory)
+ *   --root <path>          project root to scan (default: current working directory)
+ *   --token-key <name>     token key (default: gal_token)
+ *   --expiry-key <name>    expiry key (default: gal_expiry)
  *
  * No dependencies — uses Node.js built-in fs and path modules.
  * Exit 0 = all required elements found.  Exit 1 = gaps detected.
@@ -22,6 +25,14 @@ const path = require('path');
 const args    = process.argv.slice(2);
 const rootIdx = args.indexOf('--root');
 const ROOT    = rootIdx !== -1 ? path.resolve(args[rootIdx + 1]) : process.cwd();
+
+function optionValue(name, fallback) {
+  const index = args.indexOf(name);
+  return index !== -1 && args[index + 1] ? args[index + 1] : fallback;
+}
+
+const TOKEN_KEY  = optionValue('--token-key', 'gal_token');
+const EXPIRY_KEY = optionValue('--expiry-key', 'gal_expiry');
 
 let passed = 0;
 let failed = 0;
@@ -144,22 +155,35 @@ let usesSessionStorage = false;
 let usesLocalStorageForToken = false;
 for (const f of allSrcFiles) {
   const content = fs.readFileSync(f, 'utf8');
-  if (grepIn(content, ['sessionStorage.setItem(\'g_token\'', 'sessionStorage.setItem("g_token"', 'g_token'])) {
+  if (grepIn(content, [TOKEN_KEY, 'sessionStorage'])) {
     usesSessionStorage = true;
   }
-  if (grepIn(content, ['localStorage.setItem(\'g_token\'', 'localStorage.setItem("g_token"', 'localStorage']) && grepIn(content, ['token', 'access_token'])) {
+  if (grepIn(content, ['localStorage']) && grepIn(content, [TOKEN_KEY, 'token', 'access_token'])) {
     usesLocalStorageForToken = true;
   }
 }
 if (usesSessionStorage) {
-  pass('Token stored in sessionStorage (correct — clears on tab close)');
+  pass(`Token key ${TOKEN_KEY} found with sessionStorage (clears on tab close)`);
 } else if (usesLocalStorageForToken) {
   fail(
     'Token may be stored in localStorage — use sessionStorage instead',
     'sessionStorage clears on tab close; localStorage persists and is higher risk'
   );
 } else {
-  warn('Could not verify token storage method', 'Ensure token is stored in sessionStorage, not localStorage');
+  warn(`Could not verify token key ${TOKEN_KEY}`, 'Ensure the configured token is stored in sessionStorage, not localStorage');
+}
+
+let foundExpiryKey = false;
+for (const f of allSrcFiles) {
+  if (grepIn(fs.readFileSync(f, 'utf8'), [EXPIRY_KEY])) {
+    foundExpiryKey = true;
+    break;
+  }
+}
+if (foundExpiryKey) {
+  pass(`Expiry key ${EXPIRY_KEY} found`);
+} else {
+  warn(`Could not verify expiry key ${EXPIRY_KEY}`, 'Store an absolute epoch-millisecond expiry alongside the token');
 }
 
 // ── Check 5: .env or Replit Secret for VITE_GOOGLE_CLIENT_ID ────────────────

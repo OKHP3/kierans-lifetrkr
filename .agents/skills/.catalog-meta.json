@@ -1,10 +1,10 @@
 {
-  "last_indexed": "2026-06-26T18:20:57Z",
-  "skill_count": 7,
+  "last_indexed": "2026-07-21T18:49:49Z",
+  "skill_count": 8,
   "mode": "project",
   "surface": "project-skills",
-  "indexed_by": "okhp3-skill-cataloger v1.4.0",
-  "repo": "workspace",
+  "indexed_by": "okhp3-skill-cataloger v1.5.0",
+  "repo": "kierans-lifetrkr",
   "homepage": "https://overkillhill.com",
   "github": "https://github.com/OKHP3"
 }

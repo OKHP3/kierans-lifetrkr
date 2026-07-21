@@ -1,338 +1,182 @@
 ---
 name: okhp3-google-gis-client-auth
 description: >
-  OverKill Hill P³ client-only Google OAuth skill using the Google Identity Services
-  (GIS) implicit token model — no server, no Client Secret, no redirect URI, no backend.
-  Use when adding Google Sign-In, Google Calendar read access, or Google Tasks read
-  access to a static site deployed on GitHub Pages, Netlify, Cloudflare Pages, or any
-  CDN host. Also activate when a developer asks how to call Google APIs from a React
-  SPA without a backend, how to avoid needing a Client Secret, or how to handle
-  token expiry and silent re-auth in a client-only app. This is the authoritative
-  Google OAuth skill for this repo — use it even when the user doesn't mention GIS
-  or the token model by name.
+  OverKill Hill P³ client-only Google Identity Services (GIS) auth workflow.
+  Use when designing, implementing, or troubleshooting
+  client-only Google Identity Services (GIS)
+  OAuth token flows for React or TypeScript SPAs on static hosts. Use for Google
+  Sign-In, Calendar or Tasks read access, popup token acquisition, session-scoped
+  token storage, expiry handling, silent re-authentication, GCP OAuth setup, or
+  porting this pattern without a backend, Client Secret, redirect URI, or refresh
+  token. Keep provider-specific write APIs outside this skill.
 license: MIT
+compatibility: "React 18+ or TypeScript SPA, GIS CDN script, browser sessionStorage, network access, and a public VITE_GOOGLE_CLIENT_ID; static hosting is supported."
 metadata:
-  author: Jamie Hill (OverKill Hill P³)
-  version: "1.1.0"
-  category: developer-tooling
-  origin: okhp3/skillz
-  homepage: https://overkillhill.com
-  author-github: https://github.com/OKHP3
-  compatibility: >
-    React 18+ with TypeScript. Requires the google.accounts.oauth2 global, loaded
-    via the GIS CDN script in index.html. Designed for static hosting — GitHub Pages,
-    Netlify, Cloudflare Pages, etc. Works with any Google API that accepts Bearer tokens.
-  in_scope:
-    - GIS implicit token model setup and GCP Console configuration
-    - useGoogleAuth React hook (token request, sessionStorage, expiry, silent re-auth)
-    - Google Calendar API and Tasks API read access patterns
-    - Token expiry UI pattern (reconnect banner)
-    - Common OAuth scopes reference table
-    - GCP Console setup checklist
-  out_of_scope:
-    - Authorization code flow (requires a backend server and Client Secret)
-    - Refresh tokens / offline access
-    - Service account authentication (no user involved)
-    - Write operations — creating, editing, or deleting calendar events or tasks
-    - Non-Google OAuth providers (GitHub, Facebook, etc.)
-    - Multi-tenant server apps
+  author: "Jamie Hill (OverKill Hill P³)"
+  version: "1.2.0"
+  category: "developer-tooling"
+  origin: "okhp3/skillz"
+  homepage: "https://overkillhill.com"
+  author-github: "https://github.com/OKHP3"
 ---
 
 # okhp3-google-gis-client-auth
 
-**OverKill Hill P³** · [overkillhill.com](https://overkillhill.com) · [github.com/OKHP3](https://github.com/OKHP3) · [OKHP3/skillz](https://github.com/OKHP3/skillz)
+**Intent:** Give a static-site agent a reliable GIS token lifecycle for Google
+API read flows without inventing a backend or leaking a Client Secret.
 
-Client-only Google OAuth for single-page applications. Eliminates the need for a
-backend server, redirect callback route, Client Secret, or session management. The
-GIS implicit token model flows entirely through a browser popup — the access token
-lands directly in your JavaScript callback, ready to use. Tokens live in
-`sessionStorage` and expire after ~1 hour; the hook handles silent re-auth automatically.
-
----
-
-## Scope
+## Scope boundary
 
 | In scope | Out of scope |
 |---|---|
-| GIS implicit token model (popup-based, no redirect) | Authorization code flow (requires backend) |
-| `useGoogleAuth` React hook with full token lifecycle | Refresh tokens / offline access |
-| Google Calendar API read access | Write operations (create/edit/delete) |
-| Google Tasks API read access | Service account authentication |
-| Silent re-auth + expiry UI pattern | Non-Google OAuth providers |
-| GCP Console setup checklist | Multi-tenant server apps |
+| GIS popup token model and GCP Web Application setup | Authorization code flow, refresh tokens, or offline access |
+| React/TypeScript `useGoogleAuth` lifecycle | Service accounts, non-Google identity providers, or multi-tenant servers |
+| Calendar and Tasks read requests with Bearer tokens | Calendar/Tasks create, update, or delete operations |
+| Expiry buffer, silent re-auth, consent fallback, and reconnect UI | Provider-specific write logic or product data persistence |
 
----
+**LifeTrkr boundary:** This skill covers authentication and read flows. Keep
+repo-specific write operations in `src/lib/google.ts` when that integration
+boundary exists; LifeTrkr currently splits the same boundary across
+`src/lib/googleCalendar.ts` and `src/lib/googleTasks.ts`. Do not move writes into
+the auth hook or invent a new backend.
 
-## Why this matters — the model most tutorials get wrong
+## Workflow
 
-Most Google OAuth tutorials describe the **authorization code flow**: the user is
-redirected to Google, Google redirects back to your callback URL, and a server
-exchanges the auth code for tokens using a Client Secret. **This requires a backend.**
+### 1. Plan
 
-The GIS **implicit token model** works differently:
+Before editing, identify the host origins, existing GIS script, client-ID source,
+requested read scopes, auth hook location, and existing Google API modules. Record
+the smallest scope set that satisfies the request. Treat the following as the
+repo defaults, not universal names:
 
-1. A popup opens directly in the browser — no page navigation
-2. The user consents
-3. Google returns the access token directly to your JavaScript callback
-4. No redirect. No server. No Client Secret.
+| Option | LifeTrkr default | Porting rule |
+|---|---|---|
+| token storage | browser `sessionStorage` | Allow an injected `Storage` implementation only when required |
+| token key | `gal_token` | Configure one key and use it for read, write, validity, and revoke paths |
+| expiry key | `gal_expiry` | Configure one key and store an absolute epoch-millisecond expiry |
+| expiry skew | `120_000` ms | Keep a safety buffer; make it configurable for a different latency budget |
+| client ID | `VITE_GOOGLE_CLIENT_ID` | Keep it public, environment-backed, and never replace it with a secret |
 
-The Client ID is intentionally public — it identifies your app to Google but contains
-no secret material. Embedding it in client-side JavaScript is **correct and expected**.
+When porting, pass `storage`, `tokenKey`, `expiryKey`, and `expirySkewMs` through
+one options object. Do not copy hard-coded `gal_*` names into an unrelated app.
 
-> **Critical GCP distinction:** Authorized **JavaScript Origins** only — do NOT add
-> redirect URIs. The token model does not use redirect URIs. Adding them causes confusion
-> and is not required.
+### 2. Validate
 
----
+Check the target before implementing:
 
-## What you need
+1. Confirm `index.html` loads `https://accounts.google.com/gsi/client`.
+2. Confirm the client ID is available as a public build-time value and no Client
+   Secret, `.env` file, or token is being added to source control.
+3. Confirm GCP has the required APIs enabled and the exact deployed and local
+   origins under **Authorized JavaScript Origins**. Leave **Authorized redirect
+   URIs empty** for this token model.
+4. Confirm the requested scopes are read-only and minimal. Use
+   `calendar.readonly` and/or `tasks.readonly` only when those reads are needed;
+   add `openid profile email` only when identity/profile data is needed.
+5. Run the bundled checker from the project root after the initial setup or a
+   lifecycle change:
 
-**In GCP Console:**
-- OAuth 2.0 Client ID — type: **Web Application**
-- Authorized **JavaScript Origins** (NOT redirect URIs):
-  ```
-  https://your-deployed-domain.com
-  http://localhost:5173
-  ```
-- Required APIs enabled (Calendar API, Tasks API, etc.)
+   ```bash
+   node .agents/skills/okhp3-google-gis-client-auth/scripts/check-gis-setup.cjs
+   ```
 
-**In your app:**
-- GIS CDN script in `index.html`
-- Client ID in constants (public value — safe to embed)
-- Scopes matching your API usage
+   Read `assets/gcp-setup-checklist.md` for Console setup or
+   `origin_mismatch`/`invalid_client` diagnosis. The checker is advisory: it
+   cannot prove that OAuth consent, CORS, quotas, or live credentials work.
 
----
+### 3. Execute
 
-## Setup
+Implement the smallest change that satisfies the plan:
 
-### 1. Add GIS script to index.html
+1. Initialize `window.google.accounts.oauth2.initTokenClient` with the public
+   client ID, minimum scopes, `prompt: ''` for an explicit connect, and a callback
+   that rejects `response.error`.
+2. On success, compute `Date.now() + response.expires_in * 1000`, store the token
+   and absolute expiry using the configured storage/key options, and update UI
+   state. Default examples for this repository are `gal_token` and `gal_expiry`.
+3. Make `isTokenValid()` require a token and
+   `Date.now() < expiry - expirySkewMs`; use the same check before every read API
+   call.
+4. Make `getToken()` return a valid token, otherwise request with
+   `prompt: 'none'`, then retry with the consent popup only if silent re-auth
+   fails. Surface a user-actionable reconnect state when both attempts fail or a
+   read request returns `401`.
+5. Make `disconnect()` revoke the current token when GIS is available, remove
+   both configured session keys, and clear local auth state. Do not persist the
+   access token in `localStorage`, a database, a URL, or logs.
+6. Keep Calendar/Tasks fetch functions read-only in the auth integration. Route
+   writes through the repository’s existing Google integration boundary.
 
-```html
-<head>
-  <!-- Google Identity Services — load before your app bundle -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-</head>
-```
+Use `references/useGoogleAuth.ts` for a configurable hook baseline. Its
+`useGoogleAuth(options)` contract returns `isConnected`, `accessToken`,
+`minutesUntilExpiry`, `connect()`, `getToken()`, and `disconnect()`; adapt the
+return shape only when the host application already has a stable contract.
 
-### 2. Store the Client ID and define scopes
+## GIS model and API facts
 
-```typescript
-// src/constants.ts
-export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+The flow is: popup opens → user consents → GIS returns an access token directly to
+the JavaScript callback → the browser calls Google APIs with `Authorization:
+Bearer <token>`. There is no redirect callback, server exchange, Client Secret,
+or refresh token.
 
-export const GOOGLE_SCOPES = [
-  'https://www.googleapis.com/auth/calendar.readonly',
-  'https://www.googleapis.com/auth/tasks.readonly',
-  'openid',
-  'profile',
-  'email',
-].join(' ');
-```
+Use the Calendar read endpoint
+`https://www.googleapis.com/calendar/v3/calendars/primary/events` and the Tasks
+read endpoints under `https://tasks.googleapis.com/tasks/v1/`. Check `res.ok` and
+handle `401` as an expired or revoked token; do not silently treat an API error as
+an empty result.
 
-The Client ID goes in a `VITE_GOOGLE_CLIENT_ID` environment variable (or `.env` file).
-It is **not a secret** — the `VITE_` prefix means it is intentionally embedded in the
-client bundle.
+If the product needs the signed-in profile, fetch it separately with
+`https://www.googleapis.com/oauth2/v3/userinfo` using the bearer token. Keep that
+profile read out of the auth hook unless the host application already treats it as
+part of `connect()`; LifeTrkr keeps it in its Google API integration layer.
 
-### 3. The useGoogleAuth hook
+The minimum API calls and scopes are:
 
-```typescript
-// src/hooks/useGoogleAuth.ts
-import { useState, useCallback } from 'react';
-import { GOOGLE_CLIENT_ID, GOOGLE_SCOPES } from '../constants';
-
-declare global {
-  interface Window { google: any; }
-}
-
-export function useGoogleAuth() {
-  const [accessToken, setAccessToken] = useState<string | null>(
-    () => sessionStorage.getItem('g_token')
-  );
-  const [tokenExpiry, setTokenExpiry] = useState<number | null>(
-    () => Number(sessionStorage.getItem('g_expiry')) || null
-  );
-
-  // Valid = token exists AND at least 2 minutes remain before expiry
-  const isTokenValid = useCallback((): boolean => {
-    if (!accessToken || !tokenExpiry) return false;
-    return Date.now() < tokenExpiry - 120_000;
-  }, [accessToken, tokenExpiry]);
-
-  // Request a token — set silent=true to skip the consent UI if already granted
-  const requestToken = useCallback((silent = false): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      if (!window.google?.accounts?.oauth2) {
-        reject(new Error('GIS library not loaded — check index.html script tag'));
-        return;
-      }
-      const client = window.google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: GOOGLE_SCOPES,
-        prompt: silent ? 'none' : '',
-        callback: (resp: any) => {
-          if (resp.error) { reject(new Error(resp.error)); return; }
-          const expiry = Date.now() + resp.expires_in * 1000;
-          // sessionStorage clears on tab close — intentional; safer than localStorage
-          sessionStorage.setItem('g_token', resp.access_token);
-          sessionStorage.setItem('g_expiry', String(expiry));
-          setAccessToken(resp.access_token);
-          setTokenExpiry(expiry);
-          resolve(resp.access_token);
-        },
-      });
-      client.requestAccessToken();
-    });
-  }, []);
-
-  // Get a valid token — tries silent refresh first, falls back to consent popup
-  const getToken = useCallback(async (): Promise<string> => {
-    if (isTokenValid()) return accessToken!;
-    try {
-      return await requestToken(true);    // silent — no UI if already granted
-    } catch {
-      return requestToken(false);          // popup — user sees consent screen
-    }
-  }, [isTokenValid, accessToken, requestToken]);
-
-  // Connect + fetch user profile in one step
-  const connect = useCallback(async () => {
-    const token = await requestToken(false);
-    const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) throw new Error('Profile fetch failed');
-    const profile = await res.json();
-    // profile = { sub, name, email, picture }
-    // sub is the stable unique user ID — use it as a localStorage namespace key
-    return { token, profile };
-  }, [requestToken]);
-
-  const disconnect = useCallback(() => {
-    sessionStorage.removeItem('g_token');
-    sessionStorage.removeItem('g_expiry');
-    setAccessToken(null);
-    setTokenExpiry(null);
-  }, []);
-
-  return {
-    isConnected: isTokenValid(),
-    tokenExpiry,
-    connect,
-    getToken,
-    disconnect,
-  };
-}
-```
-
-### 4. Call a Google API with the token
-
-`getToken()` handles expiry and silent re-auth transparently. Use it before every API call.
-
-```typescript
-const { getToken } = useGoogleAuth();
-
-async function fetchCalendarEvents() {
-  const token = await getToken();   // refreshes silently if expired
-  const url = new URL('https://www.googleapis.com/calendar/v3/calendars/primary/events');
-  url.searchParams.set('singleEvents', 'true');
-  url.searchParams.set('orderBy', 'startTime');
-  url.searchParams.set('timeMin', new Date().toISOString());
-  url.searchParams.set('maxResults', '20');
-
-  const res = await fetch(url.toString(), {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (res.status === 401) throw new Error('TOKEN_EXPIRED');
-  return res.json();
-}
-```
-
-### 5. Token expiry UI pattern
-
-GIS tokens expire after ~1 hour. Show a reconnect banner so the user is never
-silently dropped:
-
-```typescript
-const { isConnected, tokenExpiry, getToken } = useGoogleAuth();
-const tokenExpired = tokenExpiry && Date.now() > tokenExpiry;
-
-// Render:
-{tokenExpired && (
-  <div className="token-expiry-banner">
-    <span>Google sync paused — tap to reconnect</span>
-    <button onClick={() => getToken()}>↻ Reconnect</button>
-  </div>
-)}
-```
-
----
-
-## Common Scopes Reference
-
-| Scope | What it allows |
+| Read | Scope |
 |---|---|
-| `https://www.googleapis.com/auth/calendar.readonly` | Read user's calendar events |
-| `https://www.googleapis.com/auth/tasks.readonly` | Read user's tasks and task lists |
-| `https://www.googleapis.com/auth/drive.readonly` | Read files from Google Drive |
-| `https://www.googleapis.com/auth/gmail.readonly` | Read Gmail messages |
-| `openid profile email` | Sign-in: stable user ID (`sub`), name, email, photo |
+| Calendar events | `https://www.googleapis.com/auth/calendar.readonly` |
+| Task lists/tasks | `https://www.googleapis.com/auth/tasks.readonly` |
+| Stable profile identity | `openid profile email` |
 
-Always request the **minimum scopes** you need. Users see a consent dialog that lists
-each scope explicitly. Requesting more than you use erodes trust and can block OAuth
-app verification.
+## Security and gotchas
 
----
+- A Client ID is an identifier and is safe to embed; a Client Secret is not. Never
+  put secrets, access tokens, or `.env` files in the bundle or repository.
+- `sessionStorage` limits token lifetime to the browser tab. Never silently switch
+  to `localStorage` just to survive a reload.
+- Use `gal_token` and `gal_expiry` for this repository. For a port, configure the
+  key names rather than mixing repo defaults with copied examples.
+- Store absolute epoch milliseconds, not `expires_in` seconds. Apply the same
+  skew in render-time status and request-time validity checks.
+- `prompt: 'none'` can fail because consent was revoked, the browser blocks the
+  popup/session, or GIS is not loaded. Treat failure as a branch to explicit user
+  consent, not as permission to bypass auth.
+- Authorized JavaScript Origins are origin-only (`scheme://host[:port]`); do not
+  add paths, hash routes, or redirect URIs.
+- Request only the scopes used by the feature. Broader scopes increase consent
+  friction and may trigger verification requirements.
+- Audit bundled scripts and references before executing them; a skill is trusted
+  code and instruction input, not proof that a live OAuth configuration is safe.
 
-## Security notes
+## Output contract
 
-- **Token in `sessionStorage`** — clears when the browser tab closes. This is intentional. Tokens are not persisted across sessions.
-- **Never store the access token in `localStorage`** — sessionStorage is per-session; localStorage persists indefinitely and is higher risk.
-- **The Client ID is public** — this is correct and expected. Only the Client Secret is sensitive, and the implicit token model requires no Client Secret.
-- **Rate limits** — Calendar API: 1M requests/day free. Tasks API: 50k requests/day free. Both limits are per Google Cloud project.
+At handoff, report:
 
----
+- host origins, client-ID source, requested scopes, and configured storage/key names;
+- files changed and whether the change is auth, read, or UI-only;
+- validation performed and its result, including checker warnings;
+- explicit confirmation that no Client Secret, token, backend, or write operation
+  was added; and
+- any live-environment checks still required (OAuth consent, CORS, quotas, or API
+  availability).
 
-## GCP Console setup checklist
+## References and scripts
 
-- [ ] GCP project created (or existing project selected)
-- [ ] Required APIs enabled: Calendar API, Tasks API (or others as needed)
-- [ ] OAuth consent screen configured: app name, support email, authorized domains, scopes
-- [ ] OAuth 2.0 Client ID created — type: **Web Application**
-- [ ] Authorized JavaScript Origins set — your deployed domain + `http://localhost:5173`
-- [ ] **No redirect URIs added** — the token model does not use them
-- [ ] Test users added (while in Testing mode; max 100 external users before verification)
-- [ ] Client ID copied to `VITE_GOOGLE_CLIENT_ID` in your environment
-
----
-
-## Gotchas
-
-- **`prompt: 'none'` for silent re-auth** — call `tokenClient.requestAccessToken({ prompt: 'none' })` when refreshing an expired token automatically. Without it every token refresh forces the user through the full consent popup, breaking the seamless experience.
-
-- **Exact sessionStorage key names matter** — the hook uses `g_token` and `g_expiry` (not `access_token`, `google_token`, or `tokenExpiry`). These names are shared between `isTokenValid()`, `getToken()`, and the expiry banner. A mismatch silently breaks the refresh cycle.
-
-- **2-minute buffer, not exact expiry** — check `Date.now() < Number(expiry) - 120_000`. The buffer prevents mid-request expiry when the token is valid at check time but expires during the API call.
-
-- **Authorized JavaScript Origins only, no Redirect URIs** — in GCP Console, set your domain under **Authorized JavaScript Origins** and leave **Authorized redirect URIs completely empty**. Adding a redirect URI signals the auth code flow (which requires a server). Origin changes take a few minutes to propagate.
-
----
-
-## References
-
-- `references/useGoogleAuth.ts` — complete hook implementation. Load when implementing the hook from scratch or debugging token lifecycle issues.
-- `assets/gcp-setup-checklist.md` — GCP Console step-by-step. Load when the user asks about GCP project setup or reports `origin_mismatch` / `invalid_client` errors.
-
----
-
-## Available scripts
-
-- **`scripts/check-gis-setup.cjs`** — scans a project for required GIS setup elements (CDN script, Client ID, sessionStorage keys, token client usage). Run after initial setup or when auth stops working.
-  ```bash
-  node .agents/skills/okhp3-google-gis-client-auth/scripts/check-gis-setup.cjs
-  node .agents/skills/okhp3-google-gis-client-auth/scripts/check-gis-setup.cjs --root ./my-project
-  ```
-
----
+- `references/useGoogleAuth.ts` — configurable hook baseline; read when implementing
+  or debugging token lifecycle behavior.
+- `assets/gcp-setup-checklist.md` — detailed GCP Console checklist.
+- `scripts/check-gis-setup.cjs` — deterministic local setup scan; run from the
+  target project root and treat warnings as review items.
 
 ## About
 

@@ -37,7 +37,7 @@ function check(label, condition, detail) {
 
 function fetchJSON(url) {
   return new Promise((resolve, reject) => {
-    https.get(url, { headers: { 'User-Agent': 'okhp3-daily-oracle-test/1.2.0' } }, res => {
+    https.get(url, { headers: { 'User-Agent': 'okhp3-daily-oracle-test/1.3.0' } }, res => {
       let body = '';
       res.on('data', chunk => { body += chunk; });
       res.on('end', () => {

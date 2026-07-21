@@ -2,13 +2,14 @@
   "metadata": {
     "skill_name": "okhp3-google-gis-client-auth",
     "skill_path": ".agents/skills/okhp3-google-gis-client-auth",
-    "skill_version": "1.1.0",
+    "skill_version": "1.2.0",
+    "evaluated_skill_version": "1.1.0",
     "executor_model": "main-agent-graded",
     "analyzer_model": "main-agent-grader",
     "timestamp": "2026-06-26T00:00:00Z",
     "evals_run": [1, 2, 3],
     "runs_per_configuration": 1,
-    "note": "Iteration-1: main-agent graded simulation. Executor responses represent realistic with-skill vs without-skill outputs based on full SKILL.md knowledge."
+    "note": "Historical Iteration-1 main-agent graded simulation recorded against the prior 1.1.0 content. Results were not rerun after 1.2.0 changes and must not be treated as live benchmark outcomes for 1.2.0."
   },
 
   "runs": [

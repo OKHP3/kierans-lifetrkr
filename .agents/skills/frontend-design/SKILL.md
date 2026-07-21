@@ -1,42 +1,61 @@
 ---
 name: frontend-design
-description: Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics.
+description: Design and implement distinctive, production-ready web interfaces with coherent visual systems, responsive behavior, accessible interaction, and polished states. Use when building or refining websites, pages, dashboards, components, React views, or HTML/CSS UI; do not use for backend architecture or deployment-only work.
 license: Complete terms in LICENSE.txt
 ---
 
-This skill guides creation of distinctive, production-grade frontend interfaces that avoid generic "AI slop" aesthetics. Implement real working code with exceptional attention to aesthetic details and creative choices.
+# Frontend design
 
-The user provides frontend requirements: a component, page, application, or interface to build. They may include context about the purpose, audience, or technical constraints.
+Create a working interface with a deliberate point of view, not a decorative mockup. Keep the skill generic: derive the product’s visual language from the repository and brief instead of imposing a house style.
 
-## Design Thinking
+## Scope
 
-Before coding, understand the context and commit to a BOLD aesthetic direction:
-- **Purpose**: What problem does this interface solve? Who uses it?
-- **Tone**: Pick an extreme: brutally minimal, maximalist chaos, retro-futuristic, organic/natural, luxury/refined, playful/toy-like, editorial/magazine, brutalist/raw, art deco/geometric, soft/pastel, industrial/utilitarian, etc. There are so many flavors to choose from. Use these for inspiration but design one that is true to the aesthetic direction.
-- **Constraints**: Technical requirements (framework, performance, accessibility).
-- **Differentiation**: What makes this UNFORGETTABLE? What's the one thing someone will remember?
+| In scope | Out of scope |
+| --- | --- |
+| Page and component design, visual systems, responsive layouts, interaction states, accessibility, and UI refinement | Backend or API design, deployment configuration, unrelated refactors, and invented product requirements |
 
-**CRITICAL**: Choose a clear conceptual direction and execute it with precision. Bold maximalism and refined minimalism both work - the key is intentionality, not intensity.
+## Workflow
 
-Then implement working code (HTML/CSS/JS, React, Vue, etc.) that is:
-- Production-grade and functional
-- Visually striking and memorable
-- Cohesive with a clear aesthetic point-of-view
-- Meticulously refined in every detail
+### 1. Inspect
 
-## Frontend Aesthetics Guidelines
+Read the repository guidance, package manifest, entry points, routes, existing components, styles/tokens, and relevant assets before changing code. Check the working tree and preserve unrelated edits. Identify the target users, primary action, content hierarchy, supported breakpoints, and existing technical constraints.
 
-Focus on:
-- **Typography**: Choose fonts that are beautiful, unique, and interesting. Avoid generic fonts like Arial and Inter; opt instead for distinctive choices that elevate the frontend's aesthetics; unexpected, characterful font choices. Pair a distinctive display font with a refined body font.
-- **Color & Theme**: Commit to a cohesive aesthetic. Use CSS variables for consistency. Dominant colors with sharp accents outperform timid, evenly-distributed palettes.
-- **Motion**: Use animations for effects and micro-interactions. Prioritize CSS-only solutions for HTML. Use Motion library for React when available. Focus on high-impact moments: one well-orchestrated page load with staggered reveals (animation-delay) creates more delight than scattered micro-interactions. Use scroll-triggering and hover states that surprise.
-- **Spatial Composition**: Unexpected layouts. Asymmetry. Overlap. Diagonal flow. Grid-breaking elements. Generous negative space OR controlled density.
-- **Backgrounds & Visual Details**: Create atmosphere and depth rather than defaulting to solid colors. Add contextual effects and textures that match the overall aesthetic. Apply creative forms like gradient meshes, noise textures, geometric patterns, layered transparencies, dramatic shadows, decorative borders, custom cursors, and grain overlays.
+### 2. Plan
 
-NEVER use generic AI-generated aesthetics like overused font families (Inter, Roboto, Arial, system fonts), cliched color schemes (particularly purple gradients on white backgrounds), predictable layouts and component patterns, and cookie-cutter design that lacks context-specific character.
+Commit to one clear visual direction that fits the product context. Write a compact plan covering:
 
-Interpret creatively and make unexpected choices that feel genuinely designed for the context. No design should be the same. Vary between light and dark themes, different fonts, different aesthetics. NEVER converge on common choices (Space Grotesk, for example) across generations.
+- hierarchy and the one memorable design decision;
+- typography, color, spacing, surface, and state tokens;
+- mobile, desktop, empty, loading, error, disabled, hover, focus, and reduced-motion behavior;
+- semantic structure, keyboard flow, contrast, touch targets, and performance risks.
 
-**IMPORTANT**: Match implementation complexity to the aesthetic vision. Maximalist designs need elaborate code with extensive animations and effects. Minimalist or refined designs need restraint, precision, and careful attention to spacing, typography, and subtle details. Elegance comes from executing the vision well.
+Prefer the repository’s existing tokens and components. Add a new dependency only when the current stack cannot meet the requirement and the user has authorized the scope.
 
-Remember: Claude is capable of extraordinary creative work. Don't hold back, show what can truly be created when thinking outside the box and committing fully to a distinctive vision.
+### 3. Execute
+
+Implement real, maintainable code in the project’s existing framework and styling approach. Use semantic HTML and accessible names, visible focus, keyboard-operable controls, responsive composition, and content that reflects the brief. Make visual choices specific to the product: avoid defaulting to interchangeable card grids, generic system typography, ornamental gradients, or unmotivated animation.
+
+Build the complete interaction surface, including feedback for success, failure, loading, empty data, disabled controls, and narrow screens. Respect existing routing, state ownership, data contracts, and theme variables unless the task explicitly changes them.
+
+### 4. Validate
+
+Run the repository’s relevant checks and build commands. Inspect the diff for accidental scope expansion, secrets, generated files, broken imports, and inconsistent tokens. Exercise the changed flow at narrow and wide widths; verify keyboard focus and reduced motion where the environment permits. If a check cannot run, report the exact blocker rather than claiming success.
+
+## Gotchas
+
+- Do not invent copy, metrics, routes, API responses, or states that the product does not support.
+- Do not replace a working design system with a framework default merely to move faster.
+- Do not treat “distinctive” as permission for poor contrast, tiny controls, motion overload, or inaccessible custom interactions.
+- Prefer CSS and existing libraries for simple effects; keep animation purposeful and interruptible.
+- Preserve existing user data and state flows; visual polish must not change behavior accidentally.
+
+## Output contract
+
+Return:
+
+1. the changed files and the implemented user-visible behavior;
+2. the chosen visual direction and key design-system decisions;
+3. accessibility and responsive states covered;
+4. validation commands and results, including blockers or follow-up risks.
+
+Keep the final summary concise and distinguish verified facts from assumptions.
