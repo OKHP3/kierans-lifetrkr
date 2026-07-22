@@ -1,6 +1,6 @@
 ---
-title: "Kieran’s LifeTrkr Recurrence, Cosmic Overlay, and Alignment Roadmap"
-primary_topic: "Kieran LifeTrkr recurrence cosmic overlay alignment roadmap"
+title: "Kieran's LifeTrkr Recurrence and Cosmic Alignment"
+primary_topic: "Kieran LifeTrkr recurrence and cosmic alignment"
 source_platform: "ChatGPT"
 capture_mode: "full-paste"
 completeness: "partial"
@@ -17,7 +17,7 @@ schema_version: "2.0"
 artifact_type: thread-context-extract
 ---
 
-# Kieran’s LifeTrkr Recurrence, Cosmic Overlay, and Alignment Roadmap
+# Kieran's LifeTrkr Recurrence and Cosmic Alignment
 
 ## Introduction
 

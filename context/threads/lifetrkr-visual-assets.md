@@ -15,6 +15,7 @@ source_independence: "pass"
 generated_at: "2026-07-21T20:59:10Z"
 schema_version: "2.0"
 artifact_type: thread-context-extract
+library_name: lifetrkr-visual-assets
 ---
 
 # LifeTrkr Visual Identity and Asset Package Art Direction
