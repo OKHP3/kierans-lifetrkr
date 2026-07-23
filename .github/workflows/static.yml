@@ -24,11 +24,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7.0.0
 
-      - name: Setup Node.js
+      - name: Setup Node.js 22 LTS
         uses: actions/setup-node@v6.4.0
         with:
-          node-version: 'lts/*'
-          check-latest: true
+          node-version: '22.x'
           cache: 'npm'
 
       - name: Use the public npm registry
