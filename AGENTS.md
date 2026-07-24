@@ -212,10 +212,10 @@ Install dependencies from the lockfile:
 npm ci --registry=https://registry.npmjs.org/
 ~~~
 
-At this audit, that clean install fails before installing because npm reports
-that package.json and package-lock.json are out of sync, with @emnapi/core and
-@emnapi/runtime missing from the lockfile. Do not repair dependency metadata as
-part of an unrelated context-maintenance task; treat this as a CI risk.
+The checked-in package.json and package-lock.json are currently synchronized;
+`npm ci` completes from the public npm registry. Treat the lockfile as
+authoritative and keep it synchronized with package.json when dependencies
+change.
 
 Project commands:
 
@@ -276,9 +276,6 @@ Confirmed documentation drift:
   “in-place” values in its table.
 - SideNav contains existing OverKill Hill P³ branding despite the intended
   personal-app UI boundary.
-- npm ci currently fails on the checked-in lockfile with missing optional peer
-  packages (@emnapi/core and @emnapi/runtime); npm run check and npm run build
-  could not run because dependencies are not installed.
 
 Unknown without owner or live-environment verification:
 
@@ -297,5 +294,5 @@ handing off, report changed files, validation results, unresolved drift, and any
 security concern. The owner decides whether to commit, push, change milestones,
 or alter the client-only architecture.
 
-_Guide refreshed July 13, 2026 from the current source, manifest, lockfile,
+_Guide refreshed July 24, 2026 from the current source, manifest, lockfile,
 workflows, recent history, and repository documents._
