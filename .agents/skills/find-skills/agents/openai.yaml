@@ -1,7 +1,0 @@
-interface:
-  display_name: "Find Skills"
-  short_description: "Discover the right reusable agent skill"
-  default_prompt: "Use $find-skills to discover and compare the best reusable skill for this task."
-
-policy:
-  allow_implicit_invocation: true

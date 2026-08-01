@@ -1,7 +1,0 @@
-interface:
-  display_name: "Frontend Design"
-  short_description: "Design polished, distinctive web interfaces"
-  default_prompt: "Use $frontend-design to design and implement a polished, accessible web interface."
-
-policy:
-  allow_implicit_invocation: true
