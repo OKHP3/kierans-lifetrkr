@@ -28,6 +28,7 @@ import Today from './pages/Today'
 import Someday from './pages/Someday'
 import Settings from './pages/Settings'
 import Origin from './pages/Origin'
+import Footer from './components/Footer'
 import { usePageTracking } from './hooks/usePageTracking'
 
 function AppShell() {
@@ -51,6 +52,7 @@ function AppShell() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/origin" element={<Origin />} />
             </Routes>
+            <Footer />
             <BottomNav />
           </div>
         </div>

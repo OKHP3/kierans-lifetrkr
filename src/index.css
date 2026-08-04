@@ -691,6 +691,11 @@ select:focus {
   display: none;
 }
 
+/* ─── Footer ─────────────────────────────────────────────────── */
+.app-footer {
+  display: none; /* mobile: hidden — BottomNav owns that space */
+}
+
 /* ─── Desktop layout ≥ 768px ─────────────────────────────────── */
 @media (min-width: 768px) {
 
@@ -758,6 +763,41 @@ select:focus {
 
   .bottom-nav {
     display: none;
+  }
+
+  .app-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 36px;
+    flex-shrink: 0;
+    border-top: 0.5px solid var(--border-subtle);
+    background: var(--surface);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text-ghost);
+    letter-spacing: 0.02em;
+  }
+
+  .app-footer-copy {
+    opacity: 0.7;
+  }
+
+  .app-footer-built {
+    opacity: 0.85;
+  }
+
+  .app-footer-replit {
+    color: #F5620F;
+    text-decoration: none;
+    font-weight: 700;
+    transition: opacity 0.15s ease;
+  }
+
+  .app-footer-replit:hover {
+    opacity: 0.75;
+    text-decoration: underline;
   }
 
   .mobile-header {
