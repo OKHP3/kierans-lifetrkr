@@ -3,6 +3,11 @@
 **Last updated:** June 22, 2026 — second build session  
 **Versioning:** See PRD-v3.0 Section 3 for semantic versioning discipline.
 
+> **Current release truth (August 22, 2026):** The source baseline is `v0.1.10`.
+> This roadmap is a planning document, not proof that its checkboxes are shipped.
+> Stable-release approval is deferred pending the evidence gates in
+> `docs/RELEASE-TRUTH-BASELINE.md`.
+
 ---
 
 ## v0.1.x — UI Shell + Core Features (SHIPPED)
@@ -10,9 +15,9 @@
 Phase 1 shipped June 21, 2026. Phase 1 patches (v0.1.1–v0.1.8) shipped June 22, 2026.
 
 ### Shipped
-- [x] React 18 + Vite + TypeScript + Tailwind SPA
+- [x] React 19 + Vite 8 + TypeScript + Tailwind CSS v4 SPA
 - [x] Moonlit Hearth design system (amethyst, dark mode, Cormorant Garamond + DM Sans)
-- [x] All 7 tabs: Home, Rituals, Habits, Calendar, Today, Archive, Settings
+- [x] All current surfaces: Home, Calendar, Today, Someday, Rituals, Habits, Settings
 - [x] BottomNav (mobile) + SideNav (desktop, ≥768px)
 - [x] AppContext + useReducer + localStorage (namespaced by Google sub)
 - [x] storage.ts abstraction layer
@@ -22,7 +27,7 @@ Phase 1 shipped June 21, 2026. Phase 1 patches (v0.1.1–v0.1.8) shipped June 22
 - [x] Habits: daily toggle, 7-day grid, moon-streak counter, add/deactivate/delete
 - [x] Calendar: month grid, day expansion, manual event CRUD, Google-ready structure, moon phases
 - [x] Today: task list (status=today), complete/archive/delete, FAB
-- [x] Archive/Backlog: task list (status=backlog), promote to Today, search, sort, FAB
+- [x] Someday/Backlog: task list (status=backlog), promote to Today, search, sort, FAB
 - [x] Settings: profile, Google connection, oracle/celestial toggles, theme, social
 - [x] Theme toggle: Dark / Light / System (Auto)
 - [x] Seasonal badge (solstices, equinoxes, sabbats)

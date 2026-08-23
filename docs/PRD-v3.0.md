@@ -5,6 +5,11 @@
 **Repository:** https://github.com/OKHP3/kierans-lifetrkr  
 **Status:** Approved — single source of truth for all agent sessions  
 
+> **Baseline notice (August 22, 2026):** This PRD records product intent and historical
+> architecture. It is not a claim that every listed feature or acceptance criterion
+> is currently verified. For current routes, schemas, external calls, release gates,
+> and evidence status, use `docs/RELEASE-TRUTH-BASELINE.md` and `src/types.ts`.
+
 ---
 
 ## 1. Executive Summary

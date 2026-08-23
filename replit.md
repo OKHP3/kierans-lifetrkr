@@ -29,36 +29,39 @@ kieran-lifetrkr/
 ```bash
 npm run dev          # Starts Vite dev server on port 5000
 npm run build        # Type-checks (tsc) then builds to /dist
-npm run deploy       # build + gh-pages -d dist (GitHub Pages deployment)
+npm run build        # type-check + production build
 npm run preview      # Preview the production build locally
 ```
 
-## Architecture (v3.0)
+## Architecture (current implementation)
 
-- **Frontend:** React 18 + Vite 5 + **TypeScript** SPA, Tailwind CSS (dark/light/system), state in localStorage via React Context + useReducer
-- **Router:** **HashRouter** (react-router-dom v6) — required for GitHub Pages compatibility
+- **Frontend:** React 19 + Vite 8 + **TypeScript** SPA, Tailwind CSS v4 (dark/light/system), state in localStorage via React Context + useReducer
+- **Router:** **HashRouter** (react-router-dom v7) — required for GitHub Pages compatibility
 - **No backend:** Express server removed. Google auth is **client-side GIS** (Google Identity Services token flow)
-- **Deploy:** `npm run deploy` uses the `gh-pages` npm package to push `/dist` to the `gh-pages` branch
+- **Deploy:** GitHub Actions builds and deploys `/dist` to GitHub Pages on pushes to `main`
 - **Google auth:** Client-side OAuth token via `window.google.accounts.oauth2.initTokenClient`. Token stored in `sessionStorage` (expires after ~1 hour). Requires only `VITE_GOOGLE_CLIENT_ID` (a public value, not a secret).
 
 ## Phase Status
 
 | Phase | Feature | Status |
 |---|---|---|
-| 1 | Full UI shell, all data in localStorage | ✅ Current |
-| 1.5 | Google Calendar read-only (client-side) | 🔧 Wired, needs Client ID |
-| 1.6 | Google Tasks read-only (client-side) | 🔧 Wired, needs Client ID |
-| 2 | Notion backend sync | 📋 Planned |
+| Current | Full UI shell, local browser data | ✅ Current |
+| Integration | Google Calendar and Tasks | 🔧 Wired, release evidence pending |
+| Future | Notion backend sync | 📋 Not planned for the current client-only product |
 
 ## Environment Variables
 
-Only **one** value to configure — and it is **not a secret** (safe to embed in client-side code):
+The current optional browser configuration is:
 
 ```
 VITE_GOOGLE_CLIENT_ID=YOUR_CLIENT_ID.apps.googleusercontent.com
+VITE_ANTHROPIC_API_KEY=YOUR_KEY_IF_USING_DIRECT_ORACLE
 ```
 
-Set this as a Replit Secret or in a `.env` file. The app runs fully without it (Google sections show a disabled state).
+Set values as Replit Secrets or in a local `.env` file. The app runs without either;
+Google sections remain unavailable and the oracle uses its local fallback. The direct
+Anthropic browser path is not approved for a public stable release until its key
+exposure is resolved. See `docs/RELEASE-TRUTH-BASELINE.md`.
 
 ## Design System — Moonlit Hearth
 

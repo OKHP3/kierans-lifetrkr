@@ -4,7 +4,7 @@
 > and a daily oracle — one interface, no noise.
 
 **Live:** https://okhp3.github.io/kierans-lifetrkr/#/
-**Status:** v0.1.8 deployed · v0.2.0 (Google Calendar + Tasks) next
+**Status:** v0.1.10 pre-production · stable release deferred pending evidence
 **License:** MIT — free to use, fork, and build on
 
 ---
@@ -66,10 +66,10 @@ User's Browser
 
 | Layer | Choice |
 |---|---|
-| Framework | React 18 + Vite |
+| Framework | React 19 + Vite 8 |
 | Language | TypeScript |
-| Styling | Tailwind CSS v3 (dark mode, mobile-first) |
-| Routing | React Router v6 — HashRouter (required for GitHub Pages) |
+| Styling | Tailwind CSS v4 (dark mode, mobile-first) |
+| Routing | React Router v7 — HashRouter (required for GitHub Pages) |
 | Auth | Google Identity Services (GIS) — token model, Client ID only |
 | Calendar | Google Calendar API v3 (browser fetch, read-only) |
 | Tasks | Google Tasks API v1 (browser fetch, read-only) |
@@ -77,7 +77,7 @@ User's Browser
 | Tarot | tarotapi.dev (free, no auth, CORS-enabled) |
 | Horoscope | freehoroscopeapi.com (free, no auth) |
 | Moon data | Client-side Julian date math — no API required |
-| Deploy | gh-pages npm package → GitHub Pages |
+| Deploy | GitHub Actions → GitHub Pages |
 
 ---
 
@@ -121,7 +121,7 @@ src/
 │   ├── Habits.tsx              # Habit list with 7-day grid and streak counter
 │   ├── Calendar.tsx            # Month grid + Google Calendar + moon phases + oracle
 │   ├── Today.tsx               # Committed tasks (status=today) + Google Tasks
-│   ├── Archive.tsx             # Backlog (status=backlog), search, sort, promote
+│   ├── Someday.tsx             # Deferred backlog (status=backlog), search, sort, promote
 │   └── Settings.tsx            # Profile, Google, oracle/celestial, theme, social
 ├── types.ts                    # All TypeScript types (source of truth)
 ├── constants.ts                # GOOGLE_CLIENT_ID, SCOPES, APP_VERSION, categories
@@ -135,7 +135,7 @@ src/
 ```bash
 npm install
 npm run dev       # http://localhost:5173
-npm run deploy    # build → push to gh-pages → live
+npm run build     # type-check + production build
 ```
 
 Two environment variables. Both set as Replit Secrets.
@@ -170,11 +170,9 @@ v1.0.0 is not a placeholder — it is earned.
 
 | Version | Status | Description |
 |---|---|---|
-| v0.1.x | LIVE | UI shell, localStorage, Google auth button |
-| v0.2.0 | In progress | Google Calendar + Tasks live integration |
-| v0.3.0 | Planned | Close remaining gaps (dark default, About, Regenerate oracle, activate Claude) |
-| v0.4.0 | Planned | Brand assets, PWA, polish |
-| v0.5.0 | Planned | Privacy policy, Google OAuth verification |
+| v0.1.10 | PRE-PRODUCTION | Current source baseline; core UI and integrations are not fully release-proven |
+| v0.2.0 | Deferred | Google Calendar + Tasks evidence and scope review |
+| v0.3.0+ | Planned | Reliability, privacy, accessibility, PWA, and release work |
 | v1.0.0 | Reserved | Google-verified, Kieran-owned, public stable release |
 
 ---
@@ -188,6 +186,7 @@ v1.0.0 is not a placeholder — it is earned.
 | `docs/DESIGN.md` | Moonlit Hearth design system — full color, type, component spec |
 | `docs/HANDOFF.md` | Jamie → Kieran ownership transfer checklist |
 | `docs/ARCHITECTURE.md` | Client-only architecture decisions and rationale |
+| `docs/RELEASE-TRUTH-BASELINE.md` | Current artifact inventory, claims, gates, and validation protocol |
 
 ---
 

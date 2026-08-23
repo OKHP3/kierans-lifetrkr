@@ -7,6 +7,12 @@
 **Notion hub:** https://app.notion.com/p/overkillhill/Kieran-s-LifeTrkr-Project-Hub-386812e0ced481878291e92d5e428ce5
 **Status:** Approved — planning authority for v0.2.0 and beyond
 
+> **Baseline notice (August 22, 2026):** This document contains historical planning
+> material and a dated audit, not a current release assertion. Current source truth
+> is `v0.1.10`, uses Someday rather than Archive, and uses the React 19 / Vite 8 /
+> Tailwind 4 toolchain. See `docs/RELEASE-TRUTH-BASELINE.md` before treating any
+> shipped, planned, or release-readiness statement as current.
+
 ---
 
 ## Section 1 — Current State Audit (v0.1.8)
