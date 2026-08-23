@@ -1,12 +1,28 @@
 import type { RoutineDayOfWeek } from '../types'
 import { DAYS_OF_WEEK, SEASONAL_DATES, DAILY_QUOTES } from '../constants'
 
-export function getTodayISO(): string {
-  return new Date().toISOString().split('T')[0]
+const DEFAULT_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
+
+function datePartsInTimeZone(date: Date, timezone = DEFAULT_TIMEZONE): { year: number; month: number; day: number; weekday: number } {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    weekday: 'short',
+  }).formatToParts(date)
+  const value = (type: string) => parts.find(part => part.type === type)?.value ?? ''
+  const weekdays: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
+  return { year: Number(value('year')), month: Number(value('month')), day: Number(value('day')), weekday: weekdays[value('weekday')] ?? 0 }
 }
 
-export function getDayOfWeek(): RoutineDayOfWeek {
-  return DAYS_OF_WEEK[new Date().getDay()] as RoutineDayOfWeek
+export function getTodayISO(timezone = DEFAULT_TIMEZONE, now: Date = new Date()): string {
+  const parts = datePartsInTimeZone(now, timezone)
+  return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`
+}
+
+export function getDayOfWeek(timezone = DEFAULT_TIMEZONE, now: Date = new Date()): RoutineDayOfWeek {
+  return DAYS_OF_WEEK[datePartsInTimeZone(now, timezone).weekday] as RoutineDayOfWeek
 }
 
 export function getDayOfWeekFull(date: Date = new Date()): RoutineDayOfWeek {
@@ -69,6 +85,61 @@ export type RecurrenceFrequency =
 export type SimpleRecurrencePattern = {
   frequency: RecurrenceFrequency
   daysOfWeek?: number[]  // 0=Sun…6=Sat
+}
+
+import type { RecurrenceRule } from '../types'
+
+function dayNumber(date: string): number {
+  const [year, month, day] = date.split('-').map(Number)
+  return Date.UTC(year, month - 1, day)
+}
+
+const DAY_NUMBERS: Record<string, number> = {
+  sunday: 0, monday: 1, tuesday: 2, wednesday: 3,
+  thursday: 4, friday: 5, saturday: 6,
+}
+
+/** Evaluate a stored recurrence rule against a calendar date without local-DST drift. */
+export function recurrenceOccursOnDate(rule: RecurrenceRule | undefined, date: string): boolean {
+  if (!rule || rule.frequency === 'none' || !rule.startDate || date < rule.startDate) return false
+  if (rule.exceptions?.includes(date)) return false
+  if (rule.end.mode === 'onDate' && date > rule.end.date) return false
+
+  const interval = Math.max(1, Math.floor(rule.interval || 1))
+  const start = new Date(dayNumber(rule.startDate))
+  const current = new Date(dayNumber(date))
+  const days = Math.round((current.getTime() - start.getTime()) / 86400000)
+  let occurrenceIndex = -1
+
+  if (rule.frequency === 'daily') {
+    if (days % interval !== 0) return false
+    occurrenceIndex = days / interval
+  } else if (rule.frequency === 'weekly') {
+    const selected = (rule.daysOfWeek ?? []).map(day => DAY_NUMBERS[day]).filter(day => day !== undefined)
+    if (selected.length > 0) {
+      if (!selected.includes(current.getUTCDay())) return false
+      const weeks = Math.floor(days / 7)
+      if (weeks % interval !== 0) return false
+      const ordered = [...new Set(selected)].sort((a, b) => a - b)
+      occurrenceIndex = Math.floor(weeks / interval) * ordered.length + ordered.indexOf(current.getUTCDay())
+    } else {
+      if (days % (7 * interval) !== 0) return false
+      occurrenceIndex = days / (7 * interval)
+    }
+  } else if (rule.frequency === 'monthly') {
+    const months = (current.getUTCFullYear() - start.getUTCFullYear()) * 12 + current.getUTCMonth() - start.getUTCMonth()
+    const dayOfMonth = rule.dayOfMonth ?? start.getUTCDate()
+    if (months < 0 || months % interval !== 0 || current.getUTCDate() !== dayOfMonth) return false
+    occurrenceIndex = months / interval
+  } else if (rule.frequency === 'yearly') {
+    const years = current.getUTCFullYear() - start.getUTCFullYear()
+    if (years < 0 || years % interval !== 0 || current.getUTCMonth() !== start.getUTCMonth() || current.getUTCDate() !== start.getUTCDate()) return false
+    occurrenceIndex = years / interval
+  } else {
+    return false
+  }
+
+  return rule.end.mode !== 'afterCount' || (rule.end.count > 0 && occurrenceIndex < rule.end.count)
 }
 
 /** Returns true if a recurrence pattern is active on the given date (defaults to today). */

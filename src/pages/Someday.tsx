@@ -17,7 +17,7 @@ export default function Someday() {
   const [newPriority, setNewPriority] = useState<TaskPriority>('normal')
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
-  const today = getTodayISO()
+  const today = getTodayISO(state.settings.timezone)
 
   const backlogTasks = useMemo(() => {
     let tasks = state.tasks.filter(t => t.status === 'backlog')

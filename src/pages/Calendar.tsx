@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp, genId } from '../context/AppContext'
-import { getTodayISO, formatEventTime } from '../lib/date'
+import { getTodayISO, formatEventTime, recurrenceOccursOnDate } from '../lib/date'
 import { getMoonPhaseEmoji, getDailyCard, getDailyWisdom, getCosmicEventsForDateRange } from '../lib/cosmic'
 import { useGoogleAuth } from '../hooks/useGoogleAuth'
 import { fetchCalendarEvents, createGoogleEvent, deleteGoogleEvent } from '../lib/googleCalendar'
@@ -31,13 +31,20 @@ const DOW_SHORT: Record<string, string> = {
 function eventOccursOnDate(event: CalendarEvent, ds: string): boolean {
   const startDate = event.start.split('T')[0]
   if (startDate === ds) return true
+  return recurrenceOccursOnDate(
+    event.recurrence ? { ...event.recurrence, startDate } : undefined,
+    ds,
+  )
 
+  /* Legacy implementation retained temporarily for reference; the shared
+     evaluator above is the only reachable recurrence path.
   const rec = event.recurrence
   if (!rec || rec.frequency === 'none') return false
   if (ds < startDate) return false
 
   // onDate end
-  if (rec.end.mode === 'onDate' && ds > rec.end.date) return false
+  const endDate = rec.end.mode === 'onDate' ? (rec.end as { mode: 'onDate'; date: string }).date : null
+  if (endDate && ds > endDate) return false
 
   // Exception dates
   if (rec.exceptions?.includes(ds)) return false
@@ -88,10 +95,12 @@ function eventOccursOnDate(event: CalendarEvent, ds: string): boolean {
   // afterCount end: occurrence index is 0-based; start date is index 0
   if (rec.end.mode === 'afterCount') {
     // +1 because start date itself is occurrence 0, so total = index + 1 (where index starts at 1 for recurrences)
-    if (occurrenceIndex + 1 >= rec.end.count) return false
+    const count = rec.end.mode === 'afterCount' ? (rec.end as { mode: 'afterCount'; count: number }).count : null
+    if (count !== null && occurrenceIndex + 1 >= count) return false
   }
 
   return true
+  */
 }
 
 // ─── Recurrence Label ─────────────────────────────────────────────────────────
@@ -177,7 +186,7 @@ export default function Calendar() {
   const [tagFilter, setTagFilter] = useState<string | null>(null)
   const [showCosmic, setShowCosmic] = useState(true)
 
-  const today = getTodayISO()
+  const today = getTodayISO(state.settings.timezone)
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const firstDay = new Date(year, month, 1).getDay()
   const cells: (number | null)[] = [

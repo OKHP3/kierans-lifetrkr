@@ -18,7 +18,7 @@ type SortKey = 'default' | 'title' | 'next-occ' | 'category'
 
 export default function Rituals() {
   const { state, dispatch } = useApp()
-  const todayFull = getDayOfWeek()
+  const todayFull = getDayOfWeek(state.settings.timezone)
   const [selectedDay, setSelectedDay] = useState<RoutineDayOfWeek>(todayFull)
   const [editMode, setEditMode] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
@@ -39,7 +39,7 @@ export default function Rituals() {
   const [metaTags, setMetaTags] = useState<string[]>([])
   const [metaRecurrence, setMetaRecurrence] = useState<RecurrenceRule>(makeDefaultRecurrence())
 
-  const today = getTodayISO()
+  const today = getTodayISO(state.settings.timezone)
   const isToday = selectedDay === todayFull
   const template = state.routineTemplates.find(t => t.dayOfWeek === selectedDay)
   const completion = state.routineCompletions.find(

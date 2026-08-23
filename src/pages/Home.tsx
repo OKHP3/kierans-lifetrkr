@@ -21,8 +21,8 @@ export default function Home() {
   const [showEaster, setShowEaster] = useState(false)
   const { oracle, isLoadingOracle } = useOracle()
 
-  const today = getTodayISO()
-  const dayOfWeek = getDayOfWeek()
+  const today = getTodayISO(state.settings.timezone)
+  const dayOfWeek = getDayOfWeek(state.settings.timezone)
   const greeting = getGreeting()
   const seasonalBadge = getSeasonalBadge()
   const dailyQuote = getDailyQuote()

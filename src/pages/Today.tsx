@@ -20,7 +20,7 @@ export default function Today() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [showDone, setShowDone] = useState(false)
 
-  const today = getTodayISO()
+  const today = getTodayISO(state.settings.timezone)
 
   const activeTasks = useMemo(() =>
     state.tasks
@@ -123,7 +123,7 @@ export default function Today() {
                       style={{ fontSize: 11, padding: '2px 8px' }}
                       onClick={() => dispatch({
                         type: 'ADD_TASK',
-                        payload: { id: genId(), title: gt.title, notes: gt.notes || undefined, status: 'today', priority: 'normal', createdAt: getTodayISO(), source: 'manual', googleTaskId: gt.id },
+                          payload: { id: genId(), title: gt.title, notes: gt.notes || undefined, status: 'today', priority: 'normal', createdAt: getTodayISO(state.settings.timezone), source: 'manual', googleTaskId: gt.id },
                       })}
                     >
                       + Add to My List

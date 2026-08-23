@@ -143,7 +143,7 @@ function habitToForm(h: Habit): HabitForm {
 
 export default function Habits() {
   const { state, dispatch } = useApp()
-  const today = getTodayISO()
+  const today = getTodayISO(state.settings.timezone)
 
   // Add / edit forms
   const [addForm, setAddForm] = useState<HabitForm | null>(null)

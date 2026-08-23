@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react'
+import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react'
 import type {
   AppState, RoutineTemplate, RoutineCompletion, Habit, HabitCompletion,
   Task, CalendarEvent, GoogleTask, TaskList, GoogleProfile, UserSettings,
@@ -301,7 +301,7 @@ function reducer(state: AppState, action: Action): AppState {
             ? {
                 ...t,
                 status,
-                completedAt: status === 'done' ? getTodayISO() : undefined,
+                completedAt: status === 'done' ? getTodayISO(state.settings.timezone) : undefined,
               }
             : t
         ),
@@ -401,15 +401,35 @@ function persistState(state: AppState) {
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState)
+  const hydrated = useRef(false)
+  const pendingUser = useRef<string | null>(null)
 
+  // Initial hydration runs before persistence is allowed, preventing an empty
+  // initial state from overwriting a returning user's saved data.
   useEffect(() => {
     const saved = loadPersistedState()
-    if (Object.keys(saved).length > 0) {
-      dispatch({ type: 'LOAD_STATE', payload: saved })
-    }
+    dispatch({ type: 'LOAD_STATE', payload: saved })
   }, [])
 
+  // A profile switch changes the namespace used by storage. Load that
+  // namespace before allowing the new state to be written there.
   useEffect(() => {
+    if (!hydrated.current) return
+    const userId = state.profile?.sub ?? 'guest'
+    pendingUser.current = userId
+    dispatch({ type: 'LOAD_STATE', payload: loadPersistedState() })
+  }, [state.profile?.sub])
+
+  useEffect(() => {
+    const userId = state.profile?.sub ?? 'guest'
+    if (pendingUser.current && pendingUser.current !== userId) return
+    if (pendingUser.current === userId) pendingUser.current = null
+    if (!hydrated.current) {
+      // The first persistence effect runs with the reducer's empty initial
+      // state; let the queued LOAD_STATE render happen first.
+      hydrated.current = true
+      return
+    }
     persistState(state)
   }, [state])
 

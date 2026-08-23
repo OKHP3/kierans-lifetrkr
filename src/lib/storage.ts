@@ -3,7 +3,8 @@ import type { GoogleProfile } from '../types'
 const APP_PREFIX = 'lifetrkr'
 
 function getUserId(): string {
-  const raw = localStorage.getItem(`${APP_PREFIX}:profile`)
+  let raw: string | null = null
+  try { raw = localStorage.getItem(`${APP_PREFIX}:profile`) } catch { return 'guest' }
   if (!raw) return 'guest'
   try {
     const profile: GoogleProfile = JSON.parse(raw)
@@ -19,32 +20,39 @@ function key(entity: string): string {
 
 export const storage = {
   get<T>(entity: string): T | null {
-    const raw = localStorage.getItem(key(entity))
+    let raw: string | null
+    try { raw = localStorage.getItem(key(entity)) } catch { return null }
     if (!raw) return null
     try { return JSON.parse(raw) as T } catch { return null }
   },
   set<T>(entity: string, value: T): void {
-    localStorage.setItem(key(entity), JSON.stringify(value))
+    try { localStorage.setItem(key(entity), JSON.stringify(value)) } catch { /* disabled or full storage is non-fatal */ }
   },
   remove(entity: string): void {
-    localStorage.removeItem(key(entity))
+    try { localStorage.removeItem(key(entity)) } catch { /* unavailable storage */ }
   },
   clear(): void {
-    const uid = getUserId()
-    Object.keys(localStorage)
-      .filter(k => k.startsWith(`${APP_PREFIX}:${uid}:`))
-      .forEach(k => localStorage.removeItem(k))
+    try {
+      const uid = getUserId()
+      Object.keys(localStorage)
+        .filter(k => k.startsWith(`${APP_PREFIX}:${uid}:`))
+        .forEach(k => localStorage.removeItem(k))
+    } catch { /* unavailable storage */ }
   },
   getProfile(): GoogleProfile | null {
-    const raw = localStorage.getItem(`${APP_PREFIX}:profile`)
+    let raw: string | null
+    try { raw = localStorage.getItem(`${APP_PREFIX}:profile`) } catch { return null }
     if (!raw) return null
-    try { return JSON.parse(raw) as GoogleProfile } catch { return null }
+    try {
+      const profile = JSON.parse(raw) as Partial<GoogleProfile>
+      return typeof profile.sub === 'string' && typeof profile.email === 'string' ? profile as GoogleProfile : null
+    } catch { return null }
   },
   setProfile(profile: GoogleProfile): void {
-    localStorage.setItem(`${APP_PREFIX}:profile`, JSON.stringify(profile))
+    try { localStorage.setItem(`${APP_PREFIX}:profile`, JSON.stringify(profile)) } catch { /* unavailable storage */ }
   },
   clearProfile(): void {
-    localStorage.removeItem(`${APP_PREFIX}:profile`)
+    try { localStorage.removeItem(`${APP_PREFIX}:profile`) } catch { /* unavailable storage */ }
   },
 
   /**
@@ -53,12 +61,15 @@ export const storage = {
    * new optional fields (recurrence, tags, description, etc.).
    */
   getList<T extends object>(entity: string, defaults: T): T[] {
-    const raw = localStorage.getItem(key(entity))
+    let raw: string | null
+    try { raw = localStorage.getItem(key(entity)) } catch { return [] }
     if (!raw) return []
     try {
       const parsed: unknown = JSON.parse(raw)
       if (!Array.isArray(parsed)) return []
-      return (parsed as Partial<T>[]).map(record => ({ ...defaults, ...record }) as T)
+      return (parsed as unknown[])
+        .filter((record): record is Record<string, unknown> => record !== null && typeof record === 'object' && !Array.isArray(record))
+        .map(record => ({ ...defaults, ...record } as T))
     } catch {
       return []
     }
