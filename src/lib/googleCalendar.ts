@@ -1,38 +1,59 @@
 import type { CalendarEvent } from '../types'
 
+export class GoogleApiError extends Error {
+  constructor(
+    message: string,
+    readonly service: 'calendar' | 'tasks' | 'profile',
+    readonly status: number,
+  ) {
+    super(message)
+    this.name = 'GoogleApiError'
+  }
+}
+
 export async function fetchCalendarEvents(
   token: string,
-  daysAhead: number = 14
+  daysAhead: number = 14,
+  timezone = Intl.DateTimeFormat().resolvedOptions().timeZone,
 ): Promise<CalendarEvent[]> {
   const now = new Date().toISOString()
-  const cutoff = new Date(Date.now() + daysAhead * 86400000).toISOString()
+  const cutoff = new Date(Date.now() + Math.max(1, daysAhead) * 86400000).toISOString()
 
   const url = new URL('https://www.googleapis.com/calendar/v3/calendars/primary/events')
   url.searchParams.set('timeMin', now)
   url.searchParams.set('timeMax', cutoff)
   url.searchParams.set('singleEvents', 'true')
   url.searchParams.set('orderBy', 'startTime')
-  url.searchParams.set('maxResults', '50')
+  url.searchParams.set('maxResults', '2500')
+  url.searchParams.set('timeZone', timezone)
 
-  const res = await fetch(url.toString(), {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  const events: CalendarEvent[] = []
+  let pageToken: string | undefined
+  do {
+    if (pageToken) url.searchParams.set('pageToken', pageToken)
+    const res = await fetch(url.toString(), { headers: { Authorization: `Bearer ${token}` } })
+    if (!res.ok) throw new GoogleApiError(`Calendar API error: ${res.status}`, 'calendar', res.status)
+    const data = await res.json() as { items?: Record<string, unknown>[]; nextPageToken?: string }
+    for (const item of data.items ?? []) {
+      const start = item.start as Record<string, string> | undefined
+      if (!item.id || !start?.dateTime && !start?.date) continue
+      const end = item.end as Record<string, string> | undefined
+      events.push({
+        id: String(item.id),
+        title: typeof item.summary === 'string' && item.summary ? item.summary : '(no title)',
+        start: (start.dateTime || start.date)!,
+        end: end?.dateTime || end?.date,
+        allDay: !start.dateTime,
+        location: typeof item.location === 'string' ? item.location : null,
+        description: typeof item.description === 'string' ? item.description : null,
+        colorId: typeof item.colorId === 'string' ? item.colorId : null,
+        source: 'google',
+      })
+    }
+    pageToken = data.nextPageToken
+  } while (pageToken)
 
-  if (!res.ok) throw new Error(`Calendar API error: ${res.status}`)
-
-  const data = await res.json()
-
-  return (data.items || []).map((item: Record<string, unknown>) => ({
-    id: item.id as string,
-    title: (item.summary as string) || '(no title)',
-    start: ((item.start as Record<string, string>)?.dateTime || (item.start as Record<string, string>)?.date) as string,
-    end: ((item.end as Record<string, string>)?.dateTime || (item.end as Record<string, string>)?.date) as string | undefined,
-    allDay: !(item.start as Record<string, string>)?.dateTime,
-    location: (item.location as string) || null,
-    description: (item.description as string) || null,
-    colorId: (item.colorId as string) || null,
-    source: 'google' as const,
-  }))
+  return events
 }
 
 export async function createGoogleEvent(
@@ -65,7 +86,7 @@ export async function createGoogleEvent(
       body: JSON.stringify(body),
     }
   )
-  if (!res.ok) throw new Error(`Create event error: ${res.status}`)
+  if (!res.ok) throw new GoogleApiError(`Create event error: ${res.status}`, 'calendar', res.status)
   const data = await res.json()
   return data.id as string
 }
@@ -79,7 +100,7 @@ export async function deleteGoogleEvent(token: string, googleEventId: string): P
     }
   )
   if (!res.ok && res.status !== 404 && res.status !== 410) {
-    throw new Error(`Delete event error: ${res.status}`)
+    throw new GoogleApiError(`Delete event error: ${res.status}`, 'calendar', res.status)
   }
 }
 
@@ -89,6 +110,6 @@ export async function fetchGoogleProfile(token: string): Promise<{
   const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
     headers: { Authorization: `Bearer ${token}` },
   })
-  if (!res.ok) throw new Error(`Profile fetch error: ${res.status}`)
+  if (!res.ok) throw new GoogleApiError(`Profile fetch error: ${res.status}`, 'profile', res.status)
   return res.json()
 }

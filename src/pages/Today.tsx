@@ -1,7 +1,9 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useApp, genId } from '../context/AppContext'
 import CheckCircle from '../components/CheckCircle'
 import { getTodayISO } from '../lib/date'
+import { useGoogleAuth } from '../hooks/useGoogleAuth'
+import { fetchTaskLists, fetchTasks } from '../lib/googleTasks'
 import type { TaskPriority } from '../types'
 
 const PRIORITY_ORDER: Record<TaskPriority, number> = { high: 0, normal: 1, low: 2 }
@@ -13,6 +15,7 @@ const PRIORITY_COLORS: Record<TaskPriority, string> = {
 
 export default function Today() {
   const { state, dispatch } = useApp()
+  const { isConnected, getToken } = useGoogleAuth()
   const [showAdd, setShowAdd] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newNotes, setNewNotes] = useState('')
@@ -21,6 +24,30 @@ export default function Today() {
   const [showDone, setShowDone] = useState(false)
 
   const today = getTodayISO(state.settings.timezone)
+  const [googleError, setGoogleError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isConnected || !state.settings.showGoogleTasks) return
+    let cancelled = false
+    async function loadGoogleTasks() {
+      try {
+        setGoogleError(null)
+        const token = await getToken()
+        const lists = await fetchTaskLists(token)
+        if (cancelled) return
+        dispatch({ type: 'SET_TASK_LISTS', payload: lists })
+        const selected = state.settings.selectedTaskLists.length > 0
+          ? state.settings.selectedTaskLists
+          : lists.map(list => list.id)
+        const taskGroups = await Promise.all(selected.map(listId => fetchTasks(token, listId)))
+        if (!cancelled) dispatch({ type: 'SET_GOOGLE_TASKS', payload: taskGroups.flat() })
+      } catch {
+        if (!cancelled) setGoogleError('Google Tasks could not be loaded — tap to retry.')
+      }
+    }
+    loadGoogleTasks()
+    return () => { cancelled = true }
+  }, [isConnected, state.settings.showGoogleTasks, state.settings.selectedTaskLists.join(','), getToken, dispatch])
 
   const activeTasks = useMemo(() =>
     state.tasks
@@ -109,6 +136,7 @@ export default function Today() {
         <div style={{ marginTop: 20 }}>
           <p className="section-label">FROM GOOGLE TASKS</p>
           <div className="card">
+            {googleError && <p style={{ fontSize: 12, color: '#e07070', margin: '0 0 8px' }}>{googleError}</p>}
             {state.googleTasks.filter(t => t.due?.startsWith(today) && t.status === 'needsAction').length === 0 ? (
               <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: 0 }}>No Google Tasks due today.</p>
             ) : (

@@ -4,7 +4,7 @@ import { useApp, genId } from '../context/AppContext'
 import { getTodayISO, formatEventTime, recurrenceOccursOnDate } from '../lib/date'
 import { getMoonPhaseEmoji, getDailyCard, getDailyWisdom, getCosmicEventsForDateRange } from '../lib/cosmic'
 import { useGoogleAuth } from '../hooks/useGoogleAuth'
-import { fetchCalendarEvents, createGoogleEvent, deleteGoogleEvent } from '../lib/googleCalendar'
+import { fetchCalendarEvents } from '../lib/googleCalendar'
 import FilterBar from '../components/FilterBar'
 import CategoryPicker from '../components/CategoryPicker'
 import TagInput from '../components/TagInput'
@@ -229,7 +229,7 @@ export default function Calendar() {
     setSyncError(null)
     try {
       const token = await getToken()
-      const events = await fetchCalendarEvents(token, state.settings.calendarDaysAhead ?? 14)
+      const events = await fetchCalendarEvents(token, state.settings.calendarDaysAhead ?? 14, state.settings.timezone)
       dispatch({ type: 'SET_CALENDAR_EVENTS', payload: events })
       dispatch({ type: 'SET_LAST_SYNC', payload: new Date().toISOString() })
     } catch {
@@ -386,28 +386,10 @@ export default function Calendar() {
     }
     dispatch({ type: 'ADD_CALENDAR_EVENT', payload: newEvent })
     setForm(null)
-    if (isConnected) {
-      try {
-        const token = await getToken()
-        await createGoogleEvent(token, {
-          title: newEvent.title, start: newEvent.start, end: newEvent.end,
-          allDay: newEvent.allDay, location: newEvent.location, description: newEvent.description,
-        })
-      } catch { /* silent — saved locally */ }
-    }
   }
 
   async function deleteEvent(id: string) {
     dispatch({ type: 'DELETE_CALENDAR_EVENT', payload: id })
-    if (isConnected) {
-      const event = state.calendarEvents.find(e => e.id === id)
-      if (event?.source === 'google') {
-        try {
-          const token = await getToken()
-          await deleteGoogleEvent(token, id)
-        } catch { /* silent */ }
-      }
-    }
   }
 
   const selectedEvents = selectedDay ? getEventsForDay(selectedDay) : []

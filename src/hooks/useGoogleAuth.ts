@@ -9,16 +9,26 @@ export function useGoogleAuth() {
   const [, setTick] = useState(0)
   const rerender = useCallback(() => setTick(n => n + 1), [])
 
-  const storedToken = sessionStorage.getItem('gal_token')
-  const storedExpiry = Number(sessionStorage.getItem('gal_expiry')) || 0
+  function readSession(key: string): string | null {
+    try { return sessionStorage.getItem(key) } catch { return null }
+  }
+  function clearSession() {
+    try {
+      sessionStorage.removeItem('gal_token')
+      sessionStorage.removeItem('gal_expiry')
+    } catch { /* unavailable session storage */ }
+  }
+
+  const storedToken = readSession('gal_token')
+  const storedExpiry = Number(readSession('gal_expiry')) || 0
   const isConnected = Boolean(storedToken) && Date.now() < storedExpiry
   const minutesUntilExpiry = storedExpiry
     ? Math.max(0, Math.floor((storedExpiry - Date.now()) / 60000))
     : null
 
   const isTokenValid = useCallback(() => {
-    const t = sessionStorage.getItem('gal_token')
-    const e = Number(sessionStorage.getItem('gal_expiry')) || 0
+    const t = readSession('gal_token')
+    const e = Number(readSession('gal_expiry')) || 0
     return Boolean(t) && Date.now() < e
   }, [])
 
@@ -38,8 +48,13 @@ export function useGoogleAuth() {
             return
           }
           const expiry = Date.now() + (response.expires_in * 1000)
-          sessionStorage.setItem('gal_token', response.access_token)
-          sessionStorage.setItem('gal_expiry', String(expiry))
+           try {
+             sessionStorage.setItem('gal_token', response.access_token)
+             sessionStorage.setItem('gal_expiry', String(expiry))
+           } catch {
+             reject(new Error('Session storage unavailable'))
+             return
+           }
           rerender()
           resolve(response.access_token)
         },
@@ -49,17 +64,16 @@ export function useGoogleAuth() {
   }, [rerender])
 
   const getToken = useCallback(async (): Promise<string> => {
-    if (isTokenValid()) return sessionStorage.getItem('gal_token')!
+    if (isTokenValid()) return readSession('gal_token')!
     return requestToken(true).catch(() => requestToken(false))
   }, [isTokenValid, requestToken])
 
   const disconnect = useCallback(() => {
-    const token = sessionStorage.getItem('gal_token')
+    const token = readSession('gal_token')
     if (token) {
       window.google?.accounts?.oauth2?.revoke(token, () => {})
     }
-    sessionStorage.removeItem('gal_token')
-    sessionStorage.removeItem('gal_expiry')
+    clearSession()
     rerender()
   }, [rerender])
 
