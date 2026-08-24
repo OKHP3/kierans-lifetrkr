@@ -33,25 +33,17 @@ jobs:
       - name: Use the public npm registry
         run: npm config set registry https://registry.npmjs.org/
 
-      - name: Normalize Replit lockfile URLs
-        shell: bash
-        run: |
-          test -f package-lock.json
-          node <<'NODE'
-          const fs = require('node:fs');
-          const path = 'package-lock.json';
-          const internalPrefix = 'http://package-firewall.replit.local/npm/';
-          const publicPrefix = 'https://registry.npmjs.org/';
-          const lockfile = fs.readFileSync(path, 'utf8');
-          const normalized = lockfile.replaceAll(internalPrefix, publicPrefix);
-          fs.writeFileSync(path, normalized);
-          console.log(normalized === lockfile
-            ? 'Lockfile already uses portable package URLs.'
-            : 'Replaced Replit-internal package URLs with the public npm registry.');
-          NODE
-
       - name: Install dependencies
         run: npm ci --registry=https://registry.npmjs.org/
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Type-check
+        run: npm run check
+
+      - name: Accessibility source check
+        run: npm run check:a11y
 
       - name: Build
         run: npm run build
@@ -60,6 +52,9 @@ jobs:
 
       - name: Copy index.html to 404.html for SPA routing
         run: cp dist/index.html dist/404.html
+
+      - name: Inspect Pages artifact
+        run: node scripts/inspect-artifact.mjs
 
       - name: Setup Pages
         uses: actions/configure-pages@v6.0.0

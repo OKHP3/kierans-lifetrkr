@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Type-check and build
+    name: Install, audit, type-check, build, and inspect
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -30,28 +30,20 @@ jobs:
       - name: Use the public npm registry
         run: npm config set registry https://registry.npmjs.org/
 
-      - name: Normalize Replit lockfile URLs
-        shell: bash
-        run: |
-          test -f package-lock.json
-          node <<'NODE'
-          const fs = require('node:fs');
-          const path = 'package-lock.json';
-          const internalPrefix = 'http://package-firewall.replit.local/npm/';
-          const publicPrefix = 'https://registry.npmjs.org/';
-          const lockfile = fs.readFileSync(path, 'utf8');
-          const normalized = lockfile.replaceAll(internalPrefix, publicPrefix);
-          fs.writeFileSync(path, normalized);
-          console.log(normalized === lockfile
-            ? 'Lockfile already uses portable package URLs.'
-            : 'Replaced Replit-internal package URLs with the public npm registry.');
-          NODE
-
       - name: Install dependencies
         run: npm ci --registry=https://registry.npmjs.org/
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Type-check
         run: npm run check
 
+      - name: Accessibility source check
+        run: npm run check:a11y
+
       - name: Build
         run: npm run build
+
+      - name: Inspect build artifact
+        run: node scripts/inspect-artifact.mjs

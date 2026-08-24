@@ -138,6 +138,14 @@ npm run dev       # http://localhost:5173
 npm run build     # type-check + production build
 ```
 
+Supported toolchain: Node.js 20.19+ and npm 10+. For a clean, reproducible
+install use `npm ci`; the lockfile is the source of dependency versions.
+
+The app has an installable web manifest and responsive standalone layout. It
+does not currently provide an offline service worker/cache, so offline use is
+not a supported release claim; local browser data remains available whenever
+the app shell can be loaded.
+
 Google uses a public OAuth Client ID. The optional oracle worker URL is also
 safe to expose in the client because it contains no provider credential.
 
