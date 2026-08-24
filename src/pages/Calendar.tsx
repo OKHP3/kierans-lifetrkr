@@ -468,14 +468,14 @@ export default function Calendar() {
 
       {/* Month nav */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <button className="btn-ghost" style={{ padding: '4px 8px' }} onClick={() => {
+         <button className="btn-ghost" aria-label="Previous month" style={{ padding: '4px 8px' }} onClick={() => {
           if (month === 0) { setMonth(11); setYear(y => y - 1) } else setMonth(m => m - 1)
           setSelectedDay(1)
         }}>‹</button>
         <span style={{ fontSize: 18, color: 'var(--text-primary)', fontFamily: 'Cormorant Garamond, serif' }}>
           {MONTH_NAMES[month]} {year}
         </span>
-        <button className="btn-ghost" style={{ padding: '4px 8px' }} onClick={() => {
+         <button className="btn-ghost" aria-label="Next month" style={{ padding: '4px 8px' }} onClick={() => {
           if (month === 11) { setMonth(0); setYear(y => y + 1) } else setMonth(m => m + 1)
           setSelectedDay(1)
         }}>›</button>
@@ -518,6 +518,9 @@ export default function Calendar() {
             return (
               <button
                 key={i}
+                type="button"
+                aria-label={`${MONTH_NAMES[month]} ${day}${isCurrent ? ', today' : ''}${isSelected ? ', selected' : ''}${dayEvents.length ? `, ${dayEvents.length} event${dayEvents.length === 1 ? '' : 's'}` : ''}`}
+                aria-pressed={isSelected}
                 onClick={() => setSelectedDay(day === selectedDay ? null : day)}
                 style={{
                   minHeight: 58, borderRadius: 6, border: isSelected ? '1.5px solid var(--accent-amethyst)' : '1px solid transparent',
@@ -754,18 +757,18 @@ export default function Calendar() {
           {/* Add event form */}
           {form ? (
             <div className="card" style={{ marginTop: 12 }}>
-              <input className="input-field" placeholder="Event title" value={form.title} onChange={e => patchForm({ title: e.target.value })} autoFocus />
+              <input className="input-field" aria-label="Event title" placeholder="Event title" value={form.title} onChange={e => patchForm({ title: e.target.value })} autoFocus />
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
                 <input type="checkbox" id="allday" checked={form.allDay} onChange={e => patchForm({ allDay: e.target.checked })} />
                 <label htmlFor="allday" style={{ fontSize: 13, color: 'var(--text-secondary)', cursor: 'pointer' }}>All day</label>
               </div>
               {!form.allDay && (
                 <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                  <input className="input-field" style={{ flex: 1 }} placeholder="Start (14:00)" value={form.time} onChange={e => patchForm({ time: e.target.value })} />
-                  <input className="input-field" style={{ flex: 1 }} placeholder="End (optional)" value={form.endTime} onChange={e => patchForm({ endTime: e.target.value })} />
+                  <input className="input-field" aria-label="Event start time" style={{ flex: 1 }} placeholder="Start (14:00)" value={form.time} onChange={e => patchForm({ time: e.target.value })} />
+                  <input className="input-field" aria-label="Event end time" style={{ flex: 1 }} placeholder="End (optional)" value={form.endTime} onChange={e => patchForm({ endTime: e.target.value })} />
                 </div>
               )}
-              <input className="input-field" style={{ marginTop: 8 }} placeholder="Location (optional)" value={form.location} onChange={e => patchForm({ location: e.target.value })} />
+              <input className="input-field" aria-label="Event location" style={{ marginTop: 8 }} placeholder="Location (optional)" value={form.location} onChange={e => patchForm({ location: e.target.value })} />
 
               <button
                 type="button"

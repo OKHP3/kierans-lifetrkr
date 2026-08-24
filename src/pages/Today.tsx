@@ -188,8 +188,8 @@ export default function Today() {
       {/* Add form */}
       {showAdd && (
         <div className="card" style={{ marginTop: 12 }}>
-          <input className="input-field" placeholder="What needs doing?" value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTask()} autoFocus />
-          <input className="input-field" style={{ marginTop: 8 }} placeholder="Notes (optional)" value={newNotes} onChange={e => setNewNotes(e.target.value)} />
+          <input className="input-field" aria-label="Task title" placeholder="What needs doing?" value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTask()} autoFocus />
+          <input className="input-field" aria-label="Task notes" style={{ marginTop: 8 }} placeholder="Notes (optional)" value={newNotes} onChange={e => setNewNotes(e.target.value)} />
           <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
             {(['high', 'normal', 'low'] as TaskPriority[]).map(p => (
               <button key={p} onClick={() => setNewPriority(p)} style={{ flex: 1, padding: '4px 0', borderRadius: 8, border: newPriority === p ? 'none' : '0.5px solid var(--border)', background: newPriority === p ? 'var(--surface-raised)' : 'transparent', color: newPriority === p ? 'var(--text-primary)' : 'var(--text-ghost)', fontSize: 12, cursor: 'pointer', textTransform: 'capitalize' }}>{p}</button>

@@ -48,7 +48,9 @@ export default function CategoryPicker({ categoryId, onChange }: Props) {
   return (
     <div className="space-y-3">
       <input
+        id="category-search"
         type="text"
+        aria-label="Search categories"
         placeholder="Search categories…"
         value={search}
         onChange={e => setSearch(e.target.value)}
@@ -69,6 +71,8 @@ export default function CategoryPicker({ categoryId, onChange }: Props) {
                     key={cat.id}
                     type="button"
                     onClick={() => toggle(cat.id)}
+                    aria-pressed={active}
+                    aria-label={`${active ? 'Remove' : 'Choose'} ${cat.label} category`}
                     className={
                       `flex items-center gap-1 px-2.5 py-1 rounded-full text-xs transition-colors ` +
                       (active

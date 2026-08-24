@@ -65,7 +65,7 @@ export default function Home() {
           <p style={{ fontSize: 11, color: 'var(--text-ghost)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: 0 }}>{greeting}</p>
           <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 34, fontWeight: 300, color: 'var(--text-primary)', margin: '2px 0', lineHeight: 1.1 }}>
             {displayName ? (
-              <>{displayName} <button onClick={handleStarTap} style={{ background: 'none', border: 'none', color: 'var(--accent-amethyst)', cursor: 'pointer', fontSize: 20, padding: 0, verticalAlign: 'middle' }}>✦</button></>
+              <>{displayName} <button aria-label="Open LifeTrkr origin story" onClick={handleStarTap} style={{ background: 'none', border: 'none', color: 'var(--accent-amethyst)', cursor: 'pointer', fontSize: 20, padding: 0, verticalAlign: 'middle' }}>✦</button></>
             ) : (
               <button onClick={() => navigate('/settings')} style={{ background: 'none', border: 'none', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', color: 'var(--text-ghost)', cursor: 'pointer', padding: 0 }}>
                 Set your name →
@@ -153,12 +153,12 @@ export default function Home() {
       </section>
 
       {/* More section */}
-      <button className="more-toggle" onClick={() => setMoreExpanded(e => !e)}>
+       <button className="more-toggle" aria-expanded={moreExpanded} aria-controls="home-more-content" onClick={() => setMoreExpanded(e => !e)}>
         <span>∿ {moreExpanded ? 'less' : 'more'} ∿</span>
       </button>
 
       {moreExpanded && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 16 }}>
+         <div id="home-more-content" style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 16 }}>
           {/* Oracle */}
           {state.settings.oracleEnabled && (
             <section>
@@ -219,11 +219,11 @@ export default function Home() {
 
       {/* Easter egg modal — fixed content per PRD */}
       {showEaster && (
-        <div className="modal-overlay" onClick={() => setShowEaster(false)}>
-          <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay" role="presentation" onClick={() => setShowEaster(false)}>
+          <div className="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="origin-story-title" onClick={e => e.stopPropagation()}>
             <div style={{ padding: '24px 20px', textAlign: 'center' }}>
               <p style={{ fontSize: 32, marginBottom: 12 }}>✦</p>
-              <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 20, color: 'var(--text-primary)', marginBottom: 8 }}>
+               <p id="origin-story-title" style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 20, color: 'var(--text-primary)', marginBottom: 8 }}>
                 {EASTER_CONTENT.title}
               </p>
               <p style={{ fontSize: 11, color: 'var(--accent-amethyst)', fontFamily: 'Space Mono, monospace', letterSpacing: '0.06em', margin: '4px 0 0' }}>

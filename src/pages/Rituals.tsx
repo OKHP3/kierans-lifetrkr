@@ -340,8 +340,8 @@ export default function Rituals() {
       {/* Add item form */}
       {editMode && showAdd && (
         <div className="card" style={{ marginTop: 12 }}>
-          <input className="input-field" placeholder="Ritual name" value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && addItem()} autoFocus />
-          <input className="input-field" style={{ marginTop: 8 }} placeholder="Time (optional, e.g. 7:00 AM)" value={newTime} onChange={e => setNewTime(e.target.value)} onKeyDown={e => e.key === 'Enter' && addItem()} />
+          <input className="input-field" aria-label="Ritual name" placeholder="Ritual name" value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && addItem()} autoFocus />
+          <input className="input-field" aria-label="Ritual time" style={{ marginTop: 8 }} placeholder="Time (optional, e.g. 7:00 AM)" value={newTime} onChange={e => setNewTime(e.target.value)} onKeyDown={e => e.key === 'Enter' && addItem()} />
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
             <button className="btn-primary" style={{ flex: 1 }} onClick={addItem}>Add</button>
             <button className="btn-ghost" onClick={() => { setShowAdd(false); setNewTitle(''); setNewTime('') }}>Cancel</button>

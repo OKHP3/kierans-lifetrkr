@@ -64,6 +64,7 @@ export default function Someday() {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-ghost)" strokeWidth="2" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input
           className="input-field"
+          aria-label="Search someday tasks"
           style={{ paddingLeft: 34 }}
           placeholder="Search someday…"
           value={search}
@@ -152,8 +153,8 @@ export default function Someday() {
       {/* Add form */}
       {showAdd && (
         <div className="card" style={{ marginTop: 12 }}>
-          <input className="input-field" placeholder="What's worth doing someday?" value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTask()} autoFocus />
-          <input className="input-field" style={{ marginTop: 8 }} placeholder="Notes (optional)" value={newNotes} onChange={e => setNewNotes(e.target.value)} />
+          <input className="input-field" aria-label="Someday task title" placeholder="What's worth doing someday?" value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTask()} autoFocus />
+          <input className="input-field" aria-label="Someday task notes" style={{ marginTop: 8 }} placeholder="Notes (optional)" value={newNotes} onChange={e => setNewNotes(e.target.value)} />
           <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
             {(['high', 'normal', 'low'] as TaskPriority[]).map(p => (
               <button key={p} onClick={() => setNewPriority(p)} style={{ flex: 1, padding: '4px 0', borderRadius: 8, border: newPriority === p ? 'none' : '0.5px solid var(--border)', background: newPriority === p ? 'var(--surface-raised)' : 'transparent', color: newPriority === p ? 'var(--text-primary)' : 'var(--text-ghost)', fontSize: 12, cursor: 'pointer', textTransform: 'capitalize' }}>{p}</button>

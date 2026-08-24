@@ -370,7 +370,7 @@ export default function Habits() {
               {/* Inline edit form */}
               {isEditing && editForm && (
                 <div style={{ marginTop: 14, paddingTop: 14, borderTop: '0.5px solid var(--border)' }}>
-                  <input className="input-field" value={editForm.name} onChange={e => patchEdit({ name: e.target.value })} placeholder="Habit name" />
+                  <input className="input-field" aria-label="Habit name" value={editForm.name} onChange={e => patchEdit({ name: e.target.value })} placeholder="Habit name" />
                   <div style={{ marginTop: 8 }}>
                     <DescriptionField value={editForm.desc} onChange={desc => patchEdit({ desc })} rows={2} />
                   </div>
@@ -420,6 +420,7 @@ export default function Habits() {
         <div className="card" style={{ marginTop: 12 }}>
           <input
             className="input-field"
+            aria-label="Habit name"
             placeholder="Habit name"
             value={addForm.name}
             onChange={e => patchAdd({ name: e.target.value })}

@@ -14,7 +14,7 @@ export default function BottomNav() {
   const isActive = (to: string) => to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
 
   return (
-    <nav className="bottom-nav">
+    <nav className="bottom-nav" aria-label="Primary navigation">
       {tabs.map(({ to, label, Icon }) => {
         const active = isActive(to)
         return (

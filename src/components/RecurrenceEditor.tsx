@@ -58,6 +58,8 @@ export default function RecurrenceEditor({ value, onChange }: Props) {
       <div>
         <label className={labelClass}>Repeats</label>
         <select
+          id="recurrence-frequency"
+          aria-label="Repeat frequency"
           value={frequency}
           onChange={e => set({ frequency: e.target.value as RecurrenceFrequency })}
           className={inputClass}
@@ -74,7 +76,9 @@ export default function RecurrenceEditor({ value, onChange }: Props) {
           <label className={labelClass}>Every</label>
           <div className="flex items-center gap-2">
             <input
+              id="recurrence-interval"
               type="number"
+              aria-label={`Repeat every number of ${unitLabel}s`}
               min={1}
               max={99}
               value={interval}
@@ -98,6 +102,8 @@ export default function RecurrenceEditor({ value, onChange }: Props) {
                   key={day.value}
                   type="button"
                   onClick={() => toggleDay(day.value)}
+                  aria-pressed={active}
+                  aria-label={`${active ? 'Remove' : 'Add'} ${day.label} from repeat days`}
                   className={
                     `w-9 h-9 rounded-full text-xs font-mono transition-colors ` +
                     (active
@@ -123,6 +129,7 @@ export default function RecurrenceEditor({ value, onChange }: Props) {
               <input
                 type="radio"
                 name="recurrence-end"
+                aria-label="Never ends"
                 checked={end.mode === 'never'}
                 onChange={() => set({ end: { mode: 'never' } })}
                 className="accent-accentAmethyst"
@@ -135,6 +142,7 @@ export default function RecurrenceEditor({ value, onChange }: Props) {
               <input
                 type="radio"
                 name="recurrence-end"
+                aria-label="Ends on a date"
                 checked={end.mode === 'onDate'}
                 onChange={() => set({ end: { mode: 'onDate', date: '' } })}
                 className="accent-accentAmethyst"
@@ -143,6 +151,7 @@ export default function RecurrenceEditor({ value, onChange }: Props) {
               {end.mode === 'onDate' && (
                 <input
                   type="date"
+                  aria-label="Recurrence end date"
                   value={end.date}
                   onChange={e => set({ end: { mode: 'onDate', date: e.target.value } })}
                   className={`${inputClass} flex-1`}
@@ -155,6 +164,7 @@ export default function RecurrenceEditor({ value, onChange }: Props) {
               <input
                 type="radio"
                 name="recurrence-end"
+                aria-label="Ends after a number of times"
                 checked={end.mode === 'afterCount'}
                 onChange={() => set({ end: { mode: 'afterCount', count: 12 } })}
                 className="accent-accentAmethyst"
@@ -164,6 +174,7 @@ export default function RecurrenceEditor({ value, onChange }: Props) {
                 <>
                   <input
                     type="number"
+                    aria-label="Number of repetitions"
                     min={1}
                     max={999}
                     value={end.count}

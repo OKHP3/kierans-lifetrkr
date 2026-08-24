@@ -10,7 +10,8 @@ export default function Toast({ toasts, onDismiss }: Props) {
   return (
     <>
       {toasts.map(t => (
-        <div key={t.id} className="toast" onClick={() => onDismiss(t.id)} role="alert">
+        <div key={t.id} className="toast" onClick={() => onDismiss(t.id)} role="status" aria-live="polite" tabIndex={0}
+          onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && onDismiss(t.id)}>
           {t.message}
         </div>
       ))}

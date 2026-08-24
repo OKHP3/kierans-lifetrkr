@@ -63,7 +63,9 @@ export default function TagInput({ tags, onChange, suggestions = [], placeholder
 
       {/* Input */}
       <input
+        id="tag-input"
         type="text"
+        aria-label="Add a tag"
         value={input}
         onChange={e => setInput(e.target.value)}
         onKeyDown={onKey}
@@ -79,6 +81,7 @@ export default function TagInput({ tags, onChange, suggestions = [], placeholder
               key={s}
               type="button"
               onClick={() => add(s)}
+              aria-label={`Add suggested tag ${s}`}
               className="px-2 py-0.5 bg-bg border border-border rounded-full text-xs text-textMuted hover:border-accentAmethyst hover:text-accentAmethyst transition-colors"
             >
               + {s}

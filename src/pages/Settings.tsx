@@ -134,20 +134,20 @@ export default function Settings() {
 
         <div>
           <label className="input-label">Display name</label>
-          <input className="input-field" value={s.displayName} onChange={e => update({ displayName: e.target.value })} placeholder="Your name" />
+          <input className="input-field" aria-label="Display name" value={s.displayName} onChange={e => update({ displayName: e.target.value })} placeholder="Your name" />
         </div>
         <div>
           <label className="input-label">Pronouns</label>
-          <select className="input-field" value={s.pronouns} onChange={e => update({ pronouns: e.target.value })}>
+          <select className="input-field" aria-label="Pronouns" value={s.pronouns} onChange={e => update({ pronouns: e.target.value })}>
             {PRONOUNS.map(p => <option key={p} value={p}>{p || '—'}</option>)}
           </select>
         </div>
         <div>
           <label className="input-label">Birthday</label>
           <div style={{ display: 'flex', gap: 8 }}>
-            <input className="input-field" style={{ flex: 1 }} placeholder="MM" maxLength={2} value={s.birthMonth} onChange={e => update({ birthMonth: e.target.value.replace(/\D/g, '') })} />
-            <input className="input-field" style={{ flex: 1 }} placeholder="DD" maxLength={2} value={s.birthDay}   onChange={e => update({ birthDay: e.target.value.replace(/\D/g, '') })} />
-            <input className="input-field" style={{ flex: 2 }} placeholder="YYYY" maxLength={4} value={s.birthYear} onChange={e => update({ birthYear: e.target.value.replace(/\D/g, '') })} />
+            <input className="input-field" aria-label="Birth month" style={{ flex: 1 }} placeholder="MM" maxLength={2} value={s.birthMonth} onChange={e => update({ birthMonth: e.target.value.replace(/\D/g, '') })} />
+            <input className="input-field" aria-label="Birth day" style={{ flex: 1 }} placeholder="DD" maxLength={2} value={s.birthDay}   onChange={e => update({ birthDay: e.target.value.replace(/\D/g, '') })} />
+            <input className="input-field" aria-label="Birth year" style={{ flex: 2 }} placeholder="YYYY" maxLength={4} value={s.birthYear} onChange={e => update({ birthYear: e.target.value.replace(/\D/g, '') })} />
           </div>
         </div>
       </div>
@@ -313,6 +313,7 @@ export default function Settings() {
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'var(--surface-raised)', border: '0.5px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
               <span style={{ padding: '0 8px', fontSize: 13, color: 'var(--text-ghost)' }}>@</span>
               <input
+                aria-label={`${platform} username`}
                 style={{ flex: 1, background: 'none', border: 'none', outline: 'none', padding: '8px 8px 8px 0', fontSize: 13, color: 'var(--text-primary)', fontFamily: 'inherit' }}
                 placeholder={`your${platform}`}
                 value={(s.social || {})[platform] || ''}

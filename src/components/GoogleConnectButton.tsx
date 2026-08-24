@@ -77,7 +77,7 @@ export default function GoogleConnectButton({ onConnected }: Props) {
           VITE_GOOGLE_CLIENT_ID not set in environment.
         </p>
       )}
-      {error && <p style={{ fontSize: 12, color: '#e07070', margin: 0 }}>{error}</p>}
+      {error && <p role="alert" style={{ fontSize: 12, color: '#e07070', margin: 0 }}>{error}</p>}
     </div>
   )
 }

@@ -22,7 +22,7 @@ export default function SideNav() {
   const isActive = (to: string) => to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
 
   return (
-    <nav className="side-nav">
+    <nav className="side-nav" aria-label="Primary navigation">
       <div className="side-nav-logo">
         <span style={{ color: 'var(--accent-amethyst)', fontSize: 18, lineHeight: 1 }}>✦</span>
         <div>

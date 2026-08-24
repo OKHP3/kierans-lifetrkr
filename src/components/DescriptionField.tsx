@@ -11,16 +11,14 @@ export default function DescriptionField({
   placeholder = 'Add a description… (optional)',
   rows = 3,
 }: Props) {
+  const id = 'description-field'
   return (
-    <textarea
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-      rows={rows}
-      className={
-        'w-full bg-bg border border-border rounded-lg px-3 py-2 text-sm text-textPrimary ' +
-        'placeholder-textMuted focus:outline-none focus:border-accentAmethyst transition-colors resize-none'
-      }
-    />
+    <>
+      <label htmlFor={id} className="sr-only">Description</label>
+      <textarea id={id} aria-label="Description" value={value} onChange={e => onChange(e.target.value)}
+        placeholder={placeholder} rows={rows}
+        className={'w-full bg-bg border border-border rounded-lg px-3 py-2 text-sm text-textPrimary ' +
+          'placeholder-textMuted focus:outline-none focus:border-accentAmethyst transition-colors resize-none'} />
+    </>
   )
 }
