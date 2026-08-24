@@ -81,11 +81,11 @@ not be used to infer current payloads.
 | Google userinfo v3 | Connected profile | Direct browser fetch with bearer token | Provisional |
 | Tarot API | Daily card | Direct browser fetch with deterministic local fallback | Supported in code; service/CORS not continuously proven |
 | Free Horoscope API | Optional sign-based horoscope | Direct browser fetch; null on failure | Provisional; no service guarantee |
-| Anthropic Messages API | Optional daily oracle message | Direct browser fetch using `VITE_ANTHROPIC_API_KEY` | Blocked for public release until key exposure is bounded |
+| Anthropic Messages API | Optional daily oracle wording | Server-side oracle worker only; no provider key in client bundle | Worker deployment is optional; local tarot meaning is the public fallback |
 | Google Fonts / Analytics | Fonts and page tracking | Third-party browser scripts | Present; privacy disclosure and blocking behavior require review |
 
-The current Google scope includes `calendar.events`, which is write-capable. This
-must be resolved before describing the integration as read-only.
+The Google integration now requests read-only scopes and does not expose write
+helpers. Real-account lifecycle testing remains a handoff verification item.
 
 ## 5. Claim and evidence ledger
 
@@ -96,9 +96,9 @@ must be resolved before describing the integration as read-only.
 | Manual core workflows persist across reload | Provisional | Reducer and persistence effects exist | Browser journey covering create/edit/complete/delete/reload |
 | Someday is the current deferred-task surface | Supported | Route, navigation, and page use Someday; status is `backlog` | Route and navigation smoke test; no active Archive route |
 | Google Calendar and Tasks are usable | Provisional | Fetch clients and UI paths exist | Real OAuth test account: connect, refresh, expiry, disconnect, account switch, empty/error data |
-| Google access is read-only | Disputed | Calendar write functions and `calendar.events` scope exist | Remove or explicitly justify writes and use least-privilege scope |
-| Oracle key is private | Blocked for public release | `VITE_ANTHROPIC_API_KEY` is bundled for direct browser fetch | Production bundle inspection or server-side proxy implementation |
-| Daily oracle is stable for a day | Provisional | Message cache key exists; card is embedded in reading | Reload/date-rollover/regeneration tests for complete reading semantics |
+| Google access is read-only | Supported in code | Read-only scopes and GET-only client paths | Real OAuth test account confirms requested consent and API behavior |
+| Oracle key is private | Supported in code | No `VITE_ANTHROPIC_API_KEY`; Claude path targets optional worker URL | Production bundle inspection and worker deployment review |
+| Daily oracle is stable for a day | Supported in code | Date-scoped tarot, horoscope, and message caches use configured timezone | Reload/date-rollover/regeneration tests with a controlled clock |
 | Dark mode is the default | Disputed | Theme context defaults to `system`; project intent says dark | First launch on light-system device must render dark, unless product decision changes |
 | PWA works offline and is installable | Blocked | Manifest exists; no service worker found | Install and offline test on supported mobile browsers, or narrow the claim |
 | GitHub Pages deploy is reproducible | Provisional | Active workflows build and deploy `dist` | Clean checkout with public registry, `npm ci`, check, build, and Pages route smoke test |

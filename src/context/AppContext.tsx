@@ -77,6 +77,7 @@ type Action =
   | { type: 'SET_LOADING_TASKS'; payload: boolean }
   | { type: 'SET_LAST_SYNC'; payload: string }
   | { type: 'SET_ORACLE'; payload: OracleReading }
+  | { type: 'CLEAR_ORACLE' }
   | { type: 'SET_LOADING_ORACLE'; payload: boolean }
   | { type: 'ADD_ROUTINE_ITEM'; payload: { templateId: string; item: RoutineItem } }
   | { type: 'REMOVE_ROUTINE_ITEM'; payload: { templateId: string; itemId: string } }
@@ -179,6 +180,9 @@ function reducer(state: AppState, action: Action): AppState {
 
     case 'SET_ORACLE':
       return { ...state, oracle: action.payload, isLoadingOracle: false }
+
+    case 'CLEAR_ORACLE':
+      return { ...state, oracle: null }
 
     case 'SET_LOADING_ORACLE':
       return { ...state, isLoadingOracle: action.payload }

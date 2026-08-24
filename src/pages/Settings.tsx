@@ -190,6 +190,12 @@ export default function Settings() {
           </div>
           <Toggle checked={s.oracleEnabled} onChange={v => update({ oracleEnabled: v })} />
         </div>
+        <p style={{ fontSize: 11, color: 'var(--text-ghost)', lineHeight: 1.5, margin: 0 }}>
+          Tarot and celestial details work offline. Claude wording is optional and only
+          runs through the configured server-side oracle proxy. If the proxy is absent,
+          unavailable, rate-limited, or returns invalid data, the tarot meaning is shown.
+          Your name, tasks, habits, calendar, and profile are never sent to the oracle.
+        </p>
 
         {/* Mercury retrograde banner */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -236,6 +242,24 @@ export default function Settings() {
             })}
           </div>
         </div>
+      </div>
+
+      {/* ── Privacy ─────────────────────────────────────────────────────── */}
+      <p className="section-label" style={{ marginTop: 24 }}>PRIVACY & DATA</p>
+      <div className="card">
+        <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+          LifeTrkr stores your routines, habits, tasks, calendar entries, settings,
+          and oracle cache in this browser. There is no app database. Google data is
+          read-only and is fetched only after you connect Google; access tokens stay
+          in this browser session.
+        </p>
+        <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, margin: '10px 0 0' }}>
+          Optional tarot and horoscope requests go to their public providers. If an
+          oracle proxy is configured, it receives only the day’s celestial summary,
+          tarot meaning, and optional sun sign you selected. No personal profile,
+          task, habit, or calendar data is included. Google Fonts and anonymous page
+          analytics may load from Google when enabled by the deployment.
+        </p>
       </div>
 
       {/* ── Google Account ─────────────────────────────────────────────── */}

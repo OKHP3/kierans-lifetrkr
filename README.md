@@ -55,7 +55,7 @@ User's Browser
          ↕                              ↕
   Google Identity Services       Google Calendar API
   (consent popup, token grant)   Google Tasks API
-                                 Anthropic Claude API (direct browser fetch)
+                                  Optional oracle worker → Anthropic Claude
                                  tarotapi.dev
                                  freehoroscopeapi.com
 ```
@@ -73,7 +73,7 @@ User's Browser
 | Auth | Google Identity Services (GIS) — token model, Client ID only |
 | Calendar | Google Calendar API v3 (browser fetch, read-only) |
 | Tasks | Google Tasks API v1 (browser fetch, read-only) |
-| Oracle | claude-sonnet-4-5 via direct browser fetch (`VITE_ANTHROPIC_API_KEY`) |
+| Oracle | Local tarot/celestial fallback, with optional Claude wording via a server-side worker |
 | Tarot | tarotapi.dev (free, no auth, CORS-enabled) |
 | Horoscope | freehoroscopeapi.com (free, no auth) |
 | Moon data | Client-side Julian date math — no API required |
@@ -138,17 +138,22 @@ npm run dev       # http://localhost:5173
 npm run build     # type-check + production build
 ```
 
-Two environment variables. Both set as Replit Secrets.
+Google uses a public OAuth Client ID. The optional oracle worker URL is also
+safe to expose in the client because it contains no provider credential.
 
 ```
 VITE_GOOGLE_CLIENT_ID=your_gcp_client_id.apps.googleusercontent.com
-VITE_ANTHROPIC_API_KEY=your_anthropic_key
+VITE_ORACLE_WORKER_URL=https://your-worker.example
 ```
 
 `VITE_GOOGLE_CLIENT_ID` is a public OAuth Client ID — safe to embed in client
-code. `VITE_ANTHROPIC_API_KEY` enables the Claude daily oracle message; without
-it the oracle falls back to the tarot card's upright meaning. Both have graceful
-fallbacks — the app runs fully without either key set.
+code. `VITE_ORACLE_WORKER_URL` is optional. The browser never receives an
+Anthropic API key. Without the worker, the oracle uses the tarot card's upright
+meaning and remains fully local. The app runs without either variable set.
+
+LifeTrkr keeps personal records in browser storage and does not send profile,
+task, habit, or calendar data to the oracle. See the Privacy & Data section in
+Settings and `docs/HANDOFF.md` for the provider boundary.
 
 See `.env.example` for the full list.
 

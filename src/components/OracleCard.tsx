@@ -4,9 +4,10 @@ import type { OracleReading } from '../types'
 interface OracleCardProps {
   reading: OracleReading | null
   loading: boolean
+  onRegenerate?: () => void
 }
 
-export function OracleCard({ reading, loading }: OracleCardProps) {
+export function OracleCard({ reading, loading, onRegenerate }: OracleCardProps) {
   if (loading) {
     return (
       <div className="rounded-2xl border border-purple-800/40 bg-gradient-to-br from-[#1A1424] to-[#0D0B14] p-5 animate-pulse">
@@ -78,6 +79,14 @@ export function OracleCard({ reading, loading }: OracleCardProps) {
         <span>·</span>
         <span>{Math.round(moonPhase.illumination * 100)}% lit</span>
       </div>
+      {onRegenerate && (
+        <button
+          onClick={onRegenerate}
+          style={{ background: 'none', border: 'none', color: 'var(--accent-amethyst)', cursor: 'pointer', fontSize: 11, padding: 0 }}
+        >
+          Regenerate today’s reading
+        </button>
+      )}
     </div>
   )
 }

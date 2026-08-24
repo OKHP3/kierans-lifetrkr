@@ -24,7 +24,7 @@ The June 22, 2026 second build session advanced from v0.1.0 (UI shell only) to v
 - All 7 navigation tabs functional (Home, Rituals, Habits, Calendar, Today, Archive, Settings) — both BottomNav mobile and SideNav desktop
 - `src/lib/celestial.ts` — pure client-side Julian date math for moon phase illumination/age, moon phase name/emoji, next full/new moon prediction, astrological season detection, Mercury retrograde calendar through 2027
 - `src/lib/cosmic.ts` — deterministic daily oracle data: daily cards, daily wisdom, cosmic events keyed to date
-- `src/lib/oracle.ts` — three-layer oracle stack: `fetchTarotCard()` → tarotapi.dev, `fetchHoroscope()` → freehoroscopeapi.com, `generateOracleMessage()` → Anthropic claude-sonnet-4-5 with `VITE_ANTHROPIC_API_KEY` and `anthropic-dangerous-direct-browser-access: true` header; localStorage daily cache
+- `src/lib/oracle.ts` — three-layer oracle stack: `fetchTarotCard()` → tarotapi.dev, `fetchHoroscope()` → freehoroscopeapi.com, `generateOracleMessage()` → optional server-side oracle worker; localStorage daily cache
 - `src/hooks/useOracle.ts` — orchestrates the fetch sequence; respects `oracleEnabled` and `birthSign` from settings
 - `src/components/OracleCard.tsx` — display component; renders tarot card name, moon phase, Claude oracle message, horoscope; pulse loading state; mystical gradient
 - `src/components/RecurrenceEditor.tsx` — full recurrence UI (frequency, interval, weekday pickers, end conditions)
@@ -38,14 +38,14 @@ The June 22, 2026 second build session advanced from v0.1.0 (UI shell only) to v
 ### Wired but awaiting environment keys
 
 - **Google Calendar / Tasks:** All library code exists (`googleCalendar.ts`, `googleTasks.ts`, `useGoogleAuth.ts`, `GoogleConnectButton.tsx`, `TokenExpiryBanner.tsx`). Blocked by `VITE_GOOGLE_CLIENT_ID` not set in Replit environment. Settings shows "VITE_GOOGLE_CLIENT_ID not set in environment."
-- **Claude oracle message:** `generateOracleMessage()` in `oracle.ts` calls Anthropic API when `VITE_ANTHROPIC_API_KEY` is present. Without it, falls back gracefully to `card.meaning_up` (the tarot card's upright meaning). The fallback is functional but generic.
+- **Claude oracle message:** `generateOracleMessage()` in `oracle.ts` calls the configured oracle worker. Without a worker, it falls back gracefully to `card.meaning_up` (the tarot card's upright meaning). The fallback is functional but generic.
 - **Horoscope:** `fetchHoroscope()` requires `birthSign` set in Settings. When set, it calls freehoroscopeapi.com. Reliability of this free API is unknown.
 
 ### Known bugs / gaps from live review
 
 - `APP_VERSION` in `src/constants.ts` is still `'v0.1.0'` — displayed version in SideNav footer says `v0.1.0` but deployed build is v0.1.8
 - Default theme is `Auto` — on most systems (light OS) this launches the app in light/parchment mode. PRD-v3.0 specifies dark as the default. The Moonlit Hearth aesthetic is intended for dark mode; light mode is "Morning Parchment" (secondary).
-- `generateOracleMessage()` uses `claude-sonnet-4-5` — confirm the correct current model name at time of activation via the Anthropic API or external_apis skill.
+- The optional oracle worker's model and deployment still require production-owner verification.
 - No first-launch experience (welcome screen for users without any saved data) — PRD-v3.0 Section 16.1 specifies a full-screen first-launch flow.
 - Settings page is missing the "About" section (app version, origin story, MIT license link). (Note: an About card exists but shows `v0.1.0` — it needs the `APP_VERSION` constant and a "Regenerate" button.)
 - Settings page is missing the "Regenerate today's oracle" button (clears cache key for today, triggers re-fetch).
@@ -69,14 +69,18 @@ The June 22, 2026 second build session advanced from v0.1.0 (UI shell only) to v
 
 ---
 
-## Section 3 — Immediate Priority: Oracle Activation (v0.1.9 patch)
+## Section 3 — Immediate Priority: Optional Oracle Worker Activation (v0.1.9 patch)
 
-The single highest-value action that can be taken without a GCP setup is activating the Claude oracle. The entire three-layer stack is code-complete. Only a Replit Secret is needed.
+The public-safe way to activate Claude wording is deploying the oracle worker.
+The entire three-layer stack remains functional without it.
 
-**VITE_ANTHROPIC_API_KEY:**
-Use the Replit `external_apis` skill to access Anthropic's API through Replit-managed billing. This avoids needing to create or manage an Anthropic account. The key goes into Replit Secrets as `VITE_ANTHROPIC_API_KEY`. After setting it, push to `main` so GitHub Actions rebuilds and deploys.
+**VITE_ORACLE_WORKER_URL:**
+Deploy the worker described in the architectural decision below, store the
+Anthropic key only as a worker secret, then set the worker URL in Replit
+Secrets. Never set `VITE_ANTHROPIC_API_KEY`; it is not supported.
 
-**Model name:** `oracle.ts` currently uses `claude-sonnet-4-5`. Confirm the correct current Anthropic model name at the time of activation. Use whatever `claude-3-5-sonnet` or `claude-sonnet` model is available via the external_apis skill. The prompt and caching logic do not change.
+**Model name:** The worker owns model selection. Confirm the current model at
+worker deployment time. The browser prompt and caching logic do not change.
 
 **Tarot API:** tarotapi.dev is free, no auth, CORS-enabled. The fallback (day-of-year modulo major arcana) already exists. No action needed.
 
@@ -155,8 +159,10 @@ Add a "Regenerate today's oracle" button in the Oracle & Celestial settings sect
 2. Dispatch `SET_ORACLE` with `null`
 3. `useOracle.ts` will re-trigger and fetch fresh data
 
-**5.6 Activate VITE_ANTHROPIC_API_KEY**
-Via the Replit `external_apis` skill, set `VITE_ANTHROPIC_API_KEY` in Replit Secrets. Confirm the Claude oracle message generates successfully. Verify the daily cache prevents re-generation on page reload.
+**5.6 Activate the optional oracle worker**
+Set `VITE_ORACLE_WORKER_URL` only after deploying the worker and storing the
+Anthropic credential in the worker. Confirm Claude wording generates
+successfully, then verify the daily cache prevents a second request on reload.
 
 **5.7 Recurrence active-day filtering**
 Verify that `isActiveToday()` in `date.ts` correctly gates which ritual items and habits appear on the current day. A habit with `frequency: 'weekdays'` should not show on Saturday. A ritual item with `frequency: 'specific_days': [1,3,5]` (Mon/Wed/Fri) should not show on Tuesday.
@@ -232,11 +238,10 @@ This section is the canonical reference for the oracle system as designed and im
 - Result stored in `OracleReading.horoscope` (optional field)
 - Code location: `src/lib/oracle.ts` → `fetchHoroscope(sign)`
 
-**Layer 3: Claude Oracle Message (Anthropic)**
-- Requires `VITE_ANTHROPIC_API_KEY` in Replit Secrets
-- Endpoint: `POST https://api.anthropic.com/v1/messages`
-- Header: `anthropic-dangerous-direct-browser-access: true` (required for browser-side fetch)
-- Model: `claude-sonnet-4-5` (confirm with external_apis skill — use whatever current claude-3-5-sonnet or claude-sonnet model is available)
+**Layer 3: Claude Oracle Message (optional worker)**
+- Requires `VITE_ORACLE_WORKER_URL` only; the Anthropic credential remains in the worker
+- Endpoint: `POST` to the configured worker URL
+- The worker forwards the request to Anthropic and returns an Anthropic-shaped response
 - System prompt: `"You are a warm, grounded, slightly mystical daily oracle for a personal life app. Never use em dashes. Sound like someone who reads a lot and walks in the woods at dusk."`
 - User prompt (assembled in `generateOracleMessage()`):
   - Today's date (formatted long)
@@ -314,22 +319,30 @@ The shipped `types.ts` uses `RecurrenceRule` with `{ frequency, interval, startD
 | Variable | Purpose | Required | Notes |
 |---|---|---|---|
 | `VITE_GOOGLE_CLIENT_ID` | Google Calendar + Tasks OAuth | For Google features | Not a secret — safe to embed in client code. Set in Replit Secrets. |
-| `VITE_ANTHROPIC_API_KEY` | Claude oracle message — direct browser fetch | For AI oracle (current impl) | Use Replit `external_apis` skill to provision. Set in Replit Secrets. |
-| `VITE_ORACLE_WORKER_URL` | Claude oracle message — via Cloudflare Worker proxy | For AI oracle (alternative impl) | Only needed if switching to CF Worker approach. See architectural note below. |
+| `VITE_ORACLE_WORKER_URL` | Claude oracle message — via Cloudflare Worker proxy | Optional | The worker holds the Anthropic credential; omit for local tarot fallback. |
 
-`VITE_GOOGLE_CLIENT_ID` and `VITE_ANTHROPIC_API_KEY` are set as Replit Secrets. Both have graceful fallbacks when absent. The app is fully functional without either — Google sections show "not connected" state, oracle falls back to tarot card's upright meaning.
+`VITE_GOOGLE_CLIENT_ID` is optional for Google features. `VITE_ORACLE_WORKER_URL`
+is optional for Claude wording. Both have graceful fallbacks when absent. The
+app is fully functional without either — Google sections show "not connected"
+state, and the oracle falls back to tarot card's upright meaning.
 
-`.env.example` in the repo documents all three variables with setup instructions. Never commit `.env` to the repo.
+`.env.example` in the repo documents the supported variables with setup
+instructions. Never commit `.env` to the repo.
 
-**Oracle delivery — architectural decision (direct browser fetch vs Cloudflare Worker):**
+**Oracle delivery — public-release architectural decision:**
 
-The original plan (pre-session plan) called for a Cloudflare Worker proxy (`VITE_ORACLE_WORKER_URL`) to hold the Anthropic API key server-side so it would never be exposed in client code. The June 22 build session implemented direct browser fetch instead, using `anthropic-dangerous-direct-browser-access: true` and `VITE_ANTHROPIC_API_KEY` in Replit Secrets/Vite env.
+The public-release boundary is the Cloudflare Worker proxy
+(`VITE_ORACLE_WORKER_URL`). The browser never receives an Anthropic API key and
+never calls Anthropic directly. The worker receives only `{ system, messages }`
+and forwards the request using its server-side `ANTHROPIC_API_KEY` secret.
+When no worker URL is configured, or when the worker is unavailable,
+rate-limited, or returns an invalid payload, the app uses the local tarot
+meaning. Direct browser access with `VITE_ANTHROPIC_API_KEY` is not supported.
 
-Both approaches are architecturally valid. The tradeoff:
-- **Direct browser fetch (current):** Simpler — no Worker to deploy or maintain. The API key is embedded in the built JS bundle (visible in DevTools). Acceptable for a personal single-user app. `VITE_ANTHROPIC_API_KEY` goes in Replit Secrets.
-- **Cloudflare Worker proxy (original plan):** API key is never in client code. Better for a public app. Requires deploying a Worker and setting `VITE_ORACLE_WORKER_URL`. Worker code pattern: receive `{ system, messages }` POST, forward to Anthropic with the stored `ANTHROPIC_API_KEY` secret, return response.
-
-To switch to the CF Worker approach in a future session: (1) deploy a Worker at `lifetrkr-oracle.okhp3.workers.dev`, (2) set `ANTHROPIC_API_KEY` as a Worker secret, (3) set `VITE_ORACLE_WORKER_URL` in Replit Secrets, (4) update `oracle.ts` `generateOracleMessage()` to POST to `ORACLE_WORKER_URL` instead of calling Anthropic directly.
+To activate the optional Claude wording: (1) deploy a Worker at
+`lifetrkr-oracle.okhp3.workers.dev`, (2) set `ANTHROPIC_API_KEY` as a Worker
+secret, and (3) set `VITE_ORACLE_WORKER_URL` in Replit Secrets. The app remains
+fully functional without this optional service.
 
 **GCP setup for VITE_GOOGLE_CLIENT_ID (one-time manual task):**
 1. console.cloud.google.com → New Project → "LifeTrkr"
@@ -387,8 +400,7 @@ All external APIs used by the app. Before building any integration, verify CORS 
 | Google Tasks | `https://tasks.googleapis.com/tasks/v1/` | Bearer token (GIS) | Yes — via browser with token | 50k req/day free tier | Hide Google Tasks sections |
 | Tarot | `https://tarotapi.dev/api/v1/cards/random?n=1` | None | Yes | Not documented | Local 12-card Major Arcana fallback array (day-of-year % length) |
 | Horoscope | `https://freehoroscopeapi.com/api/v1/get-horoscope/daily?sign={sign}` | None | Unverified — test before using | Unknown | Skip horoscope section silently |
-| Claude (direct) | `https://api.anthropic.com/v1/messages` | `VITE_ANTHROPIC_API_KEY` header | Requires `anthropic-dangerous-direct-browser-access: true` | Depends on plan | Use tarot `meaning_up` as message |
-| Claude (CF Worker) | `https://lifetrkr-oracle.okhp3.workers.dev` | None (Worker holds key) | Configured in Worker | CF free: 100k req/day | Use tarot `meaning_up` as message |
+| Claude (worker) | Configured `VITE_ORACLE_WORKER_URL` | None in browser (Worker holds key) | Configured in Worker | Worker/provider dependent | Use tarot `meaning_up` as message |
 | Moon phases | Client-side Julian date math | None | N/A | None | None needed |
 | Astro season | Hardcoded date ranges in `celestial.ts` | None | N/A | None | None needed |
 | Mercury retrograde | Hardcoded 2026–2028 dates in `celestial.ts` | None | N/A | None | None needed |
@@ -463,7 +475,7 @@ Comprehensive per-session acceptance tests. Run these manually after each sessio
 - [ ] Oracle card: tarot card name and oracle message both populated
 - [ ] Oracle: tarot card fetched from tarotapi.dev and cached in localStorage for the day
 - [ ] Oracle: horoscope appears if birth sign is set in Settings
-- [ ] Oracle: `VITE_ANTHROPIC_API_KEY` set → Claude message generated; page reload uses cached message, not a new API call
+- [ ] Oracle: worker URL configured → Claude message generated; page reload uses cached message, not a new API call
 - [ ] Settings: About section shows correct `APP_VERSION` (not hardcoded `v0.1.0`)
 - [ ] Settings: "Regenerate today's oracle" button clears cache and triggers re-fetch
 - [ ] SideNav footer: version string matches intended release

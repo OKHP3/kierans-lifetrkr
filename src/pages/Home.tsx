@@ -19,7 +19,7 @@ export default function Home() {
   const [moreExpanded, setMoreExpanded] = useState(false)
   const [easterCount, setEasterCount] = useState(0)
   const [showEaster, setShowEaster] = useState(false)
-  const { oracle, isLoadingOracle } = useOracle()
+  const { oracle, isLoadingOracle, regenerate } = useOracle()
 
   const today = getTodayISO(state.settings.timezone)
   const dayOfWeek = getDayOfWeek(state.settings.timezone)
@@ -163,7 +163,7 @@ export default function Home() {
           {state.settings.oracleEnabled && (
             <section>
               <p className="section-label">ORACLE</p>
-              <OracleCard reading={oracle} loading={isLoadingOracle} />
+              <OracleCard reading={oracle} loading={isLoadingOracle} onRegenerate={regenerate} />
             </section>
           )}
 
