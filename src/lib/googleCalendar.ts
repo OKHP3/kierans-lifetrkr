@@ -56,54 +56,6 @@ export async function fetchCalendarEvents(
   return events
 }
 
-export async function createGoogleEvent(
-  token: string,
-  event: {
-    title: string
-    start: string
-    end?: string
-    allDay: boolean
-    location?: string | null
-    description?: string | null
-  }
-): Promise<string> {
-  const body: Record<string, unknown> = {
-    summary: event.title,
-    ...(event.location ? { location: event.location } : {}),
-    ...(event.description ? { description: event.description } : {}),
-    start: event.allDay
-      ? { date: event.start }
-      : { dateTime: event.start, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
-    end: event.allDay
-      ? { date: event.end ?? event.start }
-      : { dateTime: event.end ?? event.start, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
-  }
-  const res = await fetch(
-    'https://www.googleapis.com/calendar/v3/calendars/primary/events',
-    {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }
-  )
-  if (!res.ok) throw new GoogleApiError(`Create event error: ${res.status}`, 'calendar', res.status)
-  const data = await res.json()
-  return data.id as string
-}
-
-export async function deleteGoogleEvent(token: string, googleEventId: string): Promise<void> {
-  const res = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/primary/events/${encodeURIComponent(googleEventId)}`,
-    {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  )
-  if (!res.ok && res.status !== 404 && res.status !== 410) {
-    throw new GoogleApiError(`Delete event error: ${res.status}`, 'calendar', res.status)
-  }
-}
-
 export async function fetchGoogleProfile(token: string): Promise<{
   sub: string; name: string; email: string; picture: string
 }> {

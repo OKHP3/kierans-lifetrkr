@@ -41,6 +41,10 @@ Kieran
 ### Google Cloud
 The app uses the GIS token model. There is no Client Secret and no redirect URI.
 Only a Client ID and authorized JavaScript origins are needed.
+The app requests these least-privilege scopes:
+`calendar.readonly`, `tasks.readonly`, `openid`, `profile`, and `email`.
+Google Calendar and Google Tasks are read-only integrations; local calendar
+events and local task actions never write back to Google.
 
 - [ ] Add Kieran's Google account as Owner in the GCP project (GCP → IAM & Admin → Grant Access)
 - [ ] Kieran creates new OAuth 2.0 Client ID in the project:
@@ -57,6 +61,11 @@ Only a Client ID and authorized JavaScript origins are needed.
 - [ ] App loads cleanly under Kieran's accounts end-to-end
 - [ ] All 7 tabs function correctly (Home, Rituals, Habits, Calendar, Today, Archive, Settings)
 - [ ] Google Calendar sync works under Kieran's Google account
+- [ ] Google Tasks loads task lists and due-today tasks; adding one creates a separate local task
+- [ ] Google Calendar all-day and timed events display correctly across the configured timezone
+- [ ] Empty calendars/task lists show empty states rather than errors
+- [ ] Expiring the GIS token shows reconnect guidance, and Disconnect clears the session token
+- [ ] Connect, disconnect, and reconnect with a second Google account does not expose the first account's profile or local namespace
 - [ ] Oracle generates and caches correctly
 - [ ] README ownership section updated
 
