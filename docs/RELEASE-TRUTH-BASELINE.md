@@ -1,9 +1,9 @@
 # LifeTrkr Release Truth Baseline
 
-**Baseline date:** August 22, 2026  
+**Baseline date:** August 24, 2026
 **Artifact:** `kieran-lifetrkr`  
 **Application version:** `0.1.10` (`package.json`, `src/constants.ts`)  
-**Release posture:** Pre-production prototype; defer stable-release approval pending evidence
+**Release posture:** Candidate approved-with-limits for controlled pre-production handoff; public stable release deferred for missing live and manual evidence
 
 This document is the current evidence baseline for LifeTrkr. Historical PRDs and session
 notes remain useful for intent, but they do not override the source, package manifest,
@@ -76,7 +76,7 @@ not be used to infer current payloads.
 | Service | Use | Current boundary | Evidence status |
 |---|---|---|---|
 | Google Identity Services | Browser OAuth token flow | `sessionStorage` token and expiry | Wired; real-account lifecycle unproven |
-| Google Calendar API v3 | Calendar reads and event create/delete paths | Direct browser fetch with bearer token | Provisional; scope and read-only promise conflict |
+| Google Calendar API v3 | Calendar reads | Direct browser fetch with bearer token | Provisional; real-account lifecycle unproven |
 | Google Tasks API v1 | Task-list and task reads | Direct browser fetch with bearer token | Provisional; pagination and account lifecycle unproven |
 | Google userinfo v3 | Connected profile | Direct browser fetch with bearer token | Provisional |
 | Tarot API | Daily card | Direct browser fetch with deterministic local fallback | Supported in code; service/CORS not continuously proven |
@@ -100,9 +100,10 @@ helpers. Real-account lifecycle testing remains a handoff verification item.
 | Oracle key is private | Supported in code | No `VITE_ANTHROPIC_API_KEY`; Claude path targets optional worker URL | Production bundle inspection and worker deployment review |
 | Daily oracle is stable for a day | Supported in code | Date-scoped tarot, horoscope, and message caches use configured timezone | Reload/date-rollover/regeneration tests with a controlled clock |
 | Dark mode is the default | Disputed | Theme context defaults to `system`; project intent says dark | First launch on light-system device must render dark, unless product decision changes |
-| PWA works offline and is installable | Blocked | Manifest exists; no service worker found | Install and offline test on supported mobile browsers, or narrow the claim |
-| GitHub Pages deploy is reproducible | Provisional | Active workflows build and deploy `dist` | Clean checkout with public registry, `npm ci`, check, build, and Pages route smoke test |
-| Stable release is ready | Blocked | Evidence is incomplete and decisive tests are absent | Final equilibrium review with frozen artifact and passing release gates |
+| PWA has an installable manifest | Supported in code | `public/manifest.json`, subpath-safe metadata | Browser install prompt/standalone launch remains a manual check |
+| Offline app use is supported | Not claimed | No service worker; README and deployment checklist narrow the claim | Revisit only if a tested service-worker strategy is added |
+| GitHub Pages build artifact is reproducible | Supported for local candidate | Clean `npm ci`, lockfile portability, check, audit, build, artifact inspection | Published Pages route/asset smoke test remains required |
+| Stable public release is ready | Deferred for evidence | Candidate review record; live OAuth, manual accessibility, storage failure, and published smoke evidence absent | Complete the decisive checks in `docs/RELEASE-REVIEW-RECORD.md` |
 
 Classification meanings:
 
@@ -201,15 +202,21 @@ reliability, integration, privacy, accessibility, deployment, and final-review w
 
 ## 9. Baseline validation snapshot
 
-Run on August 22, 2026 from the current workspace:
+Run on August 24, 2026 from the frozen candidate `2bd74eadfbca7d0fa29cf35783762d68b9496591`:
 
 | Check | Result | Interpretation |
 |---|---|---|
-| `npm run check` | Pass | TypeScript source currently type-checks |
-| `git diff --check` | Pass | Documentation changes contain no whitespace errors |
-| `npm run build` | Blocked | Installed modules are stale/incompatible with the manifest: workspace has Vite 6 and Tailwind 3, while the manifest/lockfile require Vite 8 and Tailwind 4; `@tailwindcss/postcss` is unavailable in `node_modules` |
+| `npm ci` + lockfile immutability | Pass | Public registry URLs; lockfile hash unchanged after install |
+| `npm audit --omit=dev --audit-level=high` | Pass | 0 production vulnerabilities reported |
+| `npm run check` | Pass | TypeScript source type-checks |
+| `npm run check:a11y` | Pass | 27 JSX/TSX files pass the source heuristic |
+| `npm run build` | Pass | Vite production build completed |
+| `node scripts/inspect-artifact.mjs` | Pass | Required Pages files, fallback, metadata, and hashed assets present |
+| Workflow/preview startup | Pass | Replit workflow restarted; Vite served on port 5000; preview rendered without browser console errors |
+| Published Pages smoke test | Not run | No live deployment evidence captured in this review |
+| Real Google OAuth lifecycle | Not run | Requires owner/test-account action and client ID |
+| Manual accessibility matrix | Not run | Checklist exists; keyboard, screen reader, zoom, and touch results are not recorded |
+| Storage quota/private-mode recovery | Not run | Code tolerates read failures; write-failure UX is not demonstrated |
 
-The failed build is recorded rather than silently repaired here. Resolving clean
-installation, lockfile portability, and production artifact validation belongs to the
-installation/deployment workstream. Until it passes from a clean install, the release
-baseline must not claim reproducible production builds.
+The complete bounded decision, hashes, independent reviews, falsification pass,
+and risk ownership are recorded in `docs/RELEASE-REVIEW-RECORD.md`.

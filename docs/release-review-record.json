@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0",
+  "review_protocol": "equilibrium-v1",
+  "review_mode": "five-way",
+  "evaluation_status": "complete",
+  "artifact": {
+    "path": "git:2bd74eadfbca7d0fa29cf35783762d68b9496591",
+    "sha256": "2bd74eadfbca7d0fa29cf35783762d68b9496591",
+    "version": "v0.1.10"
+  },
+  "decision_question": "Can the frozen candidate be handed to Kieran as a controlled pre-production release without claiming universal reliability, completed account transfer, or offline support?",
+  "acceptance_criteria": [
+    "Artifact identity, hashes, criteria, evidence, and review record are frozen together.",
+    "Independent evidence, outcome, safety and portability reviews are compared.",
+    "A targeted falsification pass tests the strongest release conclusion.",
+    "Critical and high risks have owners, mitigations, decisive evidence, and expiry triggers.",
+    "Handoff covers accounts, secrets, deployment, recovery, privacy, and support without credentials."
+  ],
+  "independence": {
+    "reviewer_contexts_separated": true,
+    "shared_model_or_source_limits": [
+      "Reviewers read the same repository snapshot.",
+      "Reviews were produced in one model environment, so agreement is correlated.",
+      "No external human reviewer or protected holdout was available."
+    ]
+  },
+  "initial_reviews": [
+    {
+      "role": "evidence",
+      "decision": "defer-for-evidence",
+      "status": "analytical",
+      "finding": "Install, build, artifact, source privacy, and source read-only boundaries are evidenced; live deployment and runtime lifecycle evidence are absent."
+    },
+    {
+      "role": "outcome",
+      "decision": "defer-for-evidence",
+      "status": "analytical",
+      "finding": "The handoff is actionable, but ownership transfer and end-to-end user journeys remain unchecked."
+    },
+    {
+      "role": "safety-and-portability",
+      "decision": "defer-for-evidence",
+      "status": "analytical",
+      "finding": "Source boundaries are credible, but storage write failures, manual accessibility, third-party behavior, and published Pages behavior remain unproven."
+    }
+  ],
+  "concordance": "material agreement on bounded code/build readiness and missing runtime/manual evidence",
+  "disruptor": {
+    "triggered": true,
+    "authority": "exploratory",
+    "falsification_hypotheses": [
+      "Published Pages may serve stale or broken hash-route assets.",
+      "A second Google account may expose the first account's namespace.",
+      "Full or private browser storage may silently lose edits.",
+      "Manual keyboard, screen-reader, zoom, contrast, or touch defects may survive source checks."
+    ],
+    "test_results": [
+      { "hypothesis": "Pages mismatch", "status": "not-run", "next_test": "Smoke-test the published URL, every hash route, and required assets." },
+      { "hypothesis": "Account leakage", "status": "not-run", "next_test": "Run a disposable two-account switch with storage inventory." },
+      { "hypothesis": "Storage loss", "status": "not-run", "next_test": "Force unavailable/full storage and observe user-visible recovery." },
+      { "hypothesis": "Accessibility defect", "status": "not-run", "next_test": "Complete the manual accessibility matrix on phone and desktop." }
+    ]
+  },
+  "negotiator": {
+    "triggered": true,
+    "decision": "approve-with-limits",
+    "decisive_evidence": [
+      "Pushed candidate and matching local/origin main hashes.",
+      "Portable npm ci with unchanged lockfile.",
+      "Zero high-severity production audit findings.",
+      "Passing type-check, source accessibility check, production build, artifact check, and clean preview."
+    ],
+    "unresolved_items": [
+      "Published Pages smoke test",
+      "Real Google OAuth lifecycle and account isolation",
+      "Manual accessibility matrix",
+      "Storage quota/private-mode recovery",
+      "Owner-approved account handoff rehearsal"
+    ]
+  },
+  "release_decision": "approve-with-limits",
+  "limitations": [
+    "Controlled pre-production handoff only.",
+    "Public stable/v1.0 approval is deferred for the unresolved items.",
+    "Offline use is not supported or claimed because no service worker exists.",
+    "No account transfer or Google production verification has been performed."
+  ],
+  "follow_up": [
+    {
+      "owner": "Kieran with Jamie",
+      "condition": "Before public stable promotion",
+      "checks": "Published Pages, Google lifecycle, manual accessibility, storage failure, and handoff rehearsal",
+      "expiry_trigger": "Any release, route, persistence, OAuth, external endpoint, workflow, or ownership change"
+    }
+  ]
+}

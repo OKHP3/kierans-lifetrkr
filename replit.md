@@ -55,13 +55,14 @@ The current optional browser configuration is:
 
 ```
 VITE_GOOGLE_CLIENT_ID=YOUR_CLIENT_ID.apps.googleusercontent.com
-VITE_ANTHROPIC_API_KEY=YOUR_KEY_IF_USING_DIRECT_ORACLE
+VITE_ORACLE_WORKER_URL=https://your-worker.example
 ```
 
 Set values as Replit Secrets or in a local `.env` file. The app runs without either;
 Google sections remain unavailable and the oracle uses its local fallback. The direct
-Anthropic browser path is not approved for a public stable release until its key
-exposure is resolved. See `docs/RELEASE-TRUTH-BASELINE.md`.
+Anthropic browser path is not supported. If Claude wording is enabled, the provider
+credential remains only in the optional worker's secret store. See
+`docs/RELEASE-TRUTH-BASELINE.md`.
 
 ## Design System — Moonlit Hearth
 

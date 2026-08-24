@@ -200,6 +200,8 @@ v1.0.0 is not a placeholder — it is earned.
 | `docs/HANDOFF.md` | Jamie → Kieran ownership transfer checklist |
 | `docs/ARCHITECTURE.md` | Client-only architecture decisions and rationale |
 | `docs/RELEASE-TRUTH-BASELINE.md` | Current artifact inventory, claims, gates, and validation protocol |
+| `docs/DEPLOYMENT-CHECKLIST.md` | Clean install, Pages artifact, route, and offline-claim checks |
+| `docs/RELEASE-REVIEW-RECORD.md` | Frozen candidate identity, evidence ledger, review, risks, and decision |
 
 ---
 
