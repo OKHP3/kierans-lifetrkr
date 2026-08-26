@@ -31,8 +31,14 @@ report_actions() {
   if command -v gh >/dev/null 2>&1; then
     log "Recording GitHub Actions status for ${commit:0:12}..."
     gh run list --repo "$REPO" --commit "$commit" --limit 5 \
-      --json name,status,conclusion,url --template '{{range .}}{{.name}}: {{.status}} ({{.conclusion}}) {{.url}}{{"\n"}}{{end}}' ||
-      warn "GitHub Actions status could not be read; inspect the Actions tab for ${commit:0:12}."
+      --json name,status,conclusion,url --template '{{range .}}{{.name}}: {{.status}} ({{.conclusion}}) {{.url}}{{"\n"}}{{end}}' && return 0
+    warn "GitHub CLI status lookup failed; trying the bound connection..."
+    if [[ -n "${REPLIT_CONNECTORS_HOSTNAME:-}" || -n "${REPLIT_IDENTITY:-}" ]]; then
+      log "Recording GitHub Actions status for ${commit:0:12} via the bound connection..."
+      node scripts/github-actions-status.mjs "$commit" ||
+        warn "GitHub Actions status could not be read; inspect the Actions tab for ${commit:0:12}."
+      return 0
+    fi
   elif [[ -n "${REPLIT_CONNECTORS_HOSTNAME:-}" || -n "${REPL_IDENTITY:-}" ]]; then
     log "Recording GitHub Actions status for ${commit:0:12} via the bound connection..."
     node scripts/github-actions-status.mjs "$commit" ||
