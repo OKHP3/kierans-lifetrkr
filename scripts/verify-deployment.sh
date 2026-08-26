@@ -54,10 +54,27 @@ if [[ "$LOCAL" == "$REMOTE" ]]; then
 elif [[ "$REMOTE" == "no-remote" ]]; then
   err "No origin/main found — never pushed"
 else
-  warn "Local main is AHEAD of origin/main — you have unpushed commits"
-  git log --oneline origin/main..HEAD 2>/dev/null | head -10
+  if git merge-base --is-ancestor "$REMOTE" "$LOCAL" 2>/dev/null; then
+    warn "Local main is AHEAD of origin/main — you have unpushed commits"
+    git log --oneline origin/main..HEAD 2>/dev/null | head -10
+  elif git merge-base --is-ancestor "$LOCAL" "$REMOTE" 2>/dev/null; then
+    warn "origin/main is AHEAD of local main — run npm run sync to fast-forward safely"
+    git log --oneline HEAD..origin/main 2>/dev/null | head -10
+  else
+    err "Local main and origin/main have diverged — do not push; use docs/GIT-SYNC.md"
+    git log --oneline --left-right --graph HEAD...origin/main 2>/dev/null | head -12
+  fi
+fi
+
+hdr "GitHub Actions status for this commit"
+if command -v gh >/dev/null 2>&1; then
+  gh run list --repo OKHP3/kierans-lifetrkr --commit "$LOCAL" --limit 5 \
+    --json name,status,conclusion,url \
+    --template '{{range .}}{{.name}}: {{.status}} ({{.conclusion}}) {{.url}}{{"\n"}}{{end}}' ||
+    warn "Unable to read GitHub Actions status; check the repository Actions tab."
+else
+  warn "GitHub CLI unavailable — check Actions manually for $LOCAL"
 fi
 
 echo ""
-echo -e "${CYAN}Done. If you see 'exists locally but NOT committed' or 'AHEAD of origin',${RESET}"
-echo -e "${CYAN}run: git add -A && git commit -m 'feat: full project state' && git push origin main${RESET}"
+echo -e "${CYAN}Done. Use 'npm run sync' for the guarded fetch/reconcile/push workflow.${RESET}"

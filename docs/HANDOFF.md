@@ -32,6 +32,13 @@ Candidate and review record: `docs/RELEASE-REVIEW-RECORD.md`.
 
 ## Transfer Checklist
 
+### Source control synchronization
+- [ ] Bind the authorized GitHub connection to the Replit project
+- [ ] Confirm `origin` is `https://github.com/OKHP3/kierans-lifetrkr.git`
+- [ ] Use `npm run sync` for fetch-before-push reconciliation; never force-push `main`
+- [ ] Confirm CI and Deploy to GitHub Pages succeed for the pushed commit
+- [ ] Review `docs/GIT-SYNC.md` for remote-ahead, conflict, and rollback recovery
+
 ### GitHub
 - [ ] Kieran creates GitHub account (or confirm existing)
 - [ ] Jamie transfers repo: Settings → Transfer → enter Kieran's username

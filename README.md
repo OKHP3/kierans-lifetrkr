@@ -136,6 +136,7 @@ src/
 npm install
 npm run dev       # http://localhost:5173
 npm run build     # type-check + production build
+npm run sync      # type-check → reconcile origin/main → safe push
 ```
 
 Supported toolchain: Node.js 20.19+ and npm 10+. For a clean, reproducible
@@ -148,6 +149,10 @@ the app shell can be loaded.
 
 Google uses a public OAuth Client ID. The optional oracle worker URL is also
 safe to expose in the client because it contains no provider credential.
+
+GitHub Actions builds and deploys GitHub Pages from `main`; no `gh-pages`
+branch is used. See [`docs/GIT-SYNC.md`](docs/GIT-SYNC.md) for remote-ahead,
+conflict, verification, and emergency rollback procedures.
 
 ```
 VITE_GOOGLE_CLIENT_ID=your_gcp_client_id.apps.googleusercontent.com

@@ -39,6 +39,10 @@ npm run preview      # Preview the production build locally
 - **Router:** **HashRouter** (react-router-dom v7) — required for GitHub Pages compatibility
 - **No backend:** Express server removed. Google auth is **client-side GIS** (Google Identity Services token flow)
 - **Deploy:** GitHub Actions builds and deploys `/dist` to GitHub Pages on pushes to `main`
+- **Release branch:** `main` is the only release branch; no `gh-pages` branch is used
+- **Release sync:** `npm run sync` type-checks, fetches `origin/main`, reconciles
+  remote-ahead/divergent histories non-destructively, pushes without force, and
+  verifies convergence. See `docs/GIT-SYNC.md`.
 - **Google auth:** Client-side OAuth token via `window.google.accounts.oauth2.initTokenClient`. Token stored in `sessionStorage` (expires after ~1 hour). Requires only `VITE_GOOGLE_CLIENT_ID` (a public value, not a secret).
 
 ## Phase Status

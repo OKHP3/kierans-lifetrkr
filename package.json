@@ -15,7 +15,7 @@
     "check": "tsc --noEmit",
     "check:a11y": "node scripts/accessibility-check.mjs",
     "sync": "bash scripts/sync.sh",
-    "deploy": "npm run build && gh-pages -d dist"
+    "deploy": "npm run build"
   },
   "dependencies": {
     "@replit/connectors-sdk": "^0.4.2",

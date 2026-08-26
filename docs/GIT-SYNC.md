@@ -1,0 +1,100 @@
+# Safe GitHub synchronization
+
+LifeTrkr has one canonical source remote: `origin`
+
+```text
+https://github.com/OKHP3/kierans-lifetrkr.git
+```
+
+`main` is the only release branch. GitHub Actions runs CI and deploys GitHub
+Pages after a push to `main`. Do not force-push `main` or create a `gh-pages`
+deployment branch.
+
+## Normal sync
+
+From the repository root:
+
+```bash
+npm run sync
+```
+
+The command type-checks, commits the current working tree, fetches
+`origin/main`, classifies the two histories, reconciles safely, pushes without
+force, and confirms that local `main` equals `origin/main`. If GitHub CLI is
+installed, it also prints Actions runs for the pushed commit. Use
+`npm run sync -- --check` for a type-check-only check with no commit or network
+activity.
+
+Only `origin` is used for release synchronization. Replit backup/subrepl
+remotes may exist for the workspace, but they are not release sources.
+
+## Remote-ahead recovery
+
+If GitHub has commits not present locally, sync uses a fast-forward only:
+
+```bash
+git fetch origin main
+npm run sync
+```
+
+If local uncommitted changes prevent a safe recovery, save them in a normal
+commit or use a temporary patch/branch before retrying. Never reset or force
+push to make the histories appear aligned.
+
+## Conflict recovery
+
+If local and remote histories diverge, sync attempts a non-destructive rebase
+of local commits onto `origin/main`. Semantic conflicts stop the operation and
+the attempted rebase is aborted; no push occurs. Inspect the competing
+commits, resolve intentionally, then run:
+
+```bash
+git fetch origin main
+git rebase origin/main
+# resolve files, git add <resolved-files>, git rebase --continue
+npm run sync
+```
+
+If the resolution is uncertain, stop and ask for review. Do not use
+`git push --force` on `main`.
+
+## Unsafe-state messages
+
+Sync refuses to run when the checked-out branch is not `main`, unresolved merge
+conflicts exist, `origin` is missing or points at another repository, or the
+remote URL contains embedded credentials. Normalize a stale URL without
+printing or copying credentials:
+
+```bash
+git remote set-url origin https://github.com/OKHP3/kierans-lifetrkr.git
+```
+
+The GitHub Replit connection is the authorized access path; credentials must
+not be stored in Git config, scripts, or documentation.
+
+## Deployment verification and rollback
+
+After a successful push, inspect the commit's CI and Deploy to GitHub Pages
+runs. From a clone with GitHub CLI:
+
+```bash
+bash scripts/verify-deployment.sh
+gh run list --repo OKHP3/kierans-lifetrkr --commit "$(git rev-parse HEAD)"
+```
+
+The expected published URL is:
+https://okhp3.github.io/kierans-lifetrkr/#/
+
+For an application problem, prefer a corrective commit. For an emergency
+rollback, first preserve the evidence and identify the last known-good commit,
+then create a normal revert and sync it:
+
+```bash
+git log --oneline -10
+git revert <bad-commit>
+npm run sync
+```
+
+This preserves published history and lets CI redeploy the reverted state.
+`git reset --hard`, branch deletion, and force-push are not part of the normal
+recovery procedure.
