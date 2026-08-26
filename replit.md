@@ -107,7 +107,7 @@ Namespaced under `lifetrkr:{sub}:` where `sub` is the Google user ID (or `'guest
 2. Transfer the GitHub repo to Kieran's GitHub
 3. Set `VITE_GOOGLE_CLIENT_ID` as a Replit Secret in Kieran's Repl
 4. *(Optional)* Create a new GCP project / OAuth 2.0 Client ID under Kieran's Google account
-5. Run `npm run deploy` from Kieran's machine to publish to GitHub Pages
+5. Run `npm run sync` from Kieran's machine to publish through GitHub Actions
 
 ## Version History
 

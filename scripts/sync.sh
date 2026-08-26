@@ -26,6 +26,22 @@ ok()   { echo -e "${GREEN}✓ $*${RESET}"; }
 warn() { echo -e "${YELLOW}⚠ $*${RESET}"; }
 fail() { echo -e "${RED}✗ $*${RESET}" >&2; exit 1; }
 
+report_actions() {
+  local commit="$1"
+  if command -v gh >/dev/null 2>&1; then
+    log "Recording GitHub Actions status for ${commit:0:12}..."
+    gh run list --repo "$REPO" --commit "$commit" --limit 5 \
+      --json name,status,conclusion,url --template '{{range .}}{{.name}}: {{.status}} ({{.conclusion}}) {{.url}}{{"\n"}}{{end}}' ||
+      warn "GitHub Actions status could not be read; inspect the Actions tab for ${commit:0:12}."
+  elif [[ -n "${REPLIT_CONNECTORS_HOSTNAME:-}" || -n "${REPL_IDENTITY:-}" ]]; then
+    log "Recording GitHub Actions status for ${commit:0:12} via the bound connection..."
+    node scripts/github-actions-status.mjs "$commit" ||
+      warn "GitHub Actions status could not be read; inspect the Actions tab for ${commit:0:12}."
+  else
+    warn "GitHub CLI is unavailable; Actions status is pending. Check GitHub Actions for ${commit:0:12}."
+  fi
+}
+
 if [[ "$MODE" != "sync" && "$MODE" != "--check" ]]; then
   fail "Unknown mode '$MODE'. Use no argument or --check."
 fi
@@ -88,6 +104,9 @@ BASE=$(git merge-base main origin/main)
 
 if [[ "$LOCAL" == "$REMOTE" ]]; then
   ok "Local main already matches origin/main (${LOCAL:0:12})"
+  report_actions "$LOCAL"
+  ok "Synced to https://github.com/${REPO}/tree/main"
+  exit 0
 elif [[ "$LOCAL" == "$BASE" ]]; then
   log "Remote is ahead; fast-forwarding local main..."
   git merge --ff-only origin/main ||
@@ -104,21 +123,31 @@ fi
 
 # ── Step 4: Safe push and post-push convergence check ────────────────────────
 log "Pushing main without force..."
-git push --set-upstream origin main ||
-  fail "Push rejected. No force-push is used; fetch again and follow docs/GIT-SYNC.md."
+if ! git push --set-upstream origin main; then
+  warn "Git transport could not authenticate. Trying the bound GitHub connection without storing credentials..."
+  if [[ -n "${REPLIT_CONNECTORS_HOSTNAME:-}" || -n "${REPLIT_IDENTITY:-}" ]] &&
+     node scripts/github-api-publish.mjs "$LOCAL"; then
+    log "Fetching the published commit for local convergence..."
+    git fetch --prune origin main ||
+      fail "The commit was published, but its public read-back failed. Inspect origin/main before retrying."
+    REMOTE=$(git rev-parse origin/main)
+    LOCAL_TREE=$(git rev-parse main^{tree})
+    REMOTE_TREE=$(git rev-parse origin/main^{tree})
+    [[ "$LOCAL_TREE" == "$REMOTE_TREE" ]] ||
+      fail "Published tree differs from local main. No further update was attempted."
+    [[ "$LOCAL" == "$REMOTE" ]] || git reset --hard origin/main
+  else
+    fail "Push rejected. No force-push is used; fetch again and follow docs/GIT-SYNC.md."
+  fi
+fi
 
+git fetch --prune origin main ||
+  fail "Could not refresh origin/main after pushing. Stop and inspect remote state."
 LOCAL=$(git rev-parse main)
 REMOTE=$(git rev-parse origin/main)
 [[ "$LOCAL" == "$REMOTE" ]] ||
   fail "Push returned but local main does not match origin/main. Stop and inspect before retrying."
 
 ok "Local main equals origin/main (${LOCAL:0:12})"
-if command -v gh >/dev/null 2>&1; then
-  log "Recording GitHub Actions status for ${LOCAL:0:12}..."
-  gh run list --repo "$REPO" --commit "$LOCAL" --limit 5 \
-    --json name,status,conclusion,url --template '{{range .}}{{.name}}: {{.status}} ({{.conclusion}}) {{.url}}{{"\n"}}{{end}}' ||
-    warn "GitHub Actions status could not be read; inspect the Actions tab for ${LOCAL:0:12}."
-else
-  warn "GitHub CLI is unavailable; Actions status is pending. Check GitHub Actions for ${LOCAL:0:12}."
-fi
+report_actions "$LOCAL"
 ok "Synced to https://github.com/${REPO}/tree/main"

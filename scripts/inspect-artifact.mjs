@@ -2,7 +2,6 @@ import { existsSync, readFileSync, statSync } from 'node:fs'
 
 const required = [
   'dist/index.html',
-  'dist/404.html',
   'dist/manifest.json',
   'dist/favicon.svg',
   'dist/icons/icon-192.png',

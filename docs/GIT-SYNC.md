@@ -20,8 +20,12 @@ npm run sync
 
 The command type-checks, commits the current working tree, fetches
 `origin/main`, classifies the two histories, reconciles safely, pushes without
-force, and confirms that local `main` equals `origin/main`. If GitHub CLI is
-installed, it also prints Actions runs for the pushed commit. Use
+force, and confirms that local `main` equals `origin/main`. In Replit, if the
+Git transport has no credential helper, it uses the already-bound GitHub
+connection's API with a compare-and-swap ref update; no token is written to
+Git config or the repository. If GitHub CLI is installed (or the bound
+connection is available in Replit), it also prints Actions runs for the pushed
+commit. Use
 `npm run sync -- --check` for a type-check-only check with no commit or network
 activity.
 
