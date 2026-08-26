@@ -9,7 +9,13 @@
 import { execFileSync } from "node:child_process";
 import { ReplitConnectors } from "@replit/connectors-sdk";
 
-const REPO = "OKHP3/kierans-lifetrkr";
+const testMode = process.env.GITHUB_API_PUBLISH_TEST_MODE === "1";
+const REPO = testMode && process.env.GITHUB_API_PUBLISH_REPO
+  ? process.env.GITHUB_API_PUBLISH_REPO
+  : "OKHP3/kierans-lifetrkr";
+const apiBaseUrl = testMode
+  ? process.env.GITHUB_API_PUBLISH_BASE_URL?.replace(/\/$/, "")
+  : undefined;
 const commitSha = process.argv[2];
 
 if (!commitSha || !/^[0-9a-f]{40}$/.test(commitSha)) {
@@ -26,12 +32,15 @@ const metadata = git(
 const [authorName, authorEmail, authorDate, committerName, committerEmail, committerDate, ...messageParts] = metadata;
 const message = messageParts.join("\0").trimEnd();
 
-const connector = new ReplitConnectors();
+const connector = apiBaseUrl ? null : new ReplitConnectors();
 const api = async (path, options = {}) => {
-  const response = await connector.proxy("github", path, {
+  const request = {
     ...options,
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
-  });
+  };
+  const response = apiBaseUrl
+    ? await fetch(`${apiBaseUrl}${path}`, request)
+    : await connector.proxy("github", path, request);
   const text = await response.text();
   let body;
   try {
@@ -71,10 +80,10 @@ const addFile = async (path) => {
 for (let index = 0; index < changed.length;) {
   const record = changed[index++];
   const status = record[0];
-  if (status === "R" || status === "C") {
+  if (status.startsWith("R") || status.startsWith("C")) {
     const oldPath = changed[index++];
     const newPath = changed[index++];
-    if (status === "R") entries.push({ path: oldPath, mode: "100644", type: "blob", sha: null });
+    if (status.startsWith("R")) entries.push({ path: oldPath, mode: "100644", type: "blob", sha: null });
     await addFile(newPath);
   } else {
     const path = record.length === 1 ? changed[index++] : record.slice(1);

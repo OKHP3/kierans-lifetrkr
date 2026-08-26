@@ -9,10 +9,16 @@
 
 set -Eeuo pipefail
 
-REPO="OKHP3/kierans-lifetrkr"
+TEST_MODE="${SYNC_TEST_MODE:-0}"
+if [[ "$TEST_MODE" == "1" ]]; then
+  REPO="${SYNC_REPO:-OKHP3/kierans-lifetrkr}"
+  ORIGIN_URL="${SYNC_ORIGIN_URL:-https://github.com/${REPO}.git}"
+else
+  REPO="OKHP3/kierans-lifetrkr"
+  ORIGIN_URL="https://github.com/${REPO}.git"
+fi
 LIVE_URL="https://okhp3.github.io/kierans-lifetrkr/#/"
 MODE="${1:-sync}"
-ORIGIN_URL="https://github.com/${REPO}.git"
 
 # ── Colours ────────────────────────────────────────────────────────────────
 RED='\033[0;31m'
@@ -28,6 +34,7 @@ fail() { echo -e "${RED}✗ $*${RESET}" >&2; exit 1; }
 
 report_actions() {
   local commit="$1"
+  [[ "$TEST_MODE" == "1" && "${SYNC_SKIP_ACTIONS_STATUS:-0}" == "1" ]] && return 0
   if command -v gh >/dev/null 2>&1; then
     log "Recording GitHub Actions status for ${commit:0:12}..."
     gh run list --repo "$REPO" --commit "$commit" --limit 5 \
@@ -77,7 +84,11 @@ fi
 
 # ── Step 1: TypeScript check ────────────────────────────────────────────────
 log "Running TypeScript check..."
-npm run check || fail "TypeScript errors found — fix before syncing."
+if [[ "$TEST_MODE" == "1" && -n "${SYNC_CHECK_COMMAND:-}" ]]; then
+  bash -c "$SYNC_CHECK_COMMAND"
+else
+  npm run check
+fi || fail "TypeScript errors found — fix before syncing."
 ok "TypeScript clean"
 
 # ── --check mode: stop here ─────────────────────────────────────────────────
@@ -127,12 +138,16 @@ else
   fi
 fi
 
+# Reconciliation can move main (fast-forward or rebase), so never publish the
+# pre-reconciliation SHA through either Git transport or the API fallback.
+LOCAL=$(git rev-parse main)
+
 # ── Step 4: Safe push and post-push convergence check ────────────────────────
 log "Pushing main without force..."
 if ! git push --set-upstream origin main; then
   warn "Git transport could not authenticate. Trying the bound GitHub connection without storing credentials..."
   if [[ -n "${REPLIT_CONNECTORS_HOSTNAME:-}" || -n "${REPLIT_IDENTITY:-}" ]] &&
-     node scripts/github-api-publish.mjs "$LOCAL"; then
+     node scripts/github-api-publish.mjs "$(git rev-parse main)"; then
     log "Fetching the published commit for local convergence..."
     git fetch --prune origin main ||
       fail "The commit was published, but its public read-back failed. Inspect origin/main before retrying."

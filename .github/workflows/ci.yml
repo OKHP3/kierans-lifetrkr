@@ -42,6 +42,9 @@ jobs:
       - name: Accessibility source check
         run: npm run check:a11y
 
+      - name: Safe sync regression tests
+        run: npm run test:sync
+
       - name: Build
         run: npm run build
 
