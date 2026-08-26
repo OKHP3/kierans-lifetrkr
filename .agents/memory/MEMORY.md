@@ -2,3 +2,4 @@
 - [Data schema v3](data-schema-v3.md) — routineTemplates[] array (not object), completions as arrays, task status lowercase, namespaced storage lifetrkr:{sub}:entity
 - [Oracle delivery decision](oracle-delivery.md) — direct browser fetch (VITE_ANTHROPIC_API_KEY) is current impl; CF Worker (VITE_ORACLE_WORKER_URL) is documented alternative; both valid
 - [OKHP3 skill standards](okhp3-skill-standards.md) — agentskills.io uses `assertions` (not `expectations`); footer uses em dash `—` per cataloger; Gotchas sections are highest-ROI content per agentskills.io docs
+- [GitHub sync transport](github-sync-connection.md) — bound GitHub OAuth authorizes API access but does not provide Git CLI credentials; keep origin credential-free and use safe API fallback
