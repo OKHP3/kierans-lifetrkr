@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0",
+  "review_protocol": "equilibrium-v1",
+  "review_mode": "conditional",
+  "evaluation_status": "live",
+  "artifact": {
+    "path": "https://okhp3.github.io/kierans-lifetrkr/#/",
+    "sha256": null,
+    "version": "v0.1.10",
+    "note": "Live production deployment tested directly; bundle identified as assets/index-CcIRy9rq.js. No full artifact hash computed -- see docs/RELEASE-REVIEW-RECORD.md for the frozen candidate's hashes from the prior source-level review."
+  },
+  "decision_question": "Is the live LifeTrkr app (v0.1.10, https://okhp3.github.io/kierans-lifetrkr/#/) fully functional for its stated single-user purpose, and specifically, does the Google Calendar/Tasks connection work correctly end-to-end?",
+  "acceptance_criteria": [
+    "All 8 documented routes (Home, Calendar, Today, Someday, Rituals, Habits, Settings, Origin) load without console errors, blank screens, or router failures.",
+    "Visual/design-system consistency holds across pages per the app's own Moonlit Hearth design system (cards, filter/sort pills, typography).",
+    "Clicking \"Connect Google Account\" completes an actual Google consent flow and either succeeds (real Calendar/Tasks data becomes available) or fails with a clear, user-visible, recoverable error -- not an indefinite silent hang.",
+    "No unhandled JavaScript errors or exceptions surface during normal navigation and interaction.",
+    "The app defaults to its own documented dark \"Moonlit Hearth\" theme on a fresh first visit with no saved preference."
+  ],
+  "independence": {
+    "reviewer_contexts_separated": true,
+    "shared_model_or_source_limits": [
+      "All three initial reviewers and the negotiator ran on the same model family (claude-sonnet-5) in separate contexts -- no cross-model diversity, so agreement/disagreement among them is correlated evidence, not fully independent.",
+      "All roles reviewed one evidence dossier compiled from a single browser-automation session; none independently re-ran the live browser tests or re-fetched the production bundle."
+    ]
+  },
+  "initial_reviews": [
+    { "role": "evidence", "decision": "approve-with-limits", "confidence": "high", "summary": "The dossier's core observations are well-evidenced and appropriately self-disclosed, but several causal/temporal claims in the Google-connect section (E8) overreach what was directly observed: 'indefinitely' extrapolates a ~3-4s observation, and ruling out an app-side cause as the source of the hang is not fully supported by the zero-network-request evidence." },
+    { "role": "outcome", "decision": "reject", "confidence": "medium", "summary": "3 of 5 acceptance criteria fail on direct evidence (visual consistency, Google connect, dark-theme default); a 4th (no JS errors) only partially clears since core CRUD/persistence flows were never exercised. The app cannot be certified fully functional for its stated purpose on this evidence." },
+    { "role": "safety-portability", "decision": "reject", "confidence": "medium", "summary": "The Google-connect failure mode is exactly what acceptance criterion 3 was written to forbid: a silent, unrecoverable hang. Source review confirms no timeout/circuit-breaker exists, making this a structural defect, not a one-off flake, regardless of root cause. Manual accessibility and OAuth-scope safety remain unverified open risks." }
+  ],
+  "concordance": "material disagreement (evidence=usable bucket, outcome+safety=not-ready bucket)",
+  "disruptor": { "triggered": false, "authority": "none", "falsification_hypotheses": [], "test_results": [] },
+  "negotiator": {
+    "triggered": true,
+    "decision": "reject",
+    "google_connection_decision": "reject",
+    "decisive_evidence": [
+      "Clicking Connect Google Account produced an unresolved 'Connecting...' state with zero console output and zero network requests, reproduced twice from a fresh reload.",
+      "Source review (uncontested by all three reviewers): useGoogleAuth.requestToken() has no timeout -- the promise only settles from inside a GIS callback that may never fire.",
+      "Fresh page load rendered the light 'Morning Parchment' theme, not the documented dark 'Moonlit Hearth' default.",
+      "Calendar/Rituals/Habits filter-chip rows render as unstyled outlined text, confirmed via a pixel-region screenshot, versus Someday's correctly filled pills.",
+      "All 8 routes rendered cleanly with zero console messages."
+    ],
+    "unresolved_items": [
+      "Root cause of the Google-connect hang: OAuth origin misconfiguration vs. FedCM/third-party-cookie policy vs. the automated click not registering as a browser-trusted gesture.",
+      "Whether a real consent popup opened outside the tracked browser tab group where this review's tooling could not see it.",
+      "Whether core CRUD/persistence flows (add/complete a task, habit, ritual; save Settings) actually work end-to-end -- not exercised this session.",
+      "Mobile/responsive (<768px) rendering -- not verified this session due to a viewport-resize tooling failure."
+    ]
+  },
+  "release_decision": "reject",
+  "limitations": [
+    "No real Google OAuth credentials were entered; whether the flow succeeds given a completed human consent screen remains genuinely untested.",
+    "Browser-automation tooling is scoped to a tracked Chrome tab group and cannot see popups/windows opened outside it at the OS level.",
+    "Manual accessibility testing has never been performed on this app in any session.",
+    "Core data-entry/persistence flows were not exercised; only empty-state rendering and navigation were tested."
+  ],
+  "follow_up": [
+    { "item": "Have Kieran manually click Connect Google Account with real credentials via a genuine click, while a full-desktop (not tab-scoped) recording runs, to see if a consent popup appears at all.", "owner": "Jamie / Kieran", "expiry_trigger": "before re-certifying acceptance criterion 3" },
+    { "item": "Verify in Google Cloud Console that Authorized JavaScript origins for the OAuth Client ID exactly match https://okhp3.github.io.", "owner": "Jamie", "expiry_trigger": "before re-certifying acceptance criterion 3" },
+    { "item": "Add a client-side timeout/circuit-breaker to useGoogleAuth.requestToken() so a non-responsive GIS callback surfaces the existing error UI instead of hanging forever.", "owner": "development", "expiry_trigger": "next release" },
+    { "item": "Fix ThemeContext's default (or update the docs) so first-visit theme matches documented intent.", "owner": "development", "expiry_trigger": "next release" },
+    { "item": "Inspect the FilterBar/chip component to align Calendar/Rituals/Habits styling with Someday's correctly-styled chips.", "owner": "development", "expiry_trigger": "next release" },
+    { "item": "Exercise core CRUD flows with console/network monitoring armed and confirm localStorage persistence across reload.", "owner": "next review session", "expiry_trigger": "before certifying acceptance criterion 4 as fully passing" }
+  ]
+}
