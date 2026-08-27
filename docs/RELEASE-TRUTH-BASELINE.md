@@ -3,7 +3,7 @@
 **Baseline date:** August 24, 2026
 **Artifact:** `kieran-lifetrkr`  
 **Application version:** `0.1.10` (`package.json`, `src/constants.ts`)  
-**Release posture:** Candidate approved-with-limits for controlled pre-production handoff; public stable release deferred for missing live and manual evidence
+**Release posture:** Candidate approved-with-limits for controlled pre-production handoff; public stable release deferred for remaining owner-run live and manual evidence
 
 This document is the current evidence baseline for LifeTrkr. Historical PRDs and session
 notes remain useful for intent, but they do not override the source, package manifest,
@@ -64,8 +64,10 @@ derived from `lifetrkr:profile.sub`, or `guest` when no valid profile is availab
 
 Google Calendar events, Google Tasks, task lists, and the assembled oracle reading
 are held in application state unless explicitly cached by the oracle implementation.
-Storage reads tolerate malformed JSON by returning null/empty values. Storage writes
-and quota failures are not yet proven as recoverable behavior.
+Storage reads tolerate malformed JSON by returning null/empty values. The app now
+checks write read-back, surfaces a visible warning when persistence is unavailable,
+and offers a retry for the current in-memory snapshot. Real browser quota/private
+mode behavior remains an owner-run check.
 
 The source of truth for types is `src/types.ts`. In particular, the implementation
 uses `RecurrenceRule` and optional compatibility fields; older PRD type listings must
@@ -75,13 +77,13 @@ not be used to infer current payloads.
 
 | Service | Use | Current boundary | Evidence status |
 |---|---|---|---|
-| Google Identity Services | Browser OAuth token flow | `sessionStorage` token and expiry | Wired; real-account lifecycle unproven |
-| Google Calendar API v3 | Calendar reads | Direct browser fetch with bearer token | Provisional; real-account lifecycle unproven |
-| Google Tasks API v1 | Task-list and task reads | Direct browser fetch with bearer token | Provisional; pagination and account lifecycle unproven |
-| Google userinfo v3 | Connected profile | Direct browser fetch with bearer token | Provisional |
+| Google Identity Services | Browser OAuth token flow | `sessionStorage` token and expiry | Client configured; real-account lifecycle unproven |
+| Google Calendar API v3 | Calendar reads | Direct browser fetch with bearer token | Local pagination/empty/error checks pass; real-account lifecycle unproven |
+| Google Tasks API v1 | Task-list and task reads | Direct browser fetch with bearer token | Local pagination/empty/error checks pass; real-account lifecycle unproven |
+| Google userinfo v3 | Connected profile | Direct browser fetch with bearer token | Local profile-path check passes; real-account profile unproven |
 | Tarot API | Daily card | Direct browser fetch with deterministic local fallback | Supported in code; service/CORS not continuously proven |
 | Free Horoscope API | Optional sign-based horoscope | Direct browser fetch; null on failure | Provisional; no service guarantee |
-| Anthropic Messages API | Optional daily oracle wording | Server-side oracle worker only; no provider key in client bundle | Worker deployment is optional; local tarot meaning is the public fallback |
+| Anthropic Messages API | Optional daily oracle wording | Server-side oracle worker only; no provider key in client bundle | Local fallback and simulated worker boundary pass; owner worker deployment, secret-store review, and live CORS/provider behavior remain unverified |
 | Google Fonts / Analytics | Fonts and page tracking | Third-party browser scripts | Present; privacy disclosure and blocking behavior require review |
 
 The Google integration now requests read-only scopes and does not expose write
@@ -92,18 +94,18 @@ helpers. Real-account lifecycle testing remains a handoff verification item.
 | Claim | Classification | Current evidence | Decisive test or condition |
 |---|---|---|---|
 | The app is client-only and has no publisher database | Supported | No server entrypoint or database; browser storage in source | Clean checkout confirms no backend runtime is required |
-| Local data is namespaced by Google subject | Supported in code | `storage.ts` and profile namespace logic | Account-switch journey proves isolation and guest recovery |
+| Local data is namespaced by Google subject | Supported in code | `storage.ts`, profile namespace logic, and storage failure harness | Account-switch journey proves isolation and guest recovery |
 | Manual core workflows persist across reload | Provisional | Reducer and persistence effects exist | Browser journey covering create/edit/complete/delete/reload |
 | Someday is the current deferred-task surface | Supported | Route, navigation, and page use Someday; status is `backlog` | Route and navigation smoke test; no active Archive route |
-| Google Calendar and Tasks are usable | Provisional | Fetch clients and UI paths exist | Real OAuth test account: connect, refresh, expiry, disconnect, account switch, empty/error data |
-| Google access is read-only | Supported in code | Read-only scopes and GET-only client paths | Real OAuth test account confirms requested consent and API behavior |
+| Google Calendar and Tasks are usable | Provisional | Fetch clients, UI states, and local pagination/error harness pass; real-account evidence is recorded separately | Real OAuth test account: connect, refresh, expiry, disconnect, account switch, empty/error data |
+| Google access is read-only | Supported in code and local harness | Read-only scopes, GET-only client paths, and no Google mutation helpers | Real OAuth test account confirms requested consent and API behavior |
 | Oracle key is private | Supported in code | No `VITE_ANTHROPIC_API_KEY`; Claude path targets optional worker URL | Production bundle inspection and worker deployment review |
 | Daily oracle is stable for a day | Supported in code | Date-scoped tarot, horoscope, and message caches use configured timezone | Reload/date-rollover/regeneration tests with a controlled clock |
 | Dark mode is the default | Disputed | Theme context defaults to `system`; project intent says dark | First launch on light-system device must render dark, unless product decision changes |
 | PWA has an installable manifest | Supported in code | `public/manifest.json`, subpath-safe metadata | Browser install prompt/standalone launch remains a manual check |
 | Offline app use is supported | Not claimed | No service worker; README and deployment checklist narrow the claim | Revisit only if a tested service-worker strategy is added |
 | GitHub Pages build artifact is reproducible | Supported for local candidate | Clean `npm ci`, lockfile portability, check, audit, build, artifact inspection | Published Pages route/asset smoke test remains required |
-| Stable public release is ready | Deferred for evidence | Candidate review record; live OAuth, manual accessibility, storage failure, and published smoke evidence absent | Complete the decisive checks in `docs/RELEASE-REVIEW-RECORD.md` |
+| Stable public release is ready | Deferred for evidence | Candidate review record; live OAuth, manual accessibility, real browser storage failure, and published smoke evidence remain bounded | Complete the decisive checks in `docs/RELEASE-REVIEW-RECORD.md` |
 
 Classification meanings:
 
@@ -214,9 +216,214 @@ Run on August 24, 2026 from the frozen candidate `2bd74eadfbca7d0fa29cf35783762d
 | `node scripts/inspect-artifact.mjs` | Pass | Required Pages files, fallback, metadata, and hashed assets present |
 | Workflow/preview startup | Pass | Replit workflow restarted; Vite served on port 5000; preview rendered without browser console errors |
 | Published Pages smoke test | Not run | No live deployment evidence captured in this review |
-| Real Google OAuth lifecycle | Not run | Requires owner/test-account action and client ID |
+| Real Google OAuth lifecycle | Partially run locally; real-account portion not run | `docs/GOOGLE-READONLY-EVIDENCE.md`; requires owner/test-account browser journey |
 | Manual accessibility matrix | Not run | Checklist exists; keyboard, screen reader, zoom, and touch results are not recorded |
-| Storage quota/private-mode recovery | Not run | Code tolerates read failures; write-failure UX is not demonstrated |
+| Storage quota/private-mode recovery | Partial | Simulated throwing and silent non-persisting storage now produce a visible warning with retry; real browser quota/private-mode run remains owner-only |
 
 The complete bounded decision, hashes, independent reviews, falsification pass,
 and risk ownership are recorded in `docs/RELEASE-REVIEW-RECORD.md`.
+
+## 10. Core behavior verification addendum
+
+**Verification date:** August 27, 2026
+**Verification worktree:** candidate `52c872e` plus the targeted Mercury-banner fix
+recorded below
+**Environment:** Replit Linux workspace, Bun 1.3.6 for direct TypeScript/module
+checks, Vite development workflow on port 5000, UTC-controlled test dates, and an
+in-memory browser-storage/fetch harness for oracle states. No Google account or
+Google API access was used.
+
+The following checks exercised the shipped source paths rather than relying only on
+source inspection:
+
+### Recurrence visibility
+
+| Case | Expected | Observed |
+|---|---|---|
+| Weekday pattern on Monday, August 24 | Active / `true` | Pass / `true` |
+| Weekday pattern on Friday, August 28 | Active / `true` | Pass / `true` |
+| Weekday pattern on Saturday, August 29 | Inactive / `false` | Pass / `false` |
+| Weekday pattern on Sunday, August 30 | Inactive / `false` | Pass / `false` |
+| Specific days Mon/Wed/Fri on Monday, August 24 | Active / `true` | Pass / `true` |
+| Specific days Mon/Wed/Fri on Wednesday, August 26 | Active / `true` | Pass / `true` |
+| Specific days Mon/Wed/Fri on Friday, August 28 | Active / `true` | Pass / `true` |
+| Specific days Mon/Wed/Fri on Tuesday, August 25 | Inactive / `false` | Pass / `false` |
+| Specific days Mon/Wed/Fri on Sunday, August 30 | Inactive / `false` | Pass / `false` |
+| Calendar weekly Mon/Wed/Fri recurrence on Monday, August 24 | Visible / `true` | Pass / `true` |
+| Calendar weekly Mon/Wed/Fri recurrence on Tuesday, August 25 | Hidden / `false` | Pass / `false` |
+| Calendar weekly Mon/Wed recurrence with interval 2 on Monday, August 31 | Hidden / `false` | Pass / `false` |
+
+The checks covered both `isActiveToday()` and the shared
+`recurrenceOccursOnDate()` evaluator. No recurrence defect was found.
+
+### Mercury banner
+
+`getMercuryStatus()` returned retrograde through August 11, 2026 for the active
+test date August 1, and returned inactive with no end date for August 27, 2026.
+The rendered visibility predicate was then exercised in all setting/state
+combinations:
+
+| `showMercuryBanner` | Calculated state | Expected | Observed |
+|---|---|---|---|
+| enabled | retrograde | Show banner through `2026-08-11` | Pass |
+| disabled | retrograde | Hide banner | Pass |
+| enabled | inactive | Hide banner | Pass |
+| disabled | inactive | Hide banner | Pass |
+
+The check found and fixed two user-visible issues: Calendar had no Mercury banner,
+and Home displayed its banner even when the setting was disabled. Both surfaces now
+use the same setting-plus-calculated-state predicate.
+
+### Horoscope and oracle fallback
+
+| State | Expected | Observed |
+|---|---|---|
+| Configured Aries horoscope response | Non-empty horoscope is cached and available to the reading | Pass; content returned and second read reused the cache without another fetch |
+| Cleared horoscope cache followed by unavailable provider | `null`; no exception escapes | Pass; `null` returned |
+| Tarot meaning with failed horoscope | Oracle remains usable using tarot fallback | Pass; tarot meaning returned |
+| `OracleCard` with horoscope | Horoscope text is rendered | Pass |
+| `OracleCard` without horoscope | Main oracle message still renders and no empty horoscope block appears | Pass |
+
+These results support the narrower claim that horoscope failure is isolated from the
+local tarot/oracle fallback. Provider availability and real deployed browser CORS
+behavior remain provisional.
+
+### Mechanical and preview checks
+
+| Check | Result |
+|---|---|
+| `npm run check` | Pass |
+| `npm run build` | Pass |
+| Replit workflow restart | Pass; Vite served on port 5000 |
+| Browser console during preview capture | No errors reported |
+
+This addendum confirms the targeted recurrence, Mercury predicate, and oracle
+fallback behavior. It does not close the separate live OAuth, published Pages,
+manual accessibility, real-browser storage quota/private-mode, or
+ownership-transfer gates.
+
+## 11. Google read-only activation addendum
+
+**Verification date:** August 27, 2026
+**Environment:** Replit Linux workspace; Vite workflow on port 5000; UTC-controlled
+local API harness
+**Evidence record:** `docs/GOOGLE-READONLY-EVIDENCE.md`
+
+`VITE_GOOGLE_CLIENT_ID` is present in the Replit secret inventory, and the
+development preview renders an enabled Google connection action. The value was
+not read or recorded. Source inspection confirms the requested Calendar and
+Tasks scopes remain read-only.
+
+The local source-path harness passed populated two-page Calendar, Task List, and
+Task responses; empty responses; typed 403 errors; profile subject handling; and
+two simulated local subject namespaces. The UI changes add explicit Google
+Tasks loading/error/retry states on Today and Someday, automatic expiry-boundary
+re-rendering, Calendar visibility control, and no edit affordance for
+read-only Google events. Type-check, accessibility-source check, production
+build, artifact inspection, workflow restart, and preview console checks also
+passed.
+
+The real consent/profile/API/lifecycle/two-account journey was not run because
+this agent session has no interactive authenticated browser path. GCP API
+enablement, authorized origins, and the test-user list cannot be inferred from
+secret presence. Accordingly, the Google runtime claims remain **Provisional**
+and the release remains approved-with-limits until the owner-run matrix is
+recorded without personal records or tokens.
+
+## 12. Optional oracle worker boundary addendum
+
+**Verification date:** August 27, 2026
+**Environment:** Replit Linux workspace; Bun 1.3.6 source-path harness; Vite
+production builds; in-memory browser-storage and fetch stubs
+
+### Activation status
+
+The owner-deployed worker was not available for live verification. The
+environment has no configured `VITE_ORACLE_WORKER_URL`, and no
+`ANTHROPIC_API_KEY` or `VITE_ANTHROPIC_API_KEY` is present in the Replit
+environment. No credential values were requested, read, or recorded. This
+means the worker-side secret store, deployed URL, CORS policy, provider
+availability, and live Claude response remain **Owner-blocked / Not run**.
+
+### Client boundary and behavior
+
+The actual `src/lib/oracle.ts` source path was exercised with an isolated,
+temporary non-secret worker URL and in-memory browser APIs. The valid-response
+path returned the worker message and a second same-day call reused the cached
+message with exactly one worker request. The request body contained only the
+documented `system` and `messages` keys, with celestial/card context and the
+optional selected sun sign; profile, name, email, task, habit, and calendar
+values were absent.
+
+| State | Expected | Observed |
+|---|---|---|
+| Configured worker, valid response | Return worker message | Pass |
+| Same-day repeat | Reuse cache without another worker call | Pass; one request |
+| Worker HTTP failure (`500`) | Return tarot `meaning_up` | Pass; fallback cached |
+| Worker rate limit (`429`) | Return tarot `meaning_up` | Pass; fallback cached |
+| Malformed worker content | Return tarot `meaning_up` | Pass; fallback cached |
+| No worker URL | Return tarot `meaning_up` without network | Pass |
+| Request payload privacy | Send only allowed oracle context | Pass |
+
+### Bundle and artifact checks
+
+`npm run check`, `npm run check:a11y`, and `npm run build` passed. A build with
+an isolated test worker URL embedded only that URL and contained no
+`ANTHROPIC_API_KEY`, `VITE_ANTHROPIC_API_KEY`, `api.anthropic.com`, or other
+direct Anthropic browser reference. The final no-worker build passed
+`node scripts/inspect-artifact.mjs` and the same provider/direct-call scan.
+
+The oracle boundary is therefore **Confirmed for source, simulated worker,
+fallback, payload, and bundle states**. It is **Provisional for live activation**
+until the owner deploys the worker, stores the provider credential only in the
+worker secret store, configures `VITE_ORACLE_WORKER_URL`, and records a
+redacted deployed response/CORS check. The local tarot meaning remains the
+ public reliability fallback.
+
+## 13. Release evidence closure addendum
+
+**Verification date:** August 27, 2026
+**Environment:** Replit Linux workspace; Vite workflow on port 5000; public
+GitHub Pages URL `https://okhp3.github.io/kierans-lifetrkr/`
+**Artifact identity:** local candidate at `62e378a` plus the storage-failure
+repair recorded in the release commit; the published site was stale at the
+start of this run and is not treated as evidence until the post-push workflow
+and asset read-back below are recorded.
+
+### Local release gates
+
+| Check | Result | Evidence |
+|---|---|---|
+| `npm ci` with public registry | PASS | Lockfile installation completed without mutation |
+| Type-check and source accessibility check | PASS | `npm run check`; `npm run check:a11y` |
+| Sync regression suite | PASS | Nine regression tests; the fixture now explicitly clones the `main` branch |
+| Production audit | PASS | `npm audit --omit=dev --audit-level=high`; zero vulnerabilities |
+| Production build and artifact inspection | PASS | `npm run build`; `node scripts/inspect-artifact.mjs` |
+| Storage failure harness | PASS | Normal write/read-back, throwing, and silent non-persisting storage all produced the expected result |
+| Preview startup/render | PASS | Workflow served port 5000; desktop rendered smoke had no application browser-console errors |
+
+### Deployment and manual limits
+
+The pre-push Pages read-back returned HTTP 200 for the app shell, `404.html`,
+manifest, favicon, PNG icons, Apple touch icon, 32px favicon, and OG image.
+The shell rendered at a hash URL, but the remote `main` commit was still the
+older published candidate at that moment, so this pre-push read-back is not a
+claim that the reviewed repair was deployed. HashRouter fragments require a
+browser to exercise; plain HTTP cannot send the fragment to the server.
+
+The available browser capture covered a desktop rendered smoke only. An
+interactive narrow/desktop keyboard, screen-reader, zoom, contrast, and touch
+matrix was not available in this agent session and remains **NOT RUN**, not a
+pass inferred from the source heuristic.
+
+### Bounded decision
+
+The release remains **approve-with-limits** for controlled pre-production
+handoff. The storage failure objection is **partially resolved for simulated
+failures** because the app now gives visible, recoverable guidance. Public
+stable approval remains deferred for post-push Pages identity/read-back, the
+real Google lifecycle and account-isolation journey, the manual accessibility
+matrix, real browser quota/private-mode behavior, live optional-worker
+activation, and ownership handoff. This addendum expires on any change to the
+release tree, routes, persistence behavior, OAuth scopes, external endpoints,
+workflow, or Pages configuration.

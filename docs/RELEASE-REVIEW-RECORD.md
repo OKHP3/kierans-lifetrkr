@@ -4,7 +4,7 @@
 **Candidate commit:** `2bd74eadfbca7d0fa29cf35783762d68b9496591`  
 **Repository state:** local `main` = `origin/main`; worktree clean when frozen  
 **Application version:** `v0.1.10`  
-**Review status:** complete with bounded approval  
+**Review status:** complete with bounded approval; evidence closure in progress
 
 ## Decision question and scope
 
@@ -43,11 +43,14 @@ artifact validation and matched it byte-for-byte.
 | CLM-02 | Clean install is portable and does not rewrite the lockfile | Confirmed | `npm ci` with public registry; before/after hash; no internal URL | CI may depend on private infrastructure or drift | Repeat on GitHub Actions |
 | CLM-03 | Type/build/a11y source/artifact gates pass | Confirmed | `npm run check`, `npm run check:a11y`, `npm run build`, `scripts/inspect-artifact.mjs` | Broken source or Pages artifact could ship | Preserve green CI run |
 | CLM-04 | HashRouter Pages artifact has required local assets and fallback | Confirmed in artifact; runtime provisional | `dist/index.html`, `dist/404.html`, artifact script | Published routes/assets can still be stale or misconfigured | Smoke-test deployed URL and all hash routes |
-| CLM-05 | Google access is read-only in source | Confirmed in code; runtime provisional | `SCOPES`, Google client modules, baseline | Consent/runtime behavior could violate the product promise | Disposable-account lifecycle test |
+| CLM-05 | Google access is read-only in source and local API paths | Confirmed in code/local harness; runtime provisional | `SCOPES`, Google client modules, `docs/GOOGLE-READONLY-EVIDENCE.md` | Consent/runtime behavior could violate the product promise | Disposable-account lifecycle test |
 | CLM-06 | Oracle provider key is not shipped to the browser | Confirmed in code/bundle scan | `src/lib/oracle.ts`, env docs, production bundle scan | Provider credential exposure | Repeat scan on every release; inspect worker separately |
-| CLM-07 | Local records remain isolated and recoverable across normal reloads | Supported in code; runtime provisional | storage namespace and malformed-read handling | Cross-account leakage or lost edits | Two-account, reload, malformed/quota journey |
+| CLM-07 | Local records remain isolated and recoverable across normal reloads | Supported in code/local namespace harness; real account-switch runtime provisional | storage namespace, malformed-read handling, storage failure harness, `docs/GOOGLE-READONLY-EVIDENCE.md` | Cross-account leakage or lost edits | Two-account, reload, malformed/quota journey |
 | CLM-08 | Accessibility is release-ready | Provisional only | Source heuristic and checklist | Users may encounter inaccessible controls | Complete manual matrix |
 | CLM-09 | Stable public release is ready | Deferred | Missing live/manual evidence listed above | Users may rely on unproven behavior | Resolve CLM-04, 05, 07, 08 |
+| CLM-10 | Core recurrence, Mercury banner, and oracle fallback behavior works across configured states | Confirmed for tested states | August 27, 2026 behavioral verification addendum; direct source-path checks and rendered `OracleCard` checks | A date or optional-provider state could hide required routines, warnings, or the local oracle | Preserve the targeted checks when release code changes |
+| CLM-11 | Optional oracle worker boundary is private, daily-cached, and safely degradable | Confirmed for source and simulated states; live activation provisional | August 27, 2026 oracle worker boundary addendum; source-path harness; configured and no-worker bundle scans | A deployed worker could have a bad contract, CORS issue, or incorrectly stored provider credential | Owner deploys worker and records redacted live response, CORS, and worker-secret review |
+| CLM-12 | A storage write failure is visible and retryable instead of silently losing the latest edit | Confirmed for simulated throwing and silent non-persisting storage; real browser behavior provisional | August 27, 2026 storage failure harness; `StorageWarning`; write read-back checks | Data can still be lost if a browser's quota/private-mode behavior differs | Owner-run quota/private-mode browser journey |
 
 ## Independent review comparison
 
@@ -87,7 +90,7 @@ these counterexamples conceptually against the frozen evidence:
 |---|---|---|
 | Pages deploy serves an old artifact or broken hash-route assets | Live URL and every documented route/asset return and render from this commit | Not run; objection survives |
 | A second Google account can see the first account's namespace | Disposable two-account switch with before/after storage inventory | Not run; objection survives |
-| Full/private storage silently loses a user edit | Forced write failure with visible recovery guidance or explicit safe failure | Not run; objection survives |
+| Full/private storage silently loses a user edit | Forced write failure with visible recovery guidance or explicit safe failure | Partially falsified in the source-path harness; real browser quota/private-mode behavior remains untested |
 | Keyboard/screen-reader/200% zoom behavior fails despite source labels | Completed manual matrix on phone and desktop | Not run; objection survives |
 
 No counterexample was disproven by the available evidence. Development is
@@ -107,7 +110,9 @@ production build, artifact inspection, workflow restart, and clean preview.
 
 **Limits:** no offline claim; no completed transfer; no production OAuth claim;
 no universal persistence, accessibility, third-party availability, or published
-Pages claim until the explicit tests above are recorded.
+Pages claim until the explicit tests above are recorded. Simulated storage
+failures are now visible and retryable, but this does not substitute for a real
+browser quota/private-mode run.
 
 ## Risk ownership and expiry
 
@@ -119,7 +124,159 @@ Jamie owns the candidate and evidence record until then.
 
 ## Checks not run
 
-Published Pages smoke test, real Google OAuth lifecycle, manual assistive
-technology matrix, forced storage quota/private-mode test, and owner-approved
-handoff rehearsal were not run. Their absence is intentional and recorded, not
-treated as a pass.
+Published Pages smoke test for the reviewed tree, real Google OAuth lifecycle,
+manual assistive technology matrix, forced storage quota/private-mode browser
+test, live oracle worker deployment/CORS/provider check, and owner-approved
+handoff rehearsal were not run. The August 27 core-behavior checks and simulated
+storage-failure harness are complete, but the remaining checks are still
+intentionally not treated as a pass.
+
+## Core behavior verification addendum
+
+**Verification date:** August 27, 2026
+**Verification worktree:** candidate `52c872e` plus the targeted Mercury-banner fix
+recorded below
+**Environment:** Replit Linux workspace; Bun 1.3.6 direct module checks; Vite
+workflow on port 5000; UTC-controlled dates; in-memory browser-storage and fetch
+stubs for optional oracle states. Google OAuth was not used.
+
+### Recurrence
+
+The weekday and specific-day matrices passed in both directions. `isActiveToday()`
+returned `true` for weekday Monday/Friday dates (August 24/28) and `false` for
+Saturday/Sunday (August 29/30). A Mon/Wed/Fri specific-day pattern returned
+`true` on August 24, 26, and 28 and `false` on August 25 and 30. The shared
+Calendar evaluator also returned `true` on a selected Monday and Friday,
+`false` on Tuesday, and `false` for a skipped interval-2 week.
+
+### Mercury banner
+
+`getMercuryStatus()` returned `{ retrograde: true, endDate: "2026-08-11" }` for
+August 1 and `{ retrograde: false, endDate: null }` for August 27. The visibility
+matrix passed for enabled/disabled settings against both active/inactive states:
+only enabled + active showed the banner. Verification found that Calendar did not
+render the banner and Home ignored the setting; both now use the shared
+setting-plus-status predicate. The banner is exposed as a status region on
+Calendar.
+
+### Horoscope and oracle fallback
+
+A configured Aries horoscope returned non-empty content and reused its daily cache.
+After clearing the cache, a simulated unavailable provider returned `null` without
+throwing. `generateOracleMessage()` still returned the tarot meaning, and rendered
+`OracleCard` output showed horoscope text when present while remaining renderable
+without it.
+
+### Verification results
+
+| Check | Result |
+|---|---|
+| Recurrence active/inactive matrix | Pass |
+| Mercury active/inactive status dates | Pass |
+| Mercury setting visibility matrix | Pass |
+| Configured, cached, cleared, and failed horoscope states | Pass |
+| Oracle tarot fallback after horoscope failure | Pass |
+| OracleCard configured/cleared rendering | Pass |
+| `npm run check` | Pass |
+| `npm run build` | Pass |
+| Workflow restart and preview console check | Pass; no browser console errors |
+
+This addendum upgrades the tested core behavior claim to **Confirmed for tested
+states**. It does not change the bounded release decision or close live OAuth,
+published Pages, manual accessibility, storage-write failure, or handoff gates.
+
+## Google read-only activation addendum
+
+**Verification date:** August 27, 2026
+**Environment:** Replit Linux workspace; Vite workflow on port 5000; UTC-controlled
+local API harness
+**Evidence:** `docs/GOOGLE-READONLY-EVIDENCE.md`
+
+The Replit secret inventory confirms that `VITE_GOOGLE_CLIENT_ID` exists without
+recording its value. The local harness passed Calendar, Task List, and Task
+pagination, empty responses, typed 403 handling, profile subject handling, and
+separate simulated local namespaces. Source review confirmed the read-only
+scopes and GET-only Google clients. The preview workflow restarted cleanly with
+no browser console errors.
+
+The real Google consent, profile, populated-data, expiry/reconnect/disconnect,
+and two-account browser journey was not run in this session because no
+interactive authenticated browser path is available. This is recorded as an
+explicit remaining owner-run gate, not as a pass inferred from client-ID secret
+presence. CLM-05 and CLM-07 therefore remain runtime-provisional, and the
+bounded `approve-with-limits` decision is unchanged.
+
+## Optional oracle worker boundary addendum
+
+**Verification date:** August 27, 2026
+**Environment:** Replit Linux workspace; Bun 1.3.6 source-path harness; Vite
+production builds; in-memory browser-storage and fetch stubs
+
+### Status and evidence
+
+The owner-deployed worker was not available for live verification. Replit
+environment inspection showed no configured `VITE_ORACLE_WORKER_URL` and no
+`ANTHROPIC_API_KEY` or `VITE_ANTHROPIC_API_KEY`. No credential values were
+requested, read, or recorded. Worker-side secret storage, deployed URL, CORS,
+provider availability, and live Claude wording are therefore **Owner-blocked /
+Not run**, rather than inferred from source or simulated responses.
+
+The actual `src/lib/oracle.ts` path was exercised with an isolated temporary
+non-secret worker URL and in-memory browser APIs. A valid worker response
+returned correctly, and a same-day repeat used the cache with one worker
+request. The request contained only `system` and `messages`, with celestial/card
+context and the optional selected sun sign. Profile, name, email, task, habit,
+and calendar values were excluded.
+
+| State | Result |
+|---|---|
+| Configured worker valid response | Pass |
+| Same-day cache prevents duplicate worker call | Pass; one request |
+| HTTP `500` worker failure | Pass; tarot fallback cached |
+| HTTP `429` rate limit | Pass; tarot fallback cached |
+| Malformed worker content | Pass; tarot fallback cached |
+| Missing worker URL | Pass; tarot fallback with no network call |
+| Payload privacy boundary | Pass |
+| Configured and final no-worker production bundle scans | Pass; no provider credential or direct Anthropic browser call |
+| Pages artifact inspection | Pass |
+
+`npm run check`, `npm run check:a11y`, and `npm run build` also passed. CLM-11
+is **Confirmed for source, simulated worker, fallback, payload, and bundle
+states**, but live activation remains **Provisional** until the owner deploys
+the worker, stores the provider credential only in the worker secret store,
+configures `VITE_ORACLE_WORKER_URL`, and records a redacted deployed
+response/CORS check. The bounded `approve-with-limits` decision is unchanged.
+
+## Release evidence closure addendum
+
+**Verification date:** August 27, 2026
+**Environment:** Replit Linux workspace; Vite workflow on port 5000; public
+GitHub Pages URL; no Google account or token used
+
+The local release gates passed after the storage-failure repair: `npm ci`,
+`npm run check`, `npm run check:a11y`, `npm run test:sync` (9/9),
+`npm audit --omit=dev --audit-level=high`, `npm run build`, and
+`node scripts/inspect-artifact.mjs`. The storage harness passed normal
+write/read-back plus throwing and silent non-persisting storage. The sync
+regression fixture was corrected to clone its explicit `main` branch; this
+removed an environment-sensitive fixture failure without changing the guarded
+sync behavior.
+
+The pre-push Pages read-back returned HTTP 200 for the shell, `404.html`,
+manifest, favicon, required PNG icons, Apple touch icon, 32px favicon, and OG
+image, but the remote `main` SHA was still the prior published candidate.
+Those results are retained as a pre-push transport check only. The post-push
+workflow URL, published commit identity, all fragment-route browser renders,
+and final asset hashes must be appended before CLM-04 can be upgraded.
+
+The desktop rendered smoke had no application browser-console errors. An
+interactive narrow/desktop keyboard, screen-reader, zoom, contrast, and touch
+matrix was not available in this session and remains **NOT RUN**. Google
+lifecycle evidence remains cross-referenced in
+`docs/GOOGLE-READONLY-EVIDENCE.md`; it is not duplicated here.
+
+The bounded decision remains `approve-with-limits`. CLM-12 is confirmed for
+simulated failures, while real browser quota/private-mode behavior, Pages
+identity/read-back for this tree, CLM-05/CLM-07 runtime lifecycle, CLM-08
+manual accessibility, live oracle worker activation, and handoff remain
+owner-run or otherwise unresolved.

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { GOOGLE_CLIENT_ID, SCOPES } from '../constants'
 
 export function useGoogleAuth() {
@@ -26,6 +26,15 @@ export function useGoogleAuth() {
     ? Math.max(0, Math.floor((storedExpiry - Date.now()) / 60000))
     : null
 
+  // A token can expire while the page is idle. Schedule a render at the
+  // boundary so TokenExpiryBanner does not wait for another user action.
+  useEffect(() => {
+    if (!storedExpiry) return
+    const delay = Math.max(0, storedExpiry - Date.now() + 1)
+    const timer = window.setTimeout(rerender, delay)
+    return () => window.clearTimeout(timer)
+  }, [storedExpiry, rerender])
+
   const isTokenValid = useCallback(() => {
     const t = readSession('gal_token')
     const e = Number(readSession('gal_expiry')) || 0
@@ -47,14 +56,18 @@ export function useGoogleAuth() {
             reject(response.error)
             return
           }
+            if (!response.access_token || !Number.isFinite(response.expires_in) || response.expires_in <= 0) {
+              reject(new Error('Google returned an invalid access token response'))
+              return
+            }
           const expiry = Date.now() + (response.expires_in * 1000)
-           try {
-             sessionStorage.setItem('gal_token', response.access_token)
-             sessionStorage.setItem('gal_expiry', String(expiry))
-           } catch {
-             reject(new Error('Session storage unavailable'))
-             return
-           }
+            try {
+              sessionStorage.setItem('gal_token', response.access_token)
+              sessionStorage.setItem('gal_expiry', String(expiry))
+            } catch {
+              reject(new Error('Session storage unavailable'))
+              return
+            }
           rerender()
           resolve(response.access_token)
         },

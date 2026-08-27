@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext'
 import CheckCircle from '../components/CheckCircle'
 import { OracleCard } from '../components/OracleCard'
 import { useOracle } from '../hooks/useOracle'
-import { getMoonPhase, getAstroSeason, getMercuryStatus } from '../lib/celestial'
+import { getMoonPhase, getAstroSeason, getMercuryStatus, shouldShowMercuryBanner } from '../lib/celestial'
 import { getTodayISO, getDayOfWeek, getGreeting, getSeasonalBadge, getDailyQuote, formatEventTime, formatEventDate } from '../lib/date'
 
 // Easter egg — fixed content per PRD
@@ -91,7 +91,7 @@ export default function Home() {
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--text-muted)', background: 'var(--surface)', borderRadius: 20, padding: '4px 10px', border: '0.5px solid var(--border-subtle)' }}>
           {season.emoji} <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 11 }}>{season.sign}</span>
         </span>
-        {mercury.retrograde && (
+        {shouldShowMercuryBanner(state.settings.showMercuryBanner, mercury) && (
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#f4a261', background: 'rgba(244,162,97,0.12)', borderRadius: 20, padding: '4px 10px', border: '0.5px solid rgba(244,162,97,0.35)' }}>
             ☿ <span style={{ fontFamily: 'Space Mono, monospace', fontSize: 11 }}>Rx until {mercury.endDate}</span>
           </span>

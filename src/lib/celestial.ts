@@ -110,3 +110,10 @@ export function getMercuryStatus(
   const period = MERCURY_RETROGRADE.find(r => iso >= r.start && iso <= r.end)
   return { retrograde: !!period, endDate: period?.end ?? null }
 }
+
+export function shouldShowMercuryBanner(
+  enabled: boolean,
+  status: { retrograde: boolean; endDate: string | null },
+): boolean {
+  return enabled && status.retrograde
+}

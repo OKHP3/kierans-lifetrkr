@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useApp, genId } from '../context/AppContext'
 import { getTodayISO, formatEventTime, recurrenceOccursOnDate } from '../lib/date'
 import { getMoonPhaseEmoji, getDailyCard, getDailyWisdom, getCosmicEventsForDateRange } from '../lib/cosmic'
+import { getMercuryStatus, shouldShowMercuryBanner } from '../lib/celestial'
 import { useGoogleAuth } from '../hooks/useGoogleAuth'
 import { fetchCalendarEvents } from '../lib/googleCalendar'
 import FilterBar from '../components/FilterBar'
@@ -187,6 +188,7 @@ export default function Calendar() {
   const [showCosmic, setShowCosmic] = useState(true)
 
   const today = getTodayISO(state.settings.timezone)
+  const mercury = getMercuryStatus()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const firstDay = new Date(year, month, 1).getDay()
   const cells: (number | null)[] = [
@@ -218,13 +220,15 @@ export default function Calendar() {
   const userEvents = state.calendarEvents.filter(e => e.source === 'manual')
   const usedCategoryIds = [...new Set(userEvents.filter(e => e.categoryId).map(e => e.categoryId!))]
   const allEventTags = [...new Set(userEvents.flatMap(e => e.tags ?? []))]
-  const googleEventsCount = state.calendarEvents.filter(e => e.source === 'google').length
+  const googleEventsCount = state.settings.showGoogleCalendar
+    ? state.calendarEvents.filter(e => e.source === 'google').length
+    : 0
   const { isConnected, getToken } = useGoogleAuth()
   const [syncing, setSyncing] = useState(false)
   const [syncError, setSyncError] = useState<string | null>(null)
 
   const handleSync = useCallback(async () => {
-    if (!isConnected || syncing) return
+    if (!isConnected || !state.settings.showGoogleCalendar || syncing) return
     setSyncing(true)
     setSyncError(null)
     try {
@@ -237,7 +241,7 @@ export default function Calendar() {
     } finally {
       setSyncing(false)
     }
-  }, [isConnected, syncing, getToken, state.settings.calendarDaysAhead, dispatch])
+  }, [isConnected, syncing, getToken, state.settings.calendarDaysAhead, state.settings.showGoogleCalendar, dispatch])
 
   // Auto-sync when Google connects
   const prevConnected = useRef(false)
@@ -293,7 +297,9 @@ export default function Calendar() {
     const ds = dateStr(day)
 
     // Stored events that occur on this day (handles recurrence)
-    const stored = state.calendarEvents.filter(e => eventOccursOnDate(e, ds))
+    const stored = state.calendarEvents
+      .filter(e => e.source !== 'google' || state.settings.showGoogleCalendar)
+      .filter(e => eventOccursOnDate(e, ds))
 
     // Cosmic events (notable moon phases) for this day
     const cosmicEvs: CalendarEvent[] = showCosmic
@@ -322,7 +328,11 @@ export default function Calendar() {
   function hasDayEvents(day: number): boolean {
     const ds = dateStr(day)
     return (
-      state.calendarEvents.some(e => e.source !== 'cosmic' && eventOccursOnDate(e, ds)) ||
+      state.calendarEvents.some(e =>
+        e.source !== 'cosmic' &&
+        (e.source !== 'google' || state.settings.showGoogleCalendar) &&
+        eventOccursOnDate(e, ds)
+      ) ||
       birthdayEvents.some(e => e.start === ds)
     )
   }
@@ -403,6 +413,23 @@ export default function Calendar() {
       <div style={{ marginBottom: 12 }}>
         <h1 className="page-title">Calendar</h1>
       </div>
+
+      {shouldShowMercuryBanner(state.settings.showMercuryBanner, mercury) && (
+        <div
+          role="status"
+          style={{
+            marginBottom: 12,
+            padding: '8px 10px',
+            borderRadius: 10,
+            color: '#f4a261',
+            background: 'rgba(244,162,97,0.12)',
+            border: '0.5px solid rgba(244,162,97,0.35)',
+            fontSize: 12,
+          }}
+        >
+          ☿ Mercury retrograde until {mercury.endDate}
+        </div>
+      )}
 
       {/* Source filter */}
       <FilterBar
@@ -504,7 +531,9 @@ export default function Calendar() {
             if (birthdayEvents.some(e => e.start === ds)) {
               dayEvents.push({ id: 'bday', label: 'Birthday', emoji: '🎂', color: '#e8a0c4', bg: 'rgba(232,160,196,0.18)' })
             }
-            const storedDay = state.calendarEvents.filter(e => eventOccursOnDate(e, ds))
+            const storedDay = state.calendarEvents
+              .filter(e => e.source !== 'google' || state.settings.showGoogleCalendar)
+              .filter(e => eventOccursOnDate(e, ds))
             for (const e of storedDay) {
               const cat = e.categoryId ? DEFAULT_CATEGORIES.find(c => c.id === e.categoryId) : undefined
               const emoji = cat?.emoji ?? (e.source === 'google' ? 'G' : '')
@@ -718,7 +747,7 @@ export default function Calendar() {
                           {isGoogle && <span style={{ fontSize: 9, color: '#4285F4', border: '0.5px solid #4285F4', borderRadius: 4, padding: '1px 5px', fontFamily: 'Space Mono, monospace' }}>G</span>}
                           {isCosmic && <span style={{ fontSize: 10, color: 'var(--accent-amethyst)', fontFamily: 'Space Mono, monospace' }}>✦</span>}
                           {isBirthday && <span style={{ fontSize: 9, color: '#e8a0c4', border: '0.5px solid #e8a0c4', borderRadius: 4, padding: '1px 5px', fontFamily: 'Space Mono, monospace' }}>bday</span>}
-                          {(isManual || isGoogle) && (
+                          {isManual && (
                             <button
                               onClick={e => { e.stopPropagation(); openEdit(event) }}
                               style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: 13, padding: 0, lineHeight: 1 }}

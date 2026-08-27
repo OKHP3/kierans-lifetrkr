@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useApp, genId } from '../context/AppContext'
 import { getTodayISO } from '../lib/date'
+import { useGoogleTasks } from '../hooks/useGoogleTasks'
 import type { TaskPriority } from '../types'
 
 type SortKey = 'Priority' | 'Date Added' | 'Title'
@@ -9,6 +10,7 @@ const PRIORITY_COLORS: Record<TaskPriority, string> = { high: '#e07070', normal:
 
 export default function Someday() {
   const { state, dispatch } = useApp()
+  const { loading: googleLoading, error: googleError, retry: retryGoogleTasks } = useGoogleTasks()
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<SortKey>('Priority')
   const [showAdd, setShowAdd] = useState(false)
@@ -121,7 +123,14 @@ export default function Someday() {
         <div style={{ marginTop: 20 }}>
           <p className="section-label">FROM GOOGLE TASKS</p>
           <div className="card">
-            {state.googleTasks.filter(t => (!t.due || t.due > today) && t.status === 'needsAction').length === 0 ? (
+            {googleLoading ? (
+              <p role="status" aria-live="polite" style={{ fontSize: 13, color: 'var(--text-ghost)', margin: 0 }}>Loading Google Tasks…</p>
+            ) : googleError ? (
+              <div>
+                <p role="alert" style={{ fontSize: 12, color: '#e07070', margin: '0 0 8px' }}>{googleError}</p>
+                <button className="btn-ghost" style={{ fontSize: 12 }} onClick={retryGoogleTasks}>Retry</button>
+              </div>
+            ) : state.googleTasks.filter(t => (!t.due || t.due > today) && t.status === 'needsAction').length === 0 ? (
               <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: 0 }}>No future Google Tasks.</p>
             ) : (
               state.googleTasks

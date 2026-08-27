@@ -37,7 +37,7 @@ The June 22, 2026 second build session advanced from v0.1.0 (UI shell only) to v
 
 ### Wired but awaiting environment keys
 
-- **Google Calendar / Tasks:** All library code exists (`googleCalendar.ts`, `googleTasks.ts`, `useGoogleAuth.ts`, `GoogleConnectButton.tsx`, `TokenExpiryBanner.tsx`). Blocked by `VITE_GOOGLE_CLIENT_ID` not set in Replit environment. Settings shows "VITE_GOOGLE_CLIENT_ID not set in environment."
+- **Google Calendar / Tasks:** Library code, configured client wiring, pagination/error handling, and explicit UI states are active. The real-account consent, lifecycle, and two-account journey remain owner-run evidence gates; see `docs/GOOGLE-READONLY-EVIDENCE.md`.
 - **Claude oracle message:** `generateOracleMessage()` in `oracle.ts` calls the configured oracle worker. Without a worker, it falls back gracefully to `card.meaning_up` (the tarot card's upright meaning). The fallback is functional but generic.
 - **Horoscope:** `fetchHoroscope()` requires `birthSign` set in Settings. When set, it calls freehoroscopeapi.com. Reliability of this free API is unknown.
 

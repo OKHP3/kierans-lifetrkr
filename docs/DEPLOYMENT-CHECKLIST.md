@@ -33,3 +33,25 @@ After the Pages workflow completes, verify:
 Offline behavior is intentionally not claimed: there is no service worker.
 Test the installed shell while online and record browser/OS results rather
 than treating localStorage persistence as offline app support.
+
+## Evidence record — August 27, 2026
+
+### Pre-push transport check
+
+From the Replit Linux workspace, the public Pages host returned HTTP 200 for
+the app shell, `404.html`, `manifest.json`, `favicon.svg`,
+`icons/icon-192.png`, `icons/icon-512.png`, `icons/apple-touch-icon.png`,
+`icons/favicon-32.png`, and `og-image.png`. The shell also rendered from a
+hash URL in a browser capture without application console errors.
+
+The remote `main` SHA at this point was the older published candidate, not the
+storage-failure repair being reviewed. Therefore these results are a transport
+check only and do not close the published-identity gate. Hash fragments are
+client-side and cannot be tested by plain HTTP requests; each supported
+fragment must be opened in a browser after the deployment workflow completes.
+
+### Final publication record
+
+Append the post-push workflow URL, published commit SHA, verification timestamp,
+browser/OS, and HTTP status plus content type for every item above here. A green
+local build is not a substitute for that read-back.

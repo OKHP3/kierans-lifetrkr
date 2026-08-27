@@ -63,7 +63,7 @@ function clearHookLog(fixture) {
 
 async function createRemoteCommit(fixture, name, contents) {
   const clone = await mkdtemp(join(fixture.root, "remote-writer-"));
-  execFileSync("git", ["clone", "--quiet", fixture.remote, clone], { encoding: "utf8" });
+  execFileSync("git", ["clone", "--quiet", "--branch", "main", fixture.remote, clone], { encoding: "utf8" });
   configureRepo(clone);
   await writeFile(join(clone, name), contents);
   git(clone, "add", name);

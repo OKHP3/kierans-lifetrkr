@@ -303,6 +303,35 @@ export default function Settings() {
               <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Show tasks due today</span>
               <Toggle checked={s.showTasksDueToday} onChange={v => update({ showTasksDueToday: v })} />
             </div>
+            {state.taskLists.length > 0 && (
+              <div>
+                <p className="input-label" style={{ marginTop: 6, marginBottom: 6 }}>TASK LISTS</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {state.taskLists.map(list => {
+                    const isSelected = s.selectedTaskLists.length === 0 || s.selectedTaskLists.includes(list.id)
+                    return (
+                      <label key={list.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-secondary)' }}>
+                        <input
+                          type="checkbox"
+                          aria-label={`Show Google Task list ${list.title}`}
+                          checked={isSelected}
+                          onChange={event => {
+                            const selected = s.selectedTaskLists.length === 0
+                              ? state.taskLists.map(item => item.id)
+                              : [...s.selectedTaskLists]
+                            const next = event.target.checked
+                              ? [...new Set([...selected, list.id])]
+                              : selected.filter(id => id !== list.id)
+                            update({ selectedTaskLists: next.length === state.taskLists.length ? [] : next })
+                          }}
+                        />
+                        {list.title}
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

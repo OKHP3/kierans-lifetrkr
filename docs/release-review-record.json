@@ -45,6 +45,37 @@
     }
   ],
   "concordance": "material agreement on bounded code/build readiness and missing runtime/manual evidence",
+  "google_readonly_activation": {
+    "verification_date": "2026-08-27",
+    "environment": "Replit Linux workspace; Vite workflow on port 5000; UTC-controlled local API harness",
+    "client_id_secret_present": true,
+    "client_id_value_recorded": false,
+    "local_harness": {
+      "calendar_pagination": "pass",
+      "task_list_pagination": "pass",
+      "task_pagination": "pass",
+      "empty_responses": "pass",
+      "typed_403_errors": "pass",
+      "profile_subject_handling": "pass",
+      "simulated_namespace_isolation": "pass"
+    },
+    "real_account_journey": "not-run",
+    "real_account_reason": "No interactive authenticated browser path was available in this agent session.",
+    "evidence": "docs/GOOGLE-READONLY-EVIDENCE.md"
+  },
+  "storage_failure_activation": {
+    "verification_date": "2026-08-27",
+    "environment": "Replit Linux workspace; Bun 1.3.6 source-path harness with in-memory browser storage",
+    "simulated_states": {
+      "normal_write_and_readback": "pass",
+      "throwing_storage": "pass",
+      "silent_non_persisting_storage": "pass",
+      "visible_warning_and_retry_ui": "confirmed in source"
+    },
+    "real_browser_quota_or_private_mode": "not-run",
+    "evidence": "docs/RELEASE-REVIEW-RECORD.md",
+    "classification": "confirmed for simulated states; runtime provisional"
+  },
   "disruptor": {
     "triggered": true,
     "authority": "exploratory",
@@ -57,7 +88,7 @@
     "test_results": [
       { "hypothesis": "Pages mismatch", "status": "not-run", "next_test": "Smoke-test the published URL, every hash route, and required assets." },
       { "hypothesis": "Account leakage", "status": "not-run", "next_test": "Run a disposable two-account switch with storage inventory." },
-      { "hypothesis": "Storage loss", "status": "not-run", "next_test": "Force unavailable/full storage and observe user-visible recovery." },
+      { "hypothesis": "Storage loss", "status": "partially-falsified", "result": "Source-path harness observed failure detection and visible retry guidance; real browser quota/private-mode behavior remains untested.", "next_test": "Run in a real browser with unavailable/full storage and observe reload/retry behavior." },
       { "hypothesis": "Accessibility defect", "status": "not-run", "next_test": "Complete the manual accessibility matrix on phone and desktop." }
     ]
   },
@@ -74,7 +105,7 @@
       "Published Pages smoke test",
       "Real Google OAuth lifecycle and account isolation",
       "Manual accessibility matrix",
-      "Storage quota/private-mode recovery",
+      "Real browser storage quota/private-mode recovery",
       "Owner-approved account handoff rehearsal"
     ]
   },

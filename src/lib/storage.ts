@@ -19,6 +19,17 @@ function key(entity: string): string {
 }
 
 export const storage = {
+  canWrite(): boolean {
+    const probeKey = `${APP_PREFIX}:__storage_probe__`
+    try {
+      localStorage.setItem(probeKey, '1')
+      const persisted = localStorage.getItem(probeKey) === '1'
+      localStorage.removeItem(probeKey)
+      return persisted
+    } catch {
+      return false
+    }
+  },
   hasSavedData(): boolean {
     try {
       return Object.keys(localStorage).some(storedKey =>
@@ -36,19 +47,36 @@ export const storage = {
     if (!raw) return null
     try { return JSON.parse(raw) as T } catch { return null }
   },
-  set<T>(entity: string, value: T): void {
-    try { localStorage.setItem(key(entity), JSON.stringify(value)) } catch { /* disabled or full storage is non-fatal */ }
+  set<T>(entity: string, value: T): boolean {
+    try {
+      const serialized = JSON.stringify(value)
+      localStorage.setItem(key(entity), serialized)
+      return localStorage.getItem(key(entity)) === serialized
+    } catch {
+      return false
+    }
   },
-  remove(entity: string): void {
-    try { localStorage.removeItem(key(entity)) } catch { /* unavailable storage */ }
+  remove(entity: string): boolean {
+    try {
+      localStorage.removeItem(key(entity))
+      return true
+    } catch {
+      return false
+    }
   },
-  clear(): void {
+  clear(): boolean {
     try {
       const uid = getUserId()
+      let success = true
       Object.keys(localStorage)
         .filter(k => k.startsWith(`${APP_PREFIX}:${uid}:`))
-        .forEach(k => localStorage.removeItem(k))
-    } catch { /* unavailable storage */ }
+        .forEach(k => {
+          try { localStorage.removeItem(k) } catch { success = false }
+        })
+      return success
+    } catch {
+      return false
+    }
   },
   getProfile(): GoogleProfile | null {
     let raw: string | null
@@ -59,11 +87,22 @@ export const storage = {
       return typeof profile.sub === 'string' && typeof profile.email === 'string' ? profile as GoogleProfile : null
     } catch { return null }
   },
-  setProfile(profile: GoogleProfile): void {
-    try { localStorage.setItem(`${APP_PREFIX}:profile`, JSON.stringify(profile)) } catch { /* unavailable storage */ }
+  setProfile(profile: GoogleProfile): boolean {
+    try {
+      const serialized = JSON.stringify(profile)
+      localStorage.setItem(`${APP_PREFIX}:profile`, serialized)
+      return localStorage.getItem(`${APP_PREFIX}:profile`) === serialized
+    } catch {
+      return false
+    }
   },
-  clearProfile(): void {
-    try { localStorage.removeItem(`${APP_PREFIX}:profile`) } catch { /* unavailable storage */ }
+  clearProfile(): boolean {
+    try {
+      localStorage.removeItem(`${APP_PREFIX}:profile`)
+      return true
+    } catch {
+      return false
+    }
   },
   /**
    * Read an array of records and automatically fill any missing keys using

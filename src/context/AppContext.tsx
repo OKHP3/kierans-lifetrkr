@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react'
+import React, { createContext, useContext, useReducer, useEffect, useRef, useState } from 'react'
 import type {
   AppState, RoutineTemplate, RoutineCompletion, Habit, HabitCompletion,
   Task, CalendarEvent, GoogleTask, TaskList, GoogleProfile, UserSettings,
@@ -336,6 +336,8 @@ function reducer(state: AppState, action: Action): AppState {
 interface AppCtx {
   state: AppState
   dispatch: React.Dispatch<Action>
+  storageWarning: boolean
+  retryStorage: () => void
 }
 
 const AppContext = createContext<AppCtx | null>(null)
@@ -390,21 +392,24 @@ function loadPersistedState(): Partial<AppState> {
   return result
 }
 
-function persistState(state: AppState) {
+function persistState(state: AppState): boolean {
+  let success = true
   for (const key of PERSIST_KEYS) {
     if (key === 'calendarEvents') {
       // Only persist manual events; Google events come from the API each session
-      storage.set(key, (state.calendarEvents as CalendarEvent[]).filter(e => e.source === 'manual'))
+      success = storage.set(key, (state.calendarEvents as CalendarEvent[]).filter(e => e.source === 'manual')) && success
     } else {
-      storage.set(key, state[key])
+      success = storage.set(key, state[key]) && success
     }
   }
+  return success
 }
 
 // ─── Provider ───────────────────────────────────────────────────────────────
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState)
+  const [storageWarning, setStorageWarning] = useState(false)
   const hydrated = useRef(false)
   const pendingUser = useRef<string | null>(null)
 
@@ -412,6 +417,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // initial state from overwriting a returning user's saved data.
   useEffect(() => {
     const saved = loadPersistedState()
+    if (!storage.canWrite()) setStorageWarning(true)
     dispatch({ type: 'LOAD_STATE', payload: saved })
   }, [])
 
@@ -437,11 +443,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Do not create a guest namespace before first launch is acknowledged.
     // The welcome flow records its completion before the app becomes active.
     if (!storage.hasSavedData()) return
-    persistState(state)
+    setStorageWarning(!persistState(state))
   }, [state])
 
+  function retryStorage() {
+    setStorageWarning(!persistState(state))
+  }
+
   return (
-    <AppContext.Provider value={{ state, dispatch }}>
+    <AppContext.Provider value={{ state, dispatch, storageWarning, retryStorage }}>
       {children}
     </AppContext.Provider>
   )

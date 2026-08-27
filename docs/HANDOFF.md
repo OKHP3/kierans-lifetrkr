@@ -17,6 +17,7 @@ testing, and storage-failure testing remain owner-run gates. No account
 transfer has been performed.
 
 Candidate and review record: `docs/RELEASE-REVIEW-RECORD.md`.
+Google activation evidence: `docs/GOOGLE-READONLY-EVIDENCE.md`.
 
 ## Accounts Currently Used
 
@@ -119,7 +120,7 @@ events and local task actions never write back to Google.
 | Risk | Owner | Mitigation / decisive evidence | Expiry trigger |
 |---|---|---|---|
 | Google consent, expiry, disconnect, pagination, or account isolation differs at runtime | Kieran with Jamie during first smoke test | Disposable/test account journey using the matrix above; keep Google reads read-only | Any OAuth scope, GIS, Google API, or account change |
-| Browser storage quota/private mode can lose a user edit without a visible recovery path | Jamie before public stable approval | Forced unavailable/full-storage test; document user-visible behavior and recovery | Any persistence/reducer/storage change |
+| Browser storage quota/private mode can lose a user edit without a visible recovery path | Jamie before public stable approval | Source-path harness now confirms visible warning and retry for throwing/silent non-persisting storage; real browser quota/private-mode journey remains required | Any persistence/reducer/storage change |
 | Accessibility source check misses real keyboard, screen-reader, zoom, contrast, or touch defects | Kieran owner test, Jamie records | Complete `docs/ACCESSIBILITY-CHECKLIST.md` on phone and desktop | Any shared control, dialog, navigation, or CSS change |
 | Published Pages route/assets differ from the local artifact | Jamie until transfer; Kieran after transfer | Pages URL smoke test for every hash route and required asset; retain workflow URL and timestamp | Any Pages/base-path/workflow/build change |
 | Optional oracle worker or third-party APIs change availability or privacy behavior | Kieran as service owner | Keep local fallback; inspect worker payload boundary and provider settings before enabling | Worker URL/provider/prompt or external API change |

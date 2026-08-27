@@ -20,6 +20,7 @@ import MobileHeader from './components/MobileHeader'
 import SideNav from './components/SideNav'
 import ThemeToggle from './components/ThemeToggle'
 import TokenExpiryBanner from './components/TokenExpiryBanner'
+import StorageWarning from './components/StorageWarning'
 import Home from './pages/Home'
 import Rituals from './pages/Rituals'
 import Habits from './pages/Habits'
@@ -38,6 +39,7 @@ function AppShellContent() {
   return (
     <>
       <TokenExpiryBanner />
+      <StorageWarning />
       <div className="app-container">
         <SideNav />
         <div className="main-area">
