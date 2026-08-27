@@ -3,15 +3,14 @@ name: Oracle delivery decision
 description: Direct browser fetch vs Cloudflare Worker for Claude oracle — which is current and why
 ---
 
-# Oracle Delivery: Direct Browser Fetch vs Cloudflare Worker
+# Oracle Delivery: Local Fallback and Optional Worker
 
 ## The rule
-The **current implementation** uses direct browser fetch to Anthropic's API with `VITE_ANTHROPIC_API_KEY` and the `anthropic-dangerous-direct-browser-access: true` header. The CF Worker approach is a documented alternative.
+The **current implementation** uses local tarot/celestial data with an optional server-side oracle worker configured by `VITE_ORACLE_WORKER_URL`. No Anthropic credential is exposed to the browser.
 
-**Why:** The original pre-session plan (Jamie's planning doc) called for a Cloudflare Worker proxy so the API key would never appear in client code. The June 22 build session diverged and implemented direct browser fetch instead — simpler, no Worker to deploy, acceptable for a personal single-user app.
+**Why:** Keeping provider credentials outside the client preserves the app's client-only privacy boundary while allowing the worker to remain an optional enhancement. The local tarot meaning is always available when the worker is absent or unavailable.
 
 ## How to apply
-- When working on oracle features: use `VITE_ANTHROPIC_API_KEY` and direct fetch in `src/lib/oracle.ts`.
-- `VITE_ORACLE_WORKER_URL` is documented in `.env.example` and `docs/PRD-v4.0.md` Section 10 as the alternative path if someone wants to switch to CF Worker.
-- Do NOT create a Worker or reference `VITE_ORACLE_WORKER_URL` in code unless explicitly asked to switch approaches.
-- `docs/PRD-v4.0.md` Section 10 has the full migration path if the switch is ever needed.
+- When working on oracle features: keep the local fallback functional and send only the documented celestial summary to `VITE_ORACLE_WORKER_URL`.
+- Do not add a client-side provider credential or send profile, task, habit, or calendar data to the worker.
+- The worker is optional; its absence, failure, rate limit, or invalid response must fall back to the tarot card's upright meaning.

@@ -19,6 +19,17 @@ function key(entity: string): string {
 }
 
 export const storage = {
+  hasSavedData(): boolean {
+    try {
+      return Object.keys(localStorage).some(storedKey =>
+        storedKey === `${APP_PREFIX}:profile` ||
+        (storedKey.startsWith(`${APP_PREFIX}:`) &&
+          !storedKey.startsWith(`${APP_PREFIX}:public:`)),
+      )
+    } catch {
+      return false
+    }
+  },
   get<T>(entity: string): T | null {
     let raw: string | null
     try { raw = localStorage.getItem(key(entity)) } catch { return null }
@@ -54,7 +65,6 @@ export const storage = {
   clearProfile(): void {
     try { localStorage.removeItem(`${APP_PREFIX}:profile`) } catch { /* unavailable storage */ }
   },
-
   /**
    * Read an array of records and automatically fill any missing keys using
    * the provided defaults. Safe for legacy localStorage data that predates

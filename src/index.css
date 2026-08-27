@@ -305,6 +305,82 @@ button, a, input, textarea, select {
   color: var(--text-primary);
 }
 
+/* ─── First launch ──────────────────────────────────────────── */
+.welcome-screen {
+  min-height: 100%;
+  overflow-y: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 22px;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 20%, var(--glow-amethyst), transparent 40%),
+    var(--bg);
+}
+
+.welcome-content {
+  width: min(100%, 360px);
+}
+
+.welcome-cat {
+  display: block;
+  width: clamp(118px, 38vw, 170px);
+  height: auto;
+  margin: 0 auto 22px;
+  border-radius: 28%;
+  box-shadow: 0 14px 40px var(--glow-amethyst-md);
+}
+
+.welcome-eyebrow {
+  color: var(--accent-gold);
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.welcome-content h1 {
+  color: var(--text-primary);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(36px, 10vw, 52px);
+  font-weight: 300;
+  line-height: 1;
+}
+
+.welcome-tagline {
+  color: var(--text-secondary);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  margin-top: 12px;
+}
+
+.welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 28px auto 0;
+}
+
+.welcome-actions > div {
+  display: contents !important;
+}
+
+.welcome-guest-button {
+  width: 100%;
+  justify-content: center;
+  min-height: 42px;
+}
+
+.welcome-note {
+  color: var(--text-ghost);
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 18px auto 0;
+  max-width: 290px;
+}
+
 /* ─── Inputs ─────────────────────────────────────────────────── */
 .input-field {
   background: var(--surface-raised);

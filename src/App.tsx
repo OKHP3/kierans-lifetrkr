@@ -15,7 +15,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { HashRouter, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
-import { AppProvider } from './context/AppContext'
 import BottomNav from './components/BottomNav'
 import MobileHeader from './components/MobileHeader'
 import SideNav from './components/SideNav'
@@ -32,6 +31,7 @@ import Origin from './pages/Origin'
 import Footer from './components/Footer'
 import { usePageTracking } from './hooks/usePageTracking'
 import WelcomeScreen, { getWelcomeResetEventName, shouldShowWelcome } from './components/WelcomeScreen'
+import { AppProvider } from './context/AppContext'
 
 function AppShellContent() {
   usePageTracking()
@@ -93,7 +93,6 @@ function AppShell() {
     </ThemeProvider>
   )
 }
-
 export default function App() {
   return (
     <HashRouter>

@@ -16,8 +16,8 @@ function getSystemTheme(): 'dark' | 'light' {
 
 function loadThemePref(): ThemeValue {
   try {
-    const stored = localStorage.getItem('lifetrkr_theme')
-    return stored === 'dark' || stored === 'light' || stored === 'system' ? stored : 'dark'
+    const saved = localStorage.getItem('lifetrkr_theme')
+    return saved === 'dark' || saved === 'light' || saved === 'system' ? saved : 'dark'
   } catch {
     return 'dark'
   }

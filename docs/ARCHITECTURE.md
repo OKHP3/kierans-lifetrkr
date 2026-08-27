@@ -65,3 +65,22 @@ browser bundle.
 
 See `README.md`, `docs/DEPLOYMENT-CHECKLIST.md`, and
 `docs/RELEASE-TRUTH-BASELINE.md` for setup, deployment, and evidence status.
+
+# Kieran's LifeTrkr — PRD Amendment 01 (Historical)
+**Amends:** Kieran's LifeTrkr PRD v1.0  
+**Date:** June 21, 2026  
+**Subject:** Replit-native build architecture + Jamie-to-Kieran account transition plan  
+**Status:** Historical reference — does not describe the current application
+
+> **Current architecture:** LifeTrkr is a client-only React/Vite SPA deployed as
+> static files to GitHub Pages. It uses `HashRouter`, browser `localStorage` for
+> user data, session storage for the Google access token, and direct browser
+> requests to Google APIs and optional public oracle providers. There is no
+> Express server, application database, or publisher-managed credential
+> boundary in the shipped app. See `README.md` and
+> `docs/RELEASE-TRUTH-BASELINE.md` for the current source-backed description.
+>
+> The sections below preserve the approved Replit-native proposal for historical
+> context. They are not implementation instructions for the current codebase.
+
+---

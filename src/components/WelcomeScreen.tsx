@@ -1,4 +1,6 @@
+import { useEffect, useRef } from 'react'
 import GoogleConnectButton from './GoogleConnectButton'
+import catAccent from '../assets/images/cat-accent.png'
 
 const WELCOME_KEY = 'lifetrkr:welcomed'
 const WELCOME_RESET_EVENT = 'lifetrkr:welcome-reset'
@@ -42,6 +44,12 @@ export function shouldShowWelcome(): boolean {
 }
 
 export default function WelcomeScreen({ onDismiss }: { onDismiss: () => void }) {
+  const guestButtonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    guestButtonRef.current?.focus()
+  }, [])
+
   function continueAsGuest() {
     markWelcomeComplete()
     onDismiss()
@@ -49,25 +57,25 @@ export default function WelcomeScreen({ onDismiss }: { onDismiss: () => void }) 
 
   return (
     <main className="welcome-screen" aria-labelledby="welcome-title">
-      <div className="welcome-card">
-        <div className="welcome-glyph" aria-hidden="true">✦</div>
-        <p className="welcome-kicker">A quieter way to keep track</p>
+      <div className="welcome-content">
+        <img className="welcome-cat" src={catAccent} alt="" aria-hidden="true" />
+        <p className="welcome-eyebrow">A quieter way to keep track</p>
         <h1 id="welcome-title">Kieran's LifeTrkr</h1>
         <p className="welcome-tagline">Your day. Your rituals. Your rules.</p>
 
-        <div className="welcome-copy">
+        <div className="welcome-note">
           <p>LifeTrkr is a personal, browser-based life OS for the small things that make a day yours.</p>
           <p>Your records stay in this browser. Google is optional and read-only, used only for Calendar and Tasks.</p>
         </div>
 
         <div className="welcome-actions">
           <GoogleConnectButton
-            onComplete={() => {
+            onConnected={() => {
               markWelcomeComplete()
               onDismiss()
             }}
           />
-          <button className="welcome-guest" onClick={continueAsGuest}>
+          <button ref={guestButtonRef} className="btn-ghost welcome-guest-button" onClick={continueAsGuest}>
             Use without Google
           </button>
         </div>

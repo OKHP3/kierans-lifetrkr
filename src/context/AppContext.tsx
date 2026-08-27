@@ -30,7 +30,7 @@ const defaultSettings: UserSettings = {
   birthDay: '',
   birthYear: '',
   social: { instagram: '', twitter: '', tiktok: '', facebook: '', linkedin: '' },
-  theme: 'system',
+  theme: 'dark',
 }
 
 const defaultTemplates: RoutineTemplate[] = ([...DAYS_OF_WEEK] as string[]).map(day => ({
@@ -434,6 +434,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       hydrated.current = true
       return
     }
+    // Do not create a guest namespace before first launch is acknowledged.
+    // The welcome flow records its completion before the app becomes active.
+    if (!storage.hasSavedData()) return
     persistState(state)
   }, [state])
 
