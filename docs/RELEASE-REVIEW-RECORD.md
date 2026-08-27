@@ -1,10 +1,10 @@
 # LifeTrkr stable-release review record
 
 **Review date:** August 24, 2026  
-**Candidate commit:** `2bd74eadfbca7d0fa29cf35783762d68b9496591`  
-**Repository state:** local `main` = `origin/main`; worktree clean when frozen  
+**Candidate commit:** `b3d19b526608501e64faf468c5a995cf45399410`
+**Repository state:** local `main` = `origin/main`; worktree clean after publication
 **Application version:** `v0.1.10`  
-**Review status:** complete with bounded approval; evidence closure in progress
+**Review status:** complete with bounded approval; published Pages evidence closed
 
 ## Decision question and scope
 
@@ -25,12 +25,19 @@ OAuth, offline operation, or universal accessibility/reliability claims.
 
 | Input | SHA-256 / identity |
 |---|---|
-| Git commit | `2bd74eadfbca7d0fa29cf35783762d68b9496591` |
-| `package.json` | `a9e4525ccc379ff008d52a942b61429819ce1798b8a7eb31b01450500c10b28a` |
-| `package-lock.json` | `8b863b2a5bf9790c67908b99aaec769b7d3952cdc33d34669b7feb0db986f6c1` |
-| `dist/index.html` | `ebf67c1cd8634cd8a3b8b09a237ac4af1bcec72ce54f556433b975cd63186e46` |
-| `dist/assets/index-CcIRy9rq.js` | `7631459e2657c090e6d63d58e067f4936e067834542145fbb62ff69c8f868ac2` |
-| `dist/assets/index-WnUXXFBk.css` | `dc98179c705667daea47cb1de4fb41ec19e7c64bc83136e96438aa32f51c1534` |
+| Git commit | `b3d19b526608501e64faf468c5a995cf45399410` |
+| `package.json` | `3a67857d76b7372fdc8280a3c323e5e63c527a95c460418cc4970e40e0eb4203` |
+| `package-lock.json` | `5d1e868b9f6861c035dab0d717c2eff7a8d2f5c4bb591b424de553b7c41192da` |
+| `dist/index.html` / `dist/404.html` | `f2e1a2349aeac91a195c213103124c2add83783be7233a8e9436e8fc6a5d0e83` |
+| `dist/assets/index-CqpsoH4Q.js` | `3540ebdb78a5c65dfa5c55736abe8c8d9e62649dd6133b258df23b7e760064ea` |
+| `dist/assets/index-DxwRTKsr.css` | `2928a157d11c871a7491b9d935694bf131682e4ac7e9430fe4fece9ecd7f30fd` |
+| `dist/manifest.json` | `d4aef38c3996386eb4de2623bf8665e5862549319ef9605a2cfc384ffb6e0ce2` |
+| `dist/favicon.svg` | `be7f25c6ff02eb9e2b968b2e8c13f9216f65a3a11b0f2a359d55baf9d7d6810c` |
+| `dist/icons/icon-192.png` | `453bcbb8643d93711dd20534fae6ba2e5f230d65707feaa6fe1f22d80ce8e691` |
+| `dist/icons/icon-512.png` | `fb142beb5f9db8120f4c033d149f207a64190d371c61b573f9d113b95640a0c9` |
+| `dist/icons/apple-touch-icon.png` | `3515809c5381c43c195b5b02f741a38419355813c7d1e00a65b4d8105981a3bd` |
+| `dist/icons/favicon-32.png` | `130d6316cb68693f948d44788e9e1f3c45a2758c250a3e3c8aa200035c7ddbb1` |
+| `dist/og-image.png` | `22e9088e59d46bd5ee5fccbc165e46024ca546b96277940dbea22a8a1bbd5455` |
 
 The `dist/404.html` Pages fallback was copied from the candidate index during
 artifact validation and matched it byte-for-byte.
@@ -42,12 +49,12 @@ artifact validation and matched it byte-for-byte.
 | CLM-01 | Candidate is reproducible from a pushed commit | Confirmed | Git identity/status; `package.json`; `package-lock.json` | Handoff cannot identify what was reviewed | Re-run from a fresh clone |
 | CLM-02 | Clean install is portable and does not rewrite the lockfile | Confirmed | `npm ci` with public registry; before/after hash; no internal URL | CI may depend on private infrastructure or drift | Repeat on GitHub Actions |
 | CLM-03 | Type/build/a11y source/artifact gates pass | Confirmed | `npm run check`, `npm run check:a11y`, `npm run build`, `scripts/inspect-artifact.mjs` | Broken source or Pages artifact could ship | Preserve green CI run |
-| CLM-04 | HashRouter Pages artifact has required local assets and fallback | Confirmed in artifact; runtime provisional | `dist/index.html`, `dist/404.html`, artifact script | Published routes/assets can still be stale or misconfigured | Smoke-test deployed URL and all hash routes |
+| CLM-04 | HashRouter Pages artifact has required assets and fallback | Confirmed for published candidate | Clean-build hash match; successful Pages workflow; public shell, fragment-shell, asset, and content-type read-back | A future build or Pages configuration can drift | Re-run on any release/base-path/workflow change |
 | CLM-05 | Google access is read-only in source and local API paths | Confirmed in code/local harness; runtime provisional | `SCOPES`, Google client modules, `docs/GOOGLE-READONLY-EVIDENCE.md` | Consent/runtime behavior could violate the product promise | Disposable-account lifecycle test |
 | CLM-06 | Oracle provider key is not shipped to the browser | Confirmed in code/bundle scan | `src/lib/oracle.ts`, env docs, production bundle scan | Provider credential exposure | Repeat scan on every release; inspect worker separately |
 | CLM-07 | Local records remain isolated and recoverable across normal reloads | Supported in code/local namespace harness; real account-switch runtime provisional | storage namespace, malformed-read handling, storage failure harness, `docs/GOOGLE-READONLY-EVIDENCE.md` | Cross-account leakage or lost edits | Two-account, reload, malformed/quota journey |
 | CLM-08 | Accessibility is release-ready | Provisional only | Source heuristic and checklist | Users may encounter inaccessible controls | Complete manual matrix |
-| CLM-09 | Stable public release is ready | Deferred | Missing live/manual evidence listed above | Users may rely on unproven behavior | Resolve CLM-04, 05, 07, 08 |
+| CLM-09 | Stable public release is ready | Deferred | Live/manual evidence remains bounded in CLM-05, CLM-07, and CLM-08 | Users may rely on unproven behavior | Resolve remaining runtime/manual gates |
 | CLM-10 | Core recurrence, Mercury banner, and oracle fallback behavior works across configured states | Confirmed for tested states | August 27, 2026 behavioral verification addendum; direct source-path checks and rendered `OracleCard` checks | A date or optional-provider state could hide required routines, warnings, or the local oracle | Preserve the targeted checks when release code changes |
 | CLM-11 | Optional oracle worker boundary is private, daily-cached, and safely degradable | Confirmed for source and simulated states; live activation provisional | August 27, 2026 oracle worker boundary addendum; source-path harness; configured and no-worker bundle scans | A deployed worker could have a bad contract, CORS issue, or incorrectly stored provider credential | Owner deploys worker and records redacted live response, CORS, and worker-secret review |
 | CLM-12 | A storage write failure is visible and retryable instead of silently losing the latest edit | Confirmed for simulated throwing and silent non-persisting storage; real browser behavior provisional | August 27, 2026 storage failure harness; `StorageWarning`; write read-back checks | Data can still be lost if a browser's quota/private-mode behavior differs | Owner-run quota/private-mode browser journey |
@@ -88,7 +95,7 @@ these counterexamples conceptually against the frozen evidence:
 
 | Hypothesis | What would falsify the objection | Result |
 |---|---|---|
-| Pages deploy serves an old artifact or broken hash-route assets | Live URL and every documented route/asset return and render from this commit | Not run; objection survives |
+| Pages deploy serves an old artifact or broken hash-route assets | Live URL and every documented route/asset return and render from this commit | Falsified for shell/assets: CI/Pages passed and public hashes match the clean build; route-specific authenticated rendering remains bounded |
 | A second Google account can see the first account's namespace | Disposable two-account switch with before/after storage inventory | Not run; objection survives |
 | Full/private storage silently loses a user edit | Forced write failure with visible recovery guidance or explicit safe failure | Partially falsified in the source-path harness; real browser quota/private-mode behavior remains untested |
 | Keyboard/screen-reader/200% zoom behavior fails despite source labels | Completed manual matrix on phone and desktop | Not run; objection survives |
@@ -109,10 +116,10 @@ zero high-severity production audit findings; type-check, accessibility-source,
 production build, artifact inspection, workflow restart, and clean preview.
 
 **Limits:** no offline claim; no completed transfer; no production OAuth claim;
-no universal persistence, accessibility, third-party availability, or published
-Pages claim until the explicit tests above are recorded. Simulated storage
-failures are now visible and retryable, but this does not substitute for a real
-browser quota/private-mode run.
+no universal persistence, accessibility, or third-party availability claim.
+Published Pages shell/assets and clean-build identity are now evidenced.
+Simulated storage failures are visible and retryable, but this does not
+substitute for a real browser quota/private-mode run.
 
 ## Risk ownership and expiry
 
@@ -262,12 +269,15 @@ regression fixture was corrected to clone its explicit `main` branch; this
 removed an environment-sensitive fixture failure without changing the guarded
 sync behavior.
 
-The pre-push Pages read-back returned HTTP 200 for the shell, `404.html`,
-manifest, favicon, required PNG icons, Apple touch icon, 32px favicon, and OG
-image, but the remote `main` SHA was still the prior published candidate.
-Those results are retained as a pre-push transport check only. The post-push
-workflow URL, published commit identity, all fragment-route browser renders,
-and final asset hashes must be appended before CLM-04 can be upgraded.
+The pre-push Pages read-back is retained as a transport check only. After
+publication, CI and Deploy to GitHub Pages both succeeded for
+`b3d19b526608501e64faf468c5a995cf45399410`. The public shell, `404.html`,
+manifest, favicon, all required icons, OG image, and hashed JS/CSS entrypoints
+returned HTTP 200 with the expected content types and matched a clean build
+from that commit by SHA-256. Each supported fragment URL returned the HTTP 200
+SPA shell; a desktop browser capture of `#/today` rendered without application
+console errors. Hash fragments are client-side, so route-specific authenticated
+content is not claimed from those transport checks.
 
 The desktop rendered smoke had no application browser-console errors. An
 interactive narrow/desktop keyboard, screen-reader, zoom, contrast, and touch
@@ -275,8 +285,8 @@ matrix was not available in this session and remains **NOT RUN**. Google
 lifecycle evidence remains cross-referenced in
 `docs/GOOGLE-READONLY-EVIDENCE.md`; it is not duplicated here.
 
-The bounded decision remains `approve-with-limits`. CLM-12 is confirmed for
-simulated failures, while real browser quota/private-mode behavior, Pages
-identity/read-back for this tree, CLM-05/CLM-07 runtime lifecycle, CLM-08
-manual accessibility, live oracle worker activation, and handoff remain
-owner-run or otherwise unresolved.
+The bounded decision remains `approve-with-limits`. CLM-04 is confirmed for the
+published shell, fallback, assets, and clean-build identity. CLM-12 is
+confirmed for simulated failures, while real browser quota/private-mode
+behavior, CLM-05/CLM-07 runtime lifecycle, CLM-08 manual accessibility, live
+oracle worker activation, and handoff remain owner-run or otherwise unresolved.

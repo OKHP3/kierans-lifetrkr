@@ -4,8 +4,8 @@
   "review_mode": "five-way",
   "evaluation_status": "complete",
   "artifact": {
-    "path": "git:2bd74eadfbca7d0fa29cf35783762d68b9496591",
-    "sha256": "2bd74eadfbca7d0fa29cf35783762d68b9496591",
+    "path": "git:b3d19b526608501e64faf468c5a995cf45399410",
+    "sha256": "b3d19b526608501e64faf468c5a995cf45399410",
     "version": "v0.1.10"
   },
   "decision_question": "Can the frozen candidate be handed to Kieran as a controlled pre-production release without claiming universal reliability, completed account transfer, or offline support?",
@@ -76,6 +76,31 @@
     "evidence": "docs/RELEASE-REVIEW-RECORD.md",
     "classification": "confirmed for simulated states; runtime provisional"
   },
+  "published_pages_activation": {
+    "verification_date": "2026-08-27",
+    "environment": "Public GitHub Pages over HTTPS; Replit Linux clean build; desktop browser capture",
+    "published_commit": "b3d19b526608501e64faf468c5a995cf45399410",
+    "ci_run": "https://github.com/OKHP3/kierans-lifetrkr/actions/runs/33031353223",
+    "pages_run": "https://github.com/OKHP3/kierans-lifetrkr/actions/runs/33031353237",
+    "workflow_results": {
+      "ci": "success",
+      "deploy_to_github_pages": "success"
+    },
+    "supported_fragment_shells": {
+      "#/": "http-200",
+      "#/calendar": "http-200",
+      "#/today": "http-200",
+      "#/rituals": "http-200",
+      "#/habits": "http-200",
+      "#/someday": "http-200",
+      "#/settings": "http-200",
+      "#/origin": "http-200"
+    },
+    "required_assets": "http-200 and expected content types",
+    "clean_build_hash_match": true,
+    "browser_capture": "#/today rendered without application console errors",
+    "classification": "confirmed for published shell, fallback, assets, and clean-build identity; route-specific authenticated rendering bounded"
+  },
   "disruptor": {
     "triggered": true,
     "authority": "exploratory",
@@ -86,7 +111,7 @@
       "Manual keyboard, screen-reader, zoom, contrast, or touch defects may survive source checks."
     ],
     "test_results": [
-      { "hypothesis": "Pages mismatch", "status": "not-run", "next_test": "Smoke-test the published URL, every hash route, and required assets." },
+      { "hypothesis": "Pages mismatch", "status": "falsified-for-shell-and-assets", "result": "CI and Pages succeeded for the published commit; every supported fragment URL returned the SPA shell, required assets returned expected HTTP status/content types, and public hashes matched a clean build.", "next_test": "Repeat on any release, base-path, workflow, or asset change." },
       { "hypothesis": "Account leakage", "status": "not-run", "next_test": "Run a disposable two-account switch with storage inventory." },
       { "hypothesis": "Storage loss", "status": "partially-falsified", "result": "Source-path harness observed failure detection and visible retry guidance; real browser quota/private-mode behavior remains untested.", "next_test": "Run in a real browser with unavailable/full storage and observe reload/retry behavior." },
       { "hypothesis": "Accessibility defect", "status": "not-run", "next_test": "Complete the manual accessibility matrix on phone and desktop." }
@@ -102,7 +127,6 @@
       "Passing type-check, source accessibility check, production build, artifact check, and clean preview."
     ],
     "unresolved_items": [
-      "Published Pages smoke test",
       "Real Google OAuth lifecycle and account isolation",
       "Manual accessibility matrix",
       "Real browser storage quota/private-mode recovery",

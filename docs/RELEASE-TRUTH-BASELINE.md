@@ -104,8 +104,8 @@ helpers. Real-account lifecycle testing remains a handoff verification item.
 | Dark mode is the default | Disputed | Theme context defaults to `system`; project intent says dark | First launch on light-system device must render dark, unless product decision changes |
 | PWA has an installable manifest | Supported in code | `public/manifest.json`, subpath-safe metadata | Browser install prompt/standalone launch remains a manual check |
 | Offline app use is supported | Not claimed | No service worker; README and deployment checklist narrow the claim | Revisit only if a tested service-worker strategy is added |
-| GitHub Pages build artifact is reproducible | Supported for local candidate | Clean `npm ci`, lockfile portability, check, audit, build, artifact inspection | Published Pages route/asset smoke test remains required |
-| Stable public release is ready | Deferred for evidence | Candidate review record; live OAuth, manual accessibility, real browser storage failure, and published smoke evidence remain bounded | Complete the decisive checks in `docs/RELEASE-REVIEW-RECORD.md` |
+| GitHub Pages build artifact is reproducible | Supported for published candidate | Clean `npm ci`, lockfile portability, check, audit, build, artifact inspection, and post-push hash match | Re-run from a fresh clone after release-tree changes |
+| Stable public release is ready | Deferred for evidence | Candidate review record; live OAuth, manual accessibility, and real browser storage failure remain bounded | Complete the remaining decisive checks in `docs/RELEASE-REVIEW-RECORD.md` |
 
 Classification meanings:
 
@@ -215,7 +215,7 @@ Run on August 24, 2026 from the frozen candidate `2bd74eadfbca7d0fa29cf35783762d
 | `npm run build` | Pass | Vite production build completed |
 | `node scripts/inspect-artifact.mjs` | Pass | Required Pages files, fallback, metadata, and hashed assets present |
 | Workflow/preview startup | Pass | Replit workflow restarted; Vite served on port 5000; preview rendered without browser console errors |
-| Published Pages smoke test | Not run | No live deployment evidence captured in this review |
+| Published Pages smoke test | Pass | Post-push CI/Pages runs and public URL/hash/asset read-back recorded below |
 | Real Google OAuth lifecycle | Partially run locally; real-account portion not run | `docs/GOOGLE-READONLY-EVIDENCE.md`; requires owner/test-account browser journey |
 | Manual accessibility matrix | Not run | Checklist exists; keyboard, screen reader, zoom, and touch results are not recorded |
 | Storage quota/private-mode recovery | Partial | Simulated throwing and silent non-persisting storage now produce a visible warning with retry; real browser quota/private-mode run remains owner-only |
@@ -404,12 +404,14 @@ and asset read-back below are recorded.
 
 ### Deployment and manual limits
 
-The pre-push Pages read-back returned HTTP 200 for the app shell, `404.html`,
-manifest, favicon, PNG icons, Apple touch icon, 32px favicon, and OG image.
-The shell rendered at a hash URL, but the remote `main` commit was still the
-older published candidate at that moment, so this pre-push read-back is not a
-claim that the reviewed repair was deployed. HashRouter fragments require a
-browser to exercise; plain HTTP cannot send the fragment to the server.
+The pre-push Pages read-back is retained as transport evidence only because the
+remote `main` commit was still the older candidate. The post-push Pages
+workflow succeeded for `b3d19b526608501e64faf468c5a995cf45399410`, and the public
+shell, fallback, entrypoints, manifest, favicon, icons, and OG image matched a
+clean build from that commit by SHA-256. Each supported fragment URL returned
+the SPA shell with HTTP 200. The browser capture covered `#/today`; fragments
+are client-side, so plain HTTP status checks do not independently prove
+route-specific authenticated rendering.
 
 The available browser capture covered a desktop rendered smoke only. An
 interactive narrow/desktop keyboard, screen-reader, zoom, contrast, and touch
@@ -419,11 +421,12 @@ pass inferred from the source heuristic.
 ### Bounded decision
 
 The release remains **approve-with-limits** for controlled pre-production
-handoff. The storage failure objection is **partially resolved for simulated
+handoff. The Pages identity/read-back objection is resolved for the published
+candidate. The storage failure objection is **partially resolved for simulated
 failures** because the app now gives visible, recoverable guidance. Public
-stable approval remains deferred for post-push Pages identity/read-back, the
-real Google lifecycle and account-isolation journey, the manual accessibility
-matrix, real browser quota/private-mode behavior, live optional-worker
-activation, and ownership handoff. This addendum expires on any change to the
-release tree, routes, persistence behavior, OAuth scopes, external endpoints,
-workflow, or Pages configuration.
+stable approval remains deferred for the real Google lifecycle and
+account-isolation journey, the manual accessibility matrix, real browser
+quota/private-mode behavior, live optional-worker activation, and ownership
+handoff. This addendum expires on any change to the release tree, routes,
+persistence behavior, OAuth scopes, external endpoints, workflow, or Pages
+configuration.

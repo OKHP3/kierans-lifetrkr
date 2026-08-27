@@ -52,6 +52,35 @@ fragment must be opened in a browser after the deployment workflow completes.
 
 ### Final publication record
 
-Append the post-push workflow URL, published commit SHA, verification timestamp,
-browser/OS, and HTTP status plus content type for every item above here. A green
-local build is not a substitute for that read-back.
+**Verification date:** August 27, 2026
+**Published commit:** `b3d19b526608501e64faf468c5a995cf45399410`
+**Workflow runs:** [CI #33031353223](https://github.com/OKHP3/kierans-lifetrkr/actions/runs/33031353223) — success; [Deploy to GitHub Pages #33031353237](https://github.com/OKHP3/kierans-lifetrkr/actions/runs/33031353237) — success
+**Environment:** Replit Linux workspace, public GitHub Pages over HTTPS; browser capture at desktop 1920×1080; no Google account or token used
+
+The deployed shell and a clean build from the published commit use the same
+hashed entrypoints: `assets/index-CqpsoH4Q.js` and
+`assets/index-DxwRTKsr.css`. The public SHA-256 hashes matched the clean local
+build for `index.html`, `404.html`, both entrypoints, `manifest.json`,
+`favicon.svg`, `icons/icon-192.png`, `icons/icon-512.png`,
+`icons/apple-touch-icon.png`, `icons/favicon-32.png`, and `og-image.png`.
+
+| Public URL path | HTTP | Content type |
+|---|---:|---|
+| `/` | 200 | `text/html; charset=utf-8` |
+| `/404.html` | 200 | `text/html; charset=utf-8` |
+| `/manifest.json` | 200 | `application/json; charset=utf-8` |
+| `/favicon.svg` | 200 | `image/svg+xml` |
+| `/icons/icon-192.png` | 200 | `image/png` |
+| `/icons/icon-512.png` | 200 | `image/png` |
+| `/icons/apple-touch-icon.png` | 200 | `image/png` |
+| `/icons/favicon-32.png` | 200 | `image/png` |
+| `/og-image.png` | 200 | `image/png` |
+| `/assets/index-CqpsoH4Q.js` | 200 | `application/javascript; charset=utf-8` |
+| `/assets/index-DxwRTKsr.css` | 200 | `text/css; charset=utf-8` |
+
+The supported fragment URLs `#/`, `#/calendar`, `#/today`, `#/rituals`,
+`#/habits`, `#/someday`, `#/settings`, and `#/origin` each returned the same
+HTTP 200 SPA shell (fragments are client-side and are not sent to the server).
+A public browser capture of `#/today` rendered the first-launch shell without
+application console errors. Route-specific authenticated content was not
+claimed because no interactive authenticated browser path was available.
