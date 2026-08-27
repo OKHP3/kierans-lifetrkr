@@ -5,6 +5,8 @@ import { getMoonPhase, getAstroSeason, getMercuryStatus } from '../lib/celestial
 import { storage } from '../lib/storage'
 import { APP_VERSION } from '../constants'
 import type { ZodiacSign } from '../types'
+import { useOracle } from '../hooks/useOracle'
+import { resetWelcome } from '../components/WelcomeScreen'
 
 const PRONOUNS = ['', 'she/her', 'he/him', 'they/them', 'she/they', 'he/they', 'ze/zir', 'any', 'ask me']
 
@@ -80,6 +82,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 export default function Settings() {
   const { state, dispatch } = useApp()
   const { theme, setTheme } = useTheme()
+  const { isLoadingOracle, regenerate } = useOracle()
   const s = state.settings
 
   function update(patch: Partial<typeof s>) {
@@ -112,6 +115,7 @@ export default function Settings() {
   function clearAllData() {
     if (!confirm('Clear all local app data? This cannot be undone. Your Google account will remain connected.')) return
     storage.clear()
+    resetWelcome()
     dispatch({ type: 'CLEAR_ALL_DATA' })
   }
 
@@ -196,6 +200,15 @@ export default function Settings() {
           unavailable, rate-limited, or returns invalid data, the tarot meaning is shown.
           Your name, tasks, habits, calendar, and profile are never sent to the oracle.
         </p>
+        <button
+          className="btn-ghost"
+          onClick={regenerate}
+          disabled={!s.oracleEnabled || isLoadingOracle}
+          aria-busy={isLoadingOracle}
+          style={{ alignSelf: 'flex-start', fontSize: 12 }}
+        >
+          {isLoadingOracle ? 'Regenerating today’s reading…' : 'Regenerate today’s oracle'}
+        </button>
 
         {/* Mercury retrograde banner */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

@@ -7,9 +7,10 @@ import { GOOGLE_CLIENT_ID } from '../constants'
 
 interface Props {
   onConnected?: () => void
+  onComplete?: () => void
 }
 
-export default function GoogleConnectButton({ onConnected }: Props) {
+export default function GoogleConnectButton({ onConnected, onComplete }: Props) {
   const { isConnected, connect, disconnect } = useGoogleAuth()
   const { state, dispatch } = useApp()
   const [loading, setLoading] = useState(false)
@@ -36,6 +37,7 @@ export default function GoogleConnectButton({ onConnected }: Props) {
       console.error(e)
     } finally {
       setLoading(false)
+      onComplete?.()
     }
   }
 

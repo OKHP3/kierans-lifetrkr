@@ -158,5 +158,11 @@ export function clearOracleCache(timezone?: string): void {
   const date = todayISO(timezone)
   try {
     localStorage.removeItem(`lifetrkr:${getUserSub()}:oracle:${date}`)
+    localStorage.removeItem(`lifetrkr:${getUserSub()}:tarot:${date}`)
+    localStorage.removeItem(`lifetrkr:public:tarot:${date}`)
+    const horoscopePrefix = `lifetrkr:public:horoscope:${date}:`
+    Object.keys(localStorage)
+      .filter(key => key.startsWith(horoscopePrefix))
+      .forEach(key => localStorage.removeItem(key))
   } catch { /* private mode or unavailable storage */ }
 }

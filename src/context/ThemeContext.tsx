@@ -15,8 +15,12 @@ function getSystemTheme(): 'dark' | 'light' {
 }
 
 function loadThemePref(): ThemeValue {
-  try { return (localStorage.getItem('lifetrkr_theme') as ThemeValue) || 'system' }
-  catch { return 'system' }
+  try {
+    const stored = localStorage.getItem('lifetrkr_theme')
+    return stored === 'dark' || stored === 'light' || stored === 'system' ? stored : 'dark'
+  } catch {
+    return 'dark'
+  }
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
