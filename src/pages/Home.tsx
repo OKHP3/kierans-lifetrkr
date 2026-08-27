@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import CheckCircle from '../components/CheckCircle'
@@ -6,6 +6,7 @@ import { OracleCard } from '../components/OracleCard'
 import { useOracle } from '../hooks/useOracle'
 import { getMoonPhase, getAstroSeason, getMercuryStatus, shouldShowMercuryBanner } from '../lib/celestial'
 import { getTodayISO, getDayOfWeek, getGreeting, getSeasonalBadge, getDailyQuote, formatEventTime, formatEventDate } from '../lib/date'
+import catAccent from '../assets/images/cat-accent.png'
 
 // Easter egg — fixed content per PRD
 const EASTER_CONTENT = {
@@ -27,10 +28,10 @@ export default function Home() {
   const seasonalBadge = getSeasonalBadge()
   const dailyQuote = getDailyQuote()
 
-  // Celestial data (computed once per render — cheap math)
-  const moon    = getMoonPhase()
-  const season  = getAstroSeason()
-  const mercury = getMercuryStatus()
+  // Celestial data is memoized for the current local date.
+  const moon    = useMemo(() => getMoonPhase(), [today])
+  const season  = useMemo(() => getAstroSeason(), [today])
+  const mercury = useMemo(() => getMercuryStatus(), [today])
 
   const displayName = state.settings.displayName || state.profile?.name
 
@@ -61,7 +62,7 @@ export default function Home() {
     <div className="page-content">
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-        <div>
+        <div style={{ minWidth: 0 }}>
           <p style={{ fontSize: 11, color: 'var(--text-ghost)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: 0 }}>{greeting}</p>
           <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 34, fontWeight: 300, color: 'var(--text-primary)', margin: '2px 0', lineHeight: 1.1 }}>
             {displayName ? (
@@ -81,6 +82,14 @@ export default function Home() {
             </span>
           )}
         </div>
+        <img
+          className="home-cat-accent"
+          src={catAccent}
+          alt=""
+          aria-hidden="true"
+          width="88"
+          height="88"
+        />
       </div>
 
       {/* Celestial Row */}

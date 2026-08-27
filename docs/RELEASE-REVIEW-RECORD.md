@@ -131,11 +131,11 @@ Jamie owns the candidate and evidence record until then.
 
 ## Checks not run
 
-Published Pages smoke test for the reviewed tree, real Google OAuth lifecycle,
-manual assistive technology matrix, forced storage quota/private-mode browser
-test, live oracle worker deployment/CORS/provider check, and owner-approved
-handoff rehearsal were not run. The August 27 core-behavior checks and simulated
-storage-failure harness are complete, but the remaining checks are still
+Real Google OAuth lifecycle, manual assistive technology matrix, forced storage
+quota/private-mode browser test, live oracle worker deployment/CORS/provider
+check, and owner-approved handoff rehearsal were not run. The August 27
+core-behavior checks, simulated storage-failure harness, and published Pages
+shell/asset read-back are complete, but the remaining checks are still
 intentionally not treated as a pass.
 
 ## Core behavior verification addendum
@@ -290,3 +290,21 @@ published shell, fallback, assets, and clean-build identity. CLM-12 is
 confirmed for simulated failures, while real browser quota/private-mode
 behavior, CLM-05/CLM-07 runtime lifecycle, CLM-08 manual accessibility, live
 oracle worker activation, and handoff remain owner-run or otherwise unresolved.
+
+## Privacy and OAuth readiness addendum
+
+**Verification date:** August 27, 2026
+
+The current release tree includes a published `#/privacy` route, a Settings
+link to that route, and an owner-facing
+`docs/OAUTH-CONSENT-CHECKLIST.md`. The route is readable in a clean browser
+before first-launch onboarding. The policy and checklist describe the actual
+client-only storage model, direct read-only Google integration, exact scope
+set, third-party browser requests, optional oracle worker boundary, logo,
+origins, support details, and privacy URL.
+
+This is a readiness package, not a Google verification result. No consent
+submission, GCP publishing-mode change, real-account OAuth lifecycle run, or
+unrestricted public-user approval is claimed. The bounded decision remains
+`approve-with-limits` for controlled personal/pre-production use; the external
+Google approval boundary remains open.

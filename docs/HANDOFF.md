@@ -19,6 +19,8 @@ account transfer has been performed.
 
 Candidate and review record: `docs/RELEASE-REVIEW-RECORD.md`.
 Google activation evidence: `docs/GOOGLE-READONLY-EVIDENCE.md`.
+Privacy notice: `https://okhp3.github.io/kierans-lifetrkr/#/privacy`.
+OAuth owner checklist: `docs/OAUTH-CONSENT-CHECKLIST.md`.
 
 ## Accounts Currently Used
 
@@ -84,10 +86,17 @@ optional oracle worker. For a suspected privacy or credential incident:
 
 The app has no publisher database or server-side user-data recovery. Local
 browser storage is the user's data store; clearing site data can remove it.
+Privacy questions and support requests currently go to
+`contact@overkillhill.com`. The published privacy notice describes the current
+personal-use implementation; it is not evidence that Google production
+verification or unrestricted public approval is complete.
 
 ### Google Cloud
 The app uses the GIS token model. There is no Client Secret and no redirect URI.
 Only a Client ID and authorized JavaScript origins are needed.
+Use `docs/OAUTH-CONSENT-CHECKLIST.md` for the exact consent-screen copy, logo,
+privacy URL, support details, origins, scope string, and the boundary between
+personal-use readiness and future public approval.
 The app requests these least-privilege scopes:
 `calendar.readonly`, `tasks.readonly`, `openid`, `profile`, and `email`.
 Google Calendar and Google Tasks are read-only integrations; local calendar
@@ -99,7 +108,7 @@ events and local task actions never write back to Google.
   - Application type: Web Application
   - Authorized JavaScript Origins ONLY (no redirect URIs needed for the token model):
     - https://okhp3.github.io (or Kieran's custom domain if set)
-    - http://localhost:5173 (for dev)
+    - http://localhost:5000 (for dev)
 - [ ] Update VITE_GOOGLE_CLIENT_ID in Kieran's Replit Secrets with the new Client ID
 - [ ] Remove Jamie's account from the GCP project IAM
 - [ ] Update Authorized JavaScript Origins in the old Client ID to remove any dev origins (optional cleanup)
@@ -125,6 +134,7 @@ events and local task actions never write back to Google.
 | Accessibility source check misses real keyboard, screen-reader, zoom, contrast, or touch defects | Kieran owner test, Jamie records | Complete `docs/ACCESSIBILITY-CHECKLIST.md` on phone and desktop | Any shared control, dialog, navigation, or CSS change |
 | Published Pages route/assets differ from the local artifact | Jamie until transfer; Kieran after transfer | Current commit passed Pages URL, hash-shell, required-asset, and clean-build hash read-back; retain workflow URL and timestamp | Any Pages/base-path/workflow/build change |
 | Optional oracle worker or third-party APIs change availability or privacy behavior | Kieran as service owner | Keep local fallback; inspect worker payload boundary and provider settings before enabling | Worker URL/provider/prompt or external API change |
+| Privacy copy, consent details, or public approval status drifts from the client behavior | Jamie until transfer; Kieran after transfer | Keep `docs/OAUTH-CONSENT-CHECKLIST.md`, the published privacy route, and the evidence records aligned; never claim Google verification from source evidence alone | Any data flow, scope, support contact, origin, or consent-screen change |
 
 ---
 

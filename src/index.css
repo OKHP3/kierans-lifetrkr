@@ -119,6 +119,18 @@ button, a, input, textarea, select {
   display: none;
 }
 
+/* ─── Offline status ──────────────────────────────────────────── */
+.offline-banner {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  background: rgba(232, 184, 109, 0.12);
+  border-bottom: 0.5px solid rgba(232, 184, 109, 0.35);
+  color: var(--accent-gold);
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: center;
+}
+
 /* ─── Page title ─────────────────────────────────────────────── */
 .page-title {
   font-family: 'Cormorant Garamond', serif;
@@ -157,6 +169,17 @@ button, a, input, textarea, select {
 
 .section-label:first-child {
   margin-top: 0;
+}
+
+.home-cat-accent {
+  width: 88px;
+  height: 88px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  border-radius: 24%;
+  opacity: 0.9;
+  margin: -8px -4px 0 12px;
+  box-shadow: 0 8px 24px var(--glow-amethyst);
 }
 
 .section-header {

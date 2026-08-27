@@ -12,6 +12,7 @@ function resolveTitle(pathname: string): string {
     '/today':    'Today',
     '/someday':  'Someday',
     '/settings': 'Settings',
+    '/privacy':  'Privacy',
   }
   for (const [prefix, label] of Object.entries(titles)) {
     if (pathname === prefix) return label

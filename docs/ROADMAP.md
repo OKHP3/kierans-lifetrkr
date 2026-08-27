@@ -91,15 +91,15 @@ Phase 1 shipped June 21, 2026. Phase 1 patches (v0.1.1–v0.1.8) shipped June 22
 ## v0.4.0 — PWA + Brand + Polish
 
 ### Deliverables
-- [ ] PWA manifest verified (start_url, display: standalone, theme/bg colors, icons)
-- [ ] Service worker for offline shell caching
+- [x] PWA manifest verified (start_url, display: standalone, theme/bg colors, icons)
+- [x] Versioned service worker for offline shell caching
 - [ ] "Add to Home Screen" works on iOS and Android
 - [ ] App icon integrated (app-icon.png/webp)
-- [ ] Cat accent asset placed tastefully in UI (one placement)
+- [x] Cat accent asset placed tastefully in UI (one placement)
 - [ ] og-image.png verified
 - [ ] Drag-to-reorder tasks in Today and Archive
 - [ ] End-of-day review view (optional)
-- [ ] Performance audit (oracle, celestial, calendar recurrence)
+- [x] Performance audit recorded (oracle, celestial, calendar recurrence)
 
 ---
 

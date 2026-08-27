@@ -23,16 +23,24 @@ After the Pages workflow completes, verify:
 
 - `https://okhp3.github.io/kierans-lifetrkr/` loads the app shell.
 - `/#/`, `/#/today`, `/#/rituals`, `/#/habits`, `/#/calendar`,
-  `/#/someday`, `/#/settings`, and `/#/origin` load without a server 404.
+  `/#/someday`, `/#/settings`, `/#/origin`, and `/#/privacy` load without a
+  server 404. Open `/#/privacy` in a clean browser profile to confirm the
+  first-launch screen does not obscure the policy.
 - `/kierans-lifetrkr/manifest.json`, `/favicon.svg`,
   `/icons/icon-192.png`, `/icons/icon-512.png`, and `/og-image.png` return
   successfully.
 - The manifest offers installation and the standalone layout opens.
 - Reloading a hash route preserves the route.
 
-Offline behavior is intentionally not claimed: there is no service worker.
-Test the installed shell while online and record browser/OS results rather
-than treating localStorage persistence as offline app support.
+- `/kierans-lifetrkr/sw.js` returns the versioned shell worker, and the build
+  injects the same-origin hashed app assets into its precache list.
+- After one successful online load, disable network access and reload `/#/` and
+  `/#/today`: the shell and local records remain available.
+- While offline, Google Calendar/Tasks remain read-only and show a failed or
+  paused network state; the optional network oracle wording does not pretend to
+  have succeeded. Local tarot/celestial fallback may still render.
+- Re-enable network access, reload, and confirm the next worker version replaces
+  the prior `lifetrkr-shell-*` cache without leaving stale application assets.
 
 ## Evidence record — August 27, 2026
 

@@ -7,6 +7,7 @@ const required = [
   'dist/icons/icon-192.png',
   'dist/icons/icon-512.png',
   'dist/og-image.png',
+  'dist/sw.js',
 ]
 
 const missing = required.filter(path => !existsSync(path))

@@ -188,7 +188,7 @@ export default function Calendar() {
   const [showCosmic, setShowCosmic] = useState(true)
 
   const today = getTodayISO(state.settings.timezone)
-  const mercury = getMercuryStatus()
+  const mercury = useMemo(() => getMercuryStatus(), [today])
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const firstDay = new Date(year, month, 1).getDay()
   const cells: (number | null)[] = [
@@ -215,6 +215,14 @@ export default function Calendar() {
     }
     return map
   }, [cosmicMonthEvents])
+  const moonByDate = useMemo(() => {
+    const result: Record<string, string> = {}
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+      result[ds] = getMoonPhaseEmoji(ds)
+    }
+    return result
+  }, [daysInMonth, month, year])
 
   // Derived filter options from stored user events
   const userEvents = state.calendarEvents.filter(e => e.source === 'manual')
@@ -523,7 +531,7 @@ export default function Calendar() {
             const ds = dateStr(day)
             const isSelected = selectedDay === day
             const isCurrent = ds === today
-            const moonEm = getMoonPhaseEmoji(ds)
+            const moonEm = moonByDate[ds]
             const hasNotable = !!cosmicByDate[ds]?.length
 
             // Build event pills for this day

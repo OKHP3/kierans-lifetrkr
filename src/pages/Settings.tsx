@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { useTheme } from '../context/ThemeContext'
 import GoogleConnectButton from '../components/GoogleConnectButton'
@@ -273,6 +274,18 @@ export default function Settings() {
           task, habit, or calendar data is included. Google Fonts and anonymous page
           analytics may load from Google when enabled by the deployment.
         </p>
+        <Link
+          to="/privacy"
+          style={{
+            alignSelf: 'flex-start',
+            color: 'var(--accent-amethyst)',
+            fontSize: 12,
+            textDecoration: 'none',
+            marginTop: 12,
+          }}
+        >
+          Read the full Privacy Policy →
+        </Link>
       </div>
 
       {/* ── Google Account ─────────────────────────────────────────────── */}

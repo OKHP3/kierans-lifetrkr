@@ -50,6 +50,7 @@ the app is theirs.
 ```
 User's Browser
 ├── React app (served from GitHub Pages — static files only)
+├── Versioned service worker (offline app shell only)
 ├── localStorage: rituals, habits, tasks, settings (keyed by Google sub ID)
 └── sessionStorage: Google access token (1hr expiry, never sent to any server)
          ↕                              ↕
@@ -122,10 +123,11 @@ src/
 │   ├── Calendar.tsx            # Month grid + Google Calendar + moon phases + oracle
 │   ├── Today.tsx               # Committed tasks (status=today) + Google Tasks
 │   ├── Someday.tsx             # Deferred backlog (status=backlog), search, sort, promote
-│   └── Settings.tsx            # Profile, Google, oracle/celestial, theme, social
+│   ├── Settings.tsx            # Profile, Google, oracle/celestial, theme, social
+│   └── Privacy.tsx             # Published privacy notice and service boundaries
 ├── types.ts                    # All TypeScript types (source of truth)
 ├── constants.ts                # GOOGLE_CLIENT_ID, SCOPES, APP_VERSION, categories
-└── App.tsx                     # HashRouter + 7 routes
+└── App.tsx                     # HashRouter + app and privacy routes
 ```
 
 ---
@@ -134,7 +136,7 @@ src/
 
 ```bash
 npm install
-npm run dev       # http://localhost:5173
+npm run dev       # http://localhost:5000
 npm run build     # type-check + production build
 npm run sync      # type-check → reconcile origin/main → safe push
 ```
@@ -142,10 +144,13 @@ npm run sync      # type-check → reconcile origin/main → safe push
 Supported toolchain: Node.js 20.19+ and npm 10+. For a clean, reproducible
 install use `npm ci`; the lockfile is the source of dependency versions.
 
-The app has an installable web manifest and responsive standalone layout. It
-does not currently provide an offline service worker/cache, so offline use is
-not a supported release claim; local browser data remains available whenever
-the app shell can be loaded.
+The app has an installable web manifest, responsive standalone layout, and a
+versioned service worker (`lifetrkr-shell-v1`). After the shell has been loaded
+once online, the worker precaches the built app shell and same-origin hashed
+assets for offline reloads. It does not cache user data or external responses.
+Local records remain available offline; Google Calendar/Tasks sync is paused and
+the optional network oracle wording is unavailable until connectivity returns.
+The local tarot and celestial fallback remains available.
 
 Google uses a public OAuth Client ID. The optional oracle worker URL is also
 safe to expose in the client because it contains no provider credential.
@@ -169,6 +174,18 @@ task, habit, or calendar data to the oracle. See the Privacy & Data section in
 Settings and `docs/HANDOFF.md` for the provider boundary.
 
 See `.env.example` for the full list.
+
+---
+
+## Privacy
+
+LifeTrkr's published privacy notice is available at
+[`https://okhp3.github.io/kierans-lifetrkr/#/privacy`](https://okhp3.github.io/kierans-lifetrkr/#/privacy).
+It describes browser storage, the optional read-only Google connection, third-party
+browser services, and the local oracle fallback. The current implementation is
+personal-use ready with bounded evidence; Google production verification and
+unrestricted public-user approval are not claimed. The owner-facing consent
+checklist is [`docs/OAUTH-CONSENT-CHECKLIST.md`](docs/OAUTH-CONSENT-CHECKLIST.md).
 
 ---
 
@@ -207,6 +224,7 @@ v1.0.0 is not a placeholder — it is earned.
 | `docs/RELEASE-TRUTH-BASELINE.md` | Current artifact inventory, claims, gates, and validation protocol |
 | `docs/DEPLOYMENT-CHECKLIST.md` | Clean install, Pages artifact, route, and offline-claim checks |
 | `docs/RELEASE-REVIEW-RECORD.md` | Frozen candidate identity, evidence ledger, review, risks, and decision |
+| `docs/OAUTH-CONSENT-CHECKLIST.md` | Exact owner-facing Google OAuth consent and verification checklist |
 
 ---
 

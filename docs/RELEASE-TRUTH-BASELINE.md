@@ -18,7 +18,7 @@ lockfile, or active workflows recorded here.
 | Application version | `0.1.10` / `v0.1.10` | `package.json`, `src/constants.ts` |
 | Frontend | React 19.2.8, React DOM 19.2.8 | `package.json`, lockfile |
 | Routing | React Router 7.18.2 with `HashRouter` | `package.json`, `src/App.tsx` |
-| Build | Vite 8.2.1, TypeScript 7.0.2, `tsc && vite build` | `package.json`, `vite.config.ts` |
+| Build | Vite 8.2.1, TypeScript 7.0.2, type-check → Vite build → service-worker asset preparation | `package.json`, `vite.config.ts`, `scripts/prepare-service-worker.mjs` |
 | Styling | Tailwind CSS 4.3.x through `@tailwindcss/postcss` | `package.json`, lockfile |
 | Hosting | GitHub Pages at `/kierans-lifetrkr/`; static deployment through GitHub Actions | `vite.config.ts`, `static.yml` |
 | Backend/database | None in the shipped source; local browser storage is the persistence layer | `src/context/AppContext.tsx`, `src/lib/storage.ts` |
@@ -41,6 +41,7 @@ The current `HashRouter` routes are:
 | `#/habits` | Habits | `src/App.tsx` |
 | `#/settings` | Settings | `src/App.tsx` |
 | `#/origin` | Origin story and project context | `src/App.tsx` |
+| `#/privacy` | Published privacy notice and service boundaries | `src/App.tsx`, `src/pages/Privacy.tsx` |
 
 `Archive` is historical terminology only. It is not a current route or product
 surface. The internal task status remains `backlog`.
@@ -84,7 +85,7 @@ not be used to infer current payloads.
 | Tarot API | Daily card | Direct browser fetch with deterministic local fallback | Supported in code; service/CORS not continuously proven |
 | Free Horoscope API | Optional sign-based horoscope | Direct browser fetch; null on failure | Provisional; no service guarantee |
 | Anthropic Messages API | Optional daily oracle wording | Server-side oracle worker only; no provider key in client bundle | Local fallback and simulated worker boundary pass; owner worker deployment, secret-store review, and live CORS/provider behavior remain unverified |
-| Google Fonts / Analytics | Fonts and page tracking | Third-party browser scripts | Present; privacy disclosure and blocking behavior require review |
+| Google Fonts / Analytics | Fonts and page tracking | Third-party browser scripts | Present; disclosed in the published privacy notice; provider policies and blocking behavior remain external considerations |
 
 The Google integration now requests read-only scopes and does not expose write
 helpers. Real-account lifecycle testing remains a handoff verification item.
@@ -103,9 +104,10 @@ helpers. Real-account lifecycle testing remains a handoff verification item.
 | Daily oracle is stable for a day | Supported in code | Date-scoped tarot, horoscope, and message caches use configured timezone | Reload/date-rollover/regeneration tests with a controlled clock |
 | Dark mode is the default | Disputed | Theme context defaults to `system`; project intent says dark | First launch on light-system device must render dark, unless product decision changes |
 | PWA has an installable manifest | Supported in code | `public/manifest.json`, subpath-safe metadata | Browser install prompt/standalone launch remains a manual check |
-| Offline app use is supported | Not claimed | No service worker; README and deployment checklist narrow the claim | Revisit only if a tested service-worker strategy is added |
+| Offline app shell is supported | Supported in code; manual device verification remains | Versioned worker precaches the built shell and same-origin assets; external services are not cached | Verify online load → offline reload → reconnect on supported browsers |
 | GitHub Pages build artifact is reproducible | Supported for published candidate | Clean `npm ci`, lockfile portability, check, audit, build, artifact inspection, and post-push hash match | Re-run from a fresh clone after release-tree changes |
 | Stable public release is ready | Deferred for evidence | Candidate review record; live OAuth, manual accessibility, and real browser storage failure remain bounded | Complete the remaining decisive checks in `docs/RELEASE-REVIEW-RECORD.md` |
+| Published privacy notice is available | Supported in source and route | `src/pages/Privacy.tsx`, Settings link, and Pages-safe HashRouter route | Published route returns the app shell and a clean-browser check shows the policy before onboarding |
 
 Classification meanings:
 
@@ -138,6 +140,8 @@ Classification meanings:
 - No public build contains a reusable provider secret.
 - OAuth scopes match the declared product promise.
 - External requests, stored data, fallbacks, and user-controlled context are documented.
+- The published privacy notice and owner-facing OAuth consent checklist match
+  the current scopes and client-only behavior.
 - Clear-data, disconnect, account-switch, and recovery behavior is demonstrated.
 
 ### Portability and deployment
@@ -222,6 +226,29 @@ Run on August 24, 2026 from the frozen candidate `2bd74eadfbca7d0fa29cf35783762d
 
 The complete bounded decision, hashes, independent reviews, falsification pass,
 and risk ownership are recorded in `docs/RELEASE-REVIEW-RECORD.md`.
+
+## 14. Privacy and OAuth readiness addendum
+
+**Verification date:** August 27, 2026
+
+The client now has a stable `#/privacy` route at
+`https://okhp3.github.io/kierans-lifetrkr/#/privacy`. Settings links to it, and
+the route is exempted from first-launch onboarding so a clean browser can read
+the policy directly. The policy covers local browser storage, the
+session-scoped Google token, the exact read-only Google access boundary,
+third-party browser services, the optional oracle worker, local fallback
+behavior, user controls, and support contact.
+
+`docs/OAUTH-CONSENT-CHECKLIST.md` captures the exact current app name,
+description, privacy URL, support email, logo, Authorized JavaScript origins,
+scope string, use explanation, and evidence cross-references. The development
+origin is recorded as `http://localhost:5000`, matching the configured workflow.
+
+This closes the repository's privacy-copy/readiness gap, not Google's external
+approval boundary. The current posture remains personal-use ready with
+approved-with-limits release evidence. Google Cloud consent configuration,
+real-account lifecycle testing, any move to production, and any future
+multi-user/public verification remain owner-run or external gates.
 
 ## 10. Core behavior verification addendum
 
@@ -385,10 +412,10 @@ redacted deployed response/CORS check. The local tarot meaning remains the
 **Verification date:** August 27, 2026
 **Environment:** Replit Linux workspace; Vite workflow on port 5000; public
 GitHub Pages URL `https://okhp3.github.io/kierans-lifetrkr/`
-**Artifact identity:** local candidate at `62e378a` plus the storage-failure
-repair recorded in the release commit; the published site was stale at the
-start of this run and is not treated as evidence until the post-push workflow
-and asset read-back below are recorded.
+**Artifact identity:** application candidate
+`b3d19b526608501e64faf468c5a995cf45399410`; final evidence records are in the
+documentation-only child published as `b112e761849dc49721088efead1191a476e0d9cd`.
+The public artifact hashes match a clean build from the application candidate.
 
 ### Local release gates
 
@@ -404,29 +431,29 @@ and asset read-back below are recorded.
 
 ### Deployment and manual limits
 
-The pre-push Pages read-back is retained as transport evidence only because the
-remote `main` commit was still the older candidate. The post-push Pages
-workflow succeeded for `b3d19b526608501e64faf468c5a995cf45399410`, and the public
-shell, fallback, entrypoints, manifest, favicon, icons, and OG image matched a
-clean build from that commit by SHA-256. Each supported fragment URL returned
-the SPA shell with HTTP 200. The browser capture covered `#/today`; fragments
-are client-side, so plain HTTP status checks do not independently prove
-route-specific authenticated rendering.
+The pre-push Pages read-back is retained as a transport check only. After
+publication, CI and Deploy to GitHub Pages both succeeded for the application
+candidate and for the documentation-only child. The public shell, `404.html`,
+manifest, favicon, all required icons, OG image, and hashed JS/CSS entrypoints
+returned HTTP 200 with the expected content types and matched a clean build by
+SHA-256. Each supported fragment URL returned the HTTP 200 SPA shell.
+HashRouter fragments require a browser to exercise; plain HTTP cannot send the
+fragment to the server.
 
-The available browser capture covered a desktop rendered smoke only. An
-interactive narrow/desktop keyboard, screen-reader, zoom, contrast, and touch
-matrix was not available in this agent session and remains **NOT RUN**, not a
-pass inferred from the source heuristic.
+The available browser capture covered a desktop `#/today` rendered smoke
+without application console errors. An interactive narrow/desktop keyboard,
+screen-reader, zoom, contrast, and touch matrix was not available in this agent
+session and remains **NOT RUN**, not a pass inferred from the source heuristic.
 
 ### Bounded decision
 
 The release remains **approve-with-limits** for controlled pre-production
 handoff. The Pages identity/read-back objection is resolved for the published
-candidate. The storage failure objection is **partially resolved for simulated
-failures** because the app now gives visible, recoverable guidance. Public
-stable approval remains deferred for the real Google lifecycle and
-account-isolation journey, the manual accessibility matrix, real browser
-quota/private-mode behavior, live optional-worker activation, and ownership
-handoff. This addendum expires on any change to the release tree, routes,
-persistence behavior, OAuth scopes, external endpoints, workflow, or Pages
-configuration.
+shell, fallback, assets, and clean-build identity. The storage failure
+objection is **partially resolved for simulated failures** because the app now
+gives visible, recoverable guidance. Public stable approval remains deferred
+for the real Google lifecycle and account-isolation journey, the manual
+accessibility matrix, real browser quota/private-mode behavior, live
+optional-worker activation, and ownership handoff. This addendum expires on
+any change to the release tree, routes, persistence behavior, OAuth scopes,
+external endpoints, workflow, or Pages configuration.

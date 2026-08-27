@@ -2,6 +2,7 @@
   "name": "Kieran's LifeTrkr",
   "short_name": "LifeTrkr",
   "description": "Personal life-ops hub for rituals, habits, tasks, and scheduling. Track your daily routines, build streaks, manage your calendar, and reflect — all in one dark-mode mobile-first app.",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

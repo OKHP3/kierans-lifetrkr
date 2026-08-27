@@ -2,13 +2,24 @@ import type { LifeTrkrCategory, RecurrenceRule } from './types'
 
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
-export const SCOPES = [
+export const GOOGLE_OAUTH_SCOPES = [
   'https://www.googleapis.com/auth/calendar.readonly',
   'https://www.googleapis.com/auth/tasks.readonly',
   'openid',
   'profile',
   'email',
-].join(' ')
+] as const
+
+export const SCOPES = GOOGLE_OAUTH_SCOPES.join(' ')
+
+export const PUBLIC_APP_ORIGIN = 'https://okhp3.github.io'
+export const PUBLIC_APP_URL = `${PUBLIC_APP_ORIGIN}/kierans-lifetrkr/`
+export const PRIVACY_URL = `${PUBLIC_APP_URL}#/privacy`
+export const SUPPORT_EMAIL = 'contact@overkillhill.com'
+export const GOOGLE_OAUTH_ORIGINS = [
+  PUBLIC_APP_ORIGIN,
+  'http://localhost:5000',
+] as const
 
 export const DAYS_OF_WEEK = [
   'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',

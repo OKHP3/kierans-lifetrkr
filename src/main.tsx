@@ -21,3 +21,13 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>
 )
+
+// The worker is production-only so local Vite development is never served
+// from a stale cache. Its scope follows Vite's configured Pages base path.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  const baseUrl = import.meta.env.BASE_URL
+  const serviceWorkerUrl = new URL('sw.js', new URL(baseUrl, window.location.href))
+  navigator.serviceWorker.register(serviceWorkerUrl, { scope: baseUrl }).catch(() => {
+    // Installation is an enhancement; the online app remains fully usable.
+  })
+}

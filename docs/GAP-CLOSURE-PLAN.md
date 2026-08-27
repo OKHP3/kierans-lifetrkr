@@ -51,11 +51,11 @@ Confirmed by reading source directly — grep evidence noted, not inference from
 | 5 | "Regenerate today's oracle" button | PRD-v4 §5.5 | Not built | `Settings.tsx` has an About card, no regenerate control |
 | 6 | Mercury retrograde banner on **Calendar** tab | PRD-v4 §5.8 | Not built there | `getMercuryStatus` is wired into `Home.tsx` only; zero references in `Calendar.tsx` |
 | 7 | Recurrence day-filtering verified (`isActiveToday`) | PRD-v4 §5.7 | Unverified | Function exists in `date.ts`; no test evidence it correctly excludes weekday/specific-day items |
-| 8 | Offline support / service worker | README (explicitly disclaimed), PRD-v4 §6.1 | Not built | Manifest is solid; no `sw.js`, no `serviceWorker` registration anywhere |
-| 9 | Cat-accent brand asset in the UI | PRD-v4 §6.2 | Not built | Asset ships in `src/assets/images/cat-accent.*`; zero references in any component |
+| 8 | Offline support / service worker | README, PRD-v4 §6.1 | Code complete; device verification pending | Versioned `public/sw.js` is registered in production and precaches the built shell/assets; external services are excluded |
+| 9 | Cat-accent brand asset in the UI | PRD-v4 §6.2 | Code complete | `cat-accent.png` is used in the first-launch screen and Home header |
 | 10 | Drag-to-reorder in Today / Someday | PRD-v4 §6.4 | Not built | Zero drag-event code in either page |
 | 11 | End-of-day review view | PRD-v4 §6.3 | Not built | Explicitly marked optional/non-blocking in the PRD — lowest priority here too |
-| 12 | Performance audit (oracle re-fetch, celestial recalculation, recurrence expansion) | PRD-v4 §6.5 | Unverified | No profiling evidence either way |
+| 12 | Performance audit (oracle re-fetch, celestial recalculation, recurrence expansion) | PRD-v4 §6.5 | Source-level checks recorded; runtime profiler pending | `docs/PERFORMANCE-AUDIT.md` records the memoization, cache, and no-scroll-loop checks |
 | 13 | Privacy policy page | PRD-v4 §7 | Not built | No file or route matching "privacy" anywhere in the repo |
 | 14 | GCP OAuth production verification | PRD-v4 §7 | Not started | App is still in Testing mode; only listed test users (Kieran) can connect |
 | 15 | Manual accessibility matrix | RELEASE-TRUTH-BASELINE §6/§9 | Not run | Automated source check (`check:a11y`) passes; keyboard/screen-reader/zoom/touch matrix in `ACCESSIBILITY-CHECKLIST.md` has no recorded results |
