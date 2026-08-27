@@ -1,7 +1,7 @@
 # Kieran's LifeTrkr — Handoff Notes
 
 ## Current Owner
-Jamie Hill (development steward)
+Jamie Hill (development steward; verified August 27, 2026)
 
 ## Intended Permanent Owner
 Kieran
@@ -15,7 +15,14 @@ handoff. It is not approved as a universal stable release: real Google OAuth
 lifecycle testing, manual accessibility testing, real browser storage-failure
 testing, and the owner handoff rehearsal remain owner-run gates. The published
 Pages artifact and required asset read-back passed for the recorded commit. No
-account transfer has been performed.
+account transfer has been performed. This execution pass completed the
+reversible source-control and release verification work, but it did not perform
+an account transfer without Kieran's authorization.
+
+**Handoff execution date:** August 27, 2026
+**Execution performer:** Replit Agent
+**Published source after safe reconciliation:** `de5fa3a369174d9975ffa0f9af7b47b03b8e2e21`
+**Execution status:** `BLOCKED — owner-controlled transfer and service-account steps remain`
 
 Candidate and review record: `docs/RELEASE-REVIEW-RECORD.md`.
 Google activation evidence: `docs/GOOGLE-READONLY-EVIDENCE.md`.
@@ -37,41 +44,37 @@ OAuth owner checklist: `docs/OAUTH-CONSENT-CHECKLIST.md`.
 ## Transfer Checklist
 
 ### Source control synchronization
-- [ ] Bind the authorized GitHub connection to the Replit project
-- [ ] Confirm `origin` is `https://github.com/OKHP3/kierans-lifetrkr.git`
-- [ ] Use `npm run sync` for fetch-before-push reconciliation; never force-push `main`
-- [ ] Confirm CI and Deploy to GitHub Pages succeed for the pushed commit
-- [ ] Review `docs/GIT-SYNC.md` for remote-ahead, conflict, and rollback recovery
+- [x] Bind the authorized GitHub connection to the Replit project — August 27, 2026, Replit Agent; healthy bound GitHub connection confirmed through the repository API.
+- [x] Confirm `origin` is `https://github.com/OKHP3/kierans-lifetrkr.git` — August 27, 2026, Replit Agent; embedded credentials removed from local Git configuration.
+- [x] Use `npm run sync` for fetch-before-push reconciliation; never force-push `main` — August 27, 2026, Replit Agent; remote-ahead history was preserved with a non-force merge and guarded API publication.
+- [x] Confirm CI and Deploy to GitHub Pages succeed for the pushed commit — August 27, 2026, Replit Agent; CI run [33033411237](https://github.com/OKHP3/kierans-lifetrkr/actions/runs/33033411237) and Pages run [33033411233](https://github.com/OKHP3/kierans-lifetrkr/actions/runs/33033411233) both succeeded.
+- [x] Review `docs/GIT-SYNC.md` for remote-ahead, conflict, and rollback recovery — August 27, 2026, Replit Agent; the documented non-destructive recovery path was used.
 
 ### GitHub
-- [ ] Kieran creates GitHub account (or confirm existing)
-- [ ] Jamie transfers repo: Settings → Transfer → enter Kieran's username
-- [ ] Kieran accepts transfer via email invite
-- [ ] Update README ownership section
+- [ ] **BLOCKED — owner action:** Kieran creates or confirms a GitHub account; no Kieran username or authorization was available in this environment.
+- [ ] **BLOCKED — owner action:** Jamie transfers repo through GitHub Settings after Kieran's account is confirmed.
+- [ ] **BLOCKED — owner action:** Kieran accepts the transfer invitation.
+- [ ] **PENDING TRANSFER:** Update README ownership section only after the transfer is accepted; it correctly continues to name Jamie as steward for now.
 
 ### Replit
-- [ ] Kieran creates Replit account (or confirm existing)
-- [ ] **Fork** the Repl to Kieran's Replit account
+- [ ] **BLOCKED — owner action:** Kieran creates or confirms a Replit account.
+- [ ] **BLOCKED — owner action:** **Fork** the Repl to Kieran's Replit account
   - WARNING: Do NOT use Replit's Transfer feature — it is immediate and irreversible with no undo
   - Fork creates a clean copy under Kieran's account; Transfer permanently removes it from Jamie's
-- [ ] Re-enter all Replit Secrets in Kieran's Repl (same values, new location)
-- [ ] Reconnect GitHub repo to Kieran's Repl via the Git panel
-- [ ] Verify dev server runs cleanly under Kieran's account
-- [ ] Archive (do not delete) Jamie's original Repl as a backup
+- [ ] **BLOCKED — owner action:** Re-enter all Replit Secrets in Kieran's Repl (same values, new location)
+- [ ] **BLOCKED — owner action:** Reconnect GitHub repo to Kieran's Repl via the Git panel
+- [ ] **BLOCKED — owner action:** Verify dev server runs cleanly under Kieran's account; the current Jamie-owned Repl did run cleanly on August 27, 2026
+- [ ] **BLOCKED — owner action:** Archive (do not delete) Jamie's original Repl as a backup
 
 ### Secrets and recovery
 
-- [ ] Kieran re-enters `VITE_GOOGLE_CLIENT_ID` in the new Replit Secrets store
-- [ ] If the optional oracle worker is used, configure its provider credential
+- [ ] **BLOCKED — owner action:** Kieran re-enters `VITE_GOOGLE_CLIENT_ID` in the new Replit Secrets store
+- [ ] **BLOCKED — owner action if applicable:** If the optional oracle worker is used, configure its provider credential
   only in the worker's secret store; never add it to this repository or a
   `VITE_` browser variable
-- [ ] Do not copy secrets into issue reports, screenshots, release records, or
-  chat
-- [ ] Preserve the GitHub repository and original Repl until the first
-  owner-controlled smoke test passes
-- [ ] Recovery from a bad source release: use GitHub history/checkpoints to
-  restore the last known-good commit, then rerun the CI and Pages artifact
-  checks
+- [x] Do not copy secrets into issue reports, screenshots, release records, or chat — August 27, 2026, Replit Agent; only secret names/status were handled and no credential values were recorded
+- [x] Preserve the GitHub repository and original Repl until the first owner-controlled smoke test passes — August 27, 2026, Replit Agent; no deletion or Replit transfer was attempted
+- [ ] **OWNER REHEARSAL PENDING:** Recovery from a bad source release: use GitHub history/checkpoints to restore the last known-good commit, then rerun the CI and Pages artifact checks. The procedure is documented in `docs/GIT-SYNC.md`; a live owner rehearsal was not run
 
 ### Support and incident path
 
@@ -102,28 +105,38 @@ The app requests these least-privilege scopes:
 Google Calendar and Google Tasks are read-only integrations; local calendar
 events and local task actions never write back to Google.
 
-- [ ] Add Kieran's Google account as Owner in the GCP project (GCP → IAM & Admin → Grant Access)
-- [ ] Kieran creates new OAuth 2.0 Client ID in the project:
+- [ ] **BLOCKED — owner action:** Add Kieran's Google account as Owner in the GCP project (GCP → IAM & Admin → Grant Access)
+- [ ] **BLOCKED — owner action:** Kieran creates new OAuth 2.0 Client ID in the project:
   - APIs & Services → Credentials → Create Credentials → OAuth 2.0 Client ID
   - Application type: Web Application
   - Authorized JavaScript Origins ONLY (no redirect URIs needed for the token model):
     - https://okhp3.github.io (or Kieran's custom domain if set)
     - http://localhost:5000 (for dev)
-- [ ] Update VITE_GOOGLE_CLIENT_ID in Kieran's Replit Secrets with the new Client ID
-- [ ] Remove Jamie's account from the GCP project IAM
-- [ ] Update Authorized JavaScript Origins in the old Client ID to remove any dev origins (optional cleanup)
+- [ ] **BLOCKED — owner action:** Update VITE_GOOGLE_CLIENT_ID in Kieran's Replit Secrets with the new Client ID
+- [ ] **BLOCKED — owner action:** Remove Jamie's account from the GCP project IAM
+- [ ] **OPTIONAL OWNER CLEANUP:** Update Authorized JavaScript Origins in the old Client ID to remove any dev origins
 
 ### Final Verification
-- [ ] App loads cleanly under Kieran's accounts end-to-end
+- [ ] **BLOCKED — owner action:** App loads cleanly under Kieran's accounts end-to-end
 - [ ] All 7 tabs function correctly (Home, Rituals, Habits, Calendar, Today, Someday, Settings)
-- [ ] Google Calendar sync works under Kieran's Google account
-- [ ] Google Tasks loads task lists and due-today tasks; adding one creates a separate local task
-- [ ] Google Calendar all-day and timed events display correctly across the configured timezone
-- [ ] Empty calendars/task lists show empty states rather than errors
-- [ ] Expiring the GIS token shows reconnect guidance, and Disconnect clears the session token
-- [ ] Connect, disconnect, and reconnect with a second Google account does not expose the first account's profile or local namespace
-- [ ] Oracle generates and caches correctly
-- [ ] README ownership section updated
+- [ ] **BLOCKED — owner action:** Google Calendar sync works under Kieran's Google account
+- [ ] **BLOCKED — owner action:** Google Tasks loads task lists and due-today tasks; adding one creates a separate local task
+- [ ] **BLOCKED — owner action:** Google Calendar all-day and timed events display correctly across the configured timezone
+- [ ] **BLOCKED — owner action:** Empty calendars/task lists show empty states rather than errors
+- [ ] **BLOCKED — owner action:** Expiring the GIS token shows reconnect guidance, and Disconnect clears the session token
+- [ ] **BLOCKED — owner action:** Connect, disconnect, and reconnect with a second Google account does not expose the first account's profile or local namespace
+- [ ] **SOURCE/LOCAL PASS; OWNER RUNTIME PENDING:** Oracle generates and caches correctly; local fallback and simulated worker states passed on August 27, 2026
+- [ ] **PENDING TRANSFER:** README ownership section updated after the transfer is actually accepted
+
+### Execution evidence recorded August 27, 2026
+
+| Area | Result | Performer / evidence |
+|---|---|---|
+| Release gate | PASS for bounded pre-production handoff; not stable/v1.0 approval | Replit Agent; `docs/RELEASE-REVIEW-RECORD.md` remains `approve-with-limits` |
+| Source and artifact | PASS | Replit Agent; `npm run check`, `npm run check:a11y`, `npm run test:sync`, `npm run build`, artifact inspection, and production audit |
+| Preview | PASS under current Jamie-owned Repl | Replit Agent; workflow restarted on port 5000, desktop first-launch capture had no application console errors |
+| Published deployment | PASS for shell/assets and CI/Pages transport | Replit Agent; current commit and run links recorded above; route-specific authenticated rendering remains unclaimed |
+| Account transfer, secret re-entry, GCP IAM/client, and owner smoke | BLOCKED / NOT RUN | Owner action required; no irreversible transfer was attempted |
 
 ## Release risk register
 

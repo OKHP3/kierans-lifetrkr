@@ -61,13 +61,13 @@ fragment must be opened in a browser after the deployment workflow completes.
 ### Final publication record
 
 **Verification date:** August 27, 2026
-**Published commit:** `b3d19b526608501e64faf468c5a995cf45399410`
-**Workflow runs:** [CI #33031353223](https://github.com/OKHP3/kierans-lifetrkr/actions/runs/33031353223) — success; [Deploy to GitHub Pages #33031353237](https://github.com/OKHP3/kierans-lifetrkr/actions/runs/33031353237) — success
+**Published commit:** `de5fa3a369174d9975ffa0f9af7b47b03b8e2e21`
+**Workflow runs:** [CI #33033411237](https://github.com/OKHP3/kierans-lifetrkr/actions/runs/33033411237) — success; [Deploy to GitHub Pages #33033411233](https://github.com/OKHP3/kierans-lifetrkr/actions/runs/33033411233) — success
 **Environment:** Replit Linux workspace, public GitHub Pages over HTTPS; browser capture at desktop 1920×1080; no Google account or token used
 
 The deployed shell and a clean build from the published commit use the same
-hashed entrypoints: `assets/index-CqpsoH4Q.js` and
-`assets/index-DxwRTKsr.css`. The public SHA-256 hashes matched the clean local
+hashed entrypoints: `assets/index-BwqnZ0EM.js` and
+`assets/index-BGT3dLhJ.css`. The public SHA-256 hashes matched the clean local
 build for `index.html`, `404.html`, both entrypoints, `manifest.json`,
 `favicon.svg`, `icons/icon-192.png`, `icons/icon-512.png`,
 `icons/apple-touch-icon.png`, `icons/favicon-32.png`, and `og-image.png`.
@@ -83,12 +83,12 @@ build for `index.html`, `404.html`, both entrypoints, `manifest.json`,
 | `/icons/apple-touch-icon.png` | 200 | `image/png` |
 | `/icons/favicon-32.png` | 200 | `image/png` |
 | `/og-image.png` | 200 | `image/png` |
-| `/assets/index-CqpsoH4Q.js` | 200 | `application/javascript; charset=utf-8` |
-| `/assets/index-DxwRTKsr.css` | 200 | `text/css; charset=utf-8` |
+| `/assets/index-BwqnZ0EM.js` | 200 | `application/javascript; charset=utf-8` |
+| `/assets/index-BGT3dLhJ.css` | 200 | `text/css; charset=utf-8` |
 
 The supported fragment URLs `#/`, `#/calendar`, `#/today`, `#/rituals`,
-`#/habits`, `#/someday`, `#/settings`, and `#/origin` each returned the same
-HTTP 200 SPA shell (fragments are client-side and are not sent to the server).
-A public browser capture of `#/today` rendered the first-launch shell without
-application console errors. Route-specific authenticated content was not
-claimed because no interactive authenticated browser path was available.
+`#/habits`, `#/someday`, `#/settings`, `#/origin`, and `#/privacy` each returned
+the same HTTP 200 SPA shell (fragments are client-side and are not sent to the
+server). The Replit browser capture rendered the current first-launch shell
+without application console errors. Route-specific authenticated content was
+not claimed because no interactive authenticated browser path was available.

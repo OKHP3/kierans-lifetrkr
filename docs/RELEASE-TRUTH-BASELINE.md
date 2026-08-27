@@ -457,3 +457,24 @@ accessibility matrix, real browser quota/private-mode behavior, live
 optional-worker activation, and ownership handoff. This addendum expires on
 any change to the release tree, routes, persistence behavior, OAuth scopes,
 external endpoints, workflow, or Pages configuration.
+
+## 15. Ownership handoff execution addendum
+
+**Execution date:** August 27, 2026
+**Performer:** Replit Agent
+**Published source:** `de5fa3a369174d9975ffa0f9af7b47b03b8e2e21`
+
+The reversible handoff preparation is complete: the canonical credential-free
+GitHub remote was confirmed, the remote-ahead history was reconciled without a
+force-push, the current tree was published through the bound GitHub connection,
+and CI plus Deploy to GitHub Pages succeeded. The current Replit workflow also
+restarted cleanly and the published shell, privacy route, and service worker
+returned HTTP 200.
+
+Ownership remains with Jamie until Kieran authorizes and completes the GitHub
+transfer, Replit fork, secret re-entry, GCP IAM/client-ID changes, and owner
+smoke/recovery rehearsal. Real Google lifecycle and account-isolation testing,
+manual accessibility, real browser storage quota/private-mode behavior, and
+live optional-worker activation remain unresolved. This addendum records
+handoff readiness evidence; it does not promote the release beyond
+`approve-with-limits` or claim stable/v1.0 approval.

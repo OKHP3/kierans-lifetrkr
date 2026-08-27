@@ -4,8 +4,8 @@
   "review_mode": "five-way",
   "evaluation_status": "complete",
   "artifact": {
-    "path": "git:b3d19b526608501e64faf468c5a995cf45399410",
-    "sha256": "b3d19b526608501e64faf468c5a995cf45399410",
+    "path": "git:de5fa3a369174d9975ffa0f9af7b47b03b8e2e21",
+    "sha256": "de5fa3a369174d9975ffa0f9af7b47b03b8e2e21",
     "version": "v0.1.10"
   },
   "decision_question": "Can the frozen candidate be handed to Kieran as a controlled pre-production release without claiming universal reliability, completed account transfer, or offline support?",
@@ -80,9 +80,9 @@
   "published_pages_activation": {
     "verification_date": "2026-08-27",
     "environment": "Public GitHub Pages over HTTPS; Replit Linux clean build; desktop browser capture",
-    "published_commit": "b3d19b526608501e64faf468c5a995cf45399410",
-    "ci_run": "https://github.com/OKHP3/kierans-lifetrkr/actions/runs/33031353223",
-    "pages_run": "https://github.com/OKHP3/kierans-lifetrkr/actions/runs/33031353237",
+    "published_commit": "de5fa3a369174d9975ffa0f9af7b47b03b8e2e21",
+    "ci_run": "https://github.com/OKHP3/kierans-lifetrkr/actions/runs/33033411237",
+    "pages_run": "https://github.com/OKHP3/kierans-lifetrkr/actions/runs/33033411233",
     "workflow_results": {
       "ci": "success",
       "deploy_to_github_pages": "success"
@@ -95,7 +95,8 @@
       "#/habits": "http-200",
       "#/someday": "http-200",
       "#/settings": "http-200",
-      "#/origin": "http-200"
+      "#/origin": "http-200",
+      "#/privacy": "http-200"
     },
     "required_assets": "http-200 and expected content types",
     "clean_build_hash_match": true,
@@ -131,14 +132,15 @@
       "Real Google OAuth lifecycle and account isolation",
       "Manual accessibility matrix",
       "Real browser storage quota/private-mode recovery",
-      "Owner-approved account handoff rehearsal"
+      "Owner-approved account handoff rehearsal",
+      "GitHub, Replit, and GCP ownership transfer plus secret re-entry"
     ]
   },
   "release_decision": "approve-with-limits",
   "limitations": [
     "Controlled pre-production handoff only.",
     "Public stable/v1.0 approval is deferred for the unresolved items.",
-    "Offline use is not supported or claimed because no service worker exists.",
+    "Offline shell support is implemented; real browser offline reload and installation remain owner-run checks.",
     "No account transfer or Google production verification has been performed."
   ],
   "follow_up": [
