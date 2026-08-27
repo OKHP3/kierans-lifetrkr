@@ -29,3 +29,17 @@ outside this repository.
 **How to apply:** If sync stops at `Author identity unknown`, set local
 `user.name` and `user.email` from the latest project commit, then rerun the
 guarded sync.
+
+When a documentation-only remote child has advanced from the shared base while
+validated application commits remain local, the guarded rebase may stop on
+semantic conflicts. Preserve a local backup ref, review the remote delta, and
+use an explicit non-force merge only when the newer validated tree intentionally
+supersedes the stale wording; then rerun the guarded sync and fetch the result.
+
+**Why:** Squashed evidence updates can share a base without sharing the later
+application and release-record history. Silent conflict resolution can discard
+newer evidence or product changes.
+
+**How to apply:** Treat the aborted rebase as a stop signal, not a reason to
+force-push or reset. Keep both histories reachable until the merged tree and
+post-publish checks are verified.
