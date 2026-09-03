@@ -1,4 +1,5 @@
 import type { LifeTrkrCategory, RecurrenceRule } from './types'
+import packageMetadata from '../package.json'
 
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
@@ -27,7 +28,9 @@ export const DAYS_OF_WEEK = [
 
 export const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
-export const APP_VERSION = 'v0.1.10'
+// package.json is the authoritative release version. Keep the display label
+// derived from it so UI and release metadata cannot drift independently.
+export const APP_VERSION = `v${packageMetadata.version}`
 
 export const DAILY_QUOTES = [
   'Every day is a new ritual. Begin again.',

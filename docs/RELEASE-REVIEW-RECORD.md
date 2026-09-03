@@ -4,6 +4,7 @@
 **Candidate commit:** `de5fa3a369174d9975ffa0f9af7b47b03b8e2e21`
 **Repository state:** local `main` = `origin/main`; worktree clean after publication
 **Application version:** `v0.1.10`  
+**Identity validation:** `npm run release:check` from the candidate commit; the generated report is `dist/release-identity.json`
 **Review status:** complete with bounded approval; published Pages evidence closed
 
 ## Decision question and scope
@@ -263,7 +264,9 @@ GitHub Pages URL; no Google account or token used
 The local release gates passed after the storage-failure repair: `npm ci`,
 `npm run check`, `npm run check:a11y`, `npm run test:sync` (9/9),
 `npm audit --omit=dev --audit-level=high`, `npm run build`, and
-`node scripts/inspect-artifact.mjs`. The storage harness passed normal
+`npm run release:check`. The release check reported the reviewed commit and
+generated artifact identity for the build and failed on version/identity
+mismatches rather than allowing stale release evidence. The storage harness passed normal
 write/read-back plus throwing and silent non-persisting storage. The sync
 regression fixture was corrected to clone its explicit `main` branch; this
 removed an environment-sensitive fixture failure without changing the guarded

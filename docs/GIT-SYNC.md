@@ -29,6 +29,12 @@ commit. Use
 `npm run sync -- --check` for a type-check-only check with no commit or network
 activity.
 
+If the bound connector rejects a protected tree path such as
+`.github/workflows`, the publisher retries that API request through
+`https://api.github.com` using the existing `GITHUB_PAT` Replit Secret in
+memory only. The token is never written to Git config, the repository, or
+logs.
+
 Only `origin` is used for release synchronization. Replit backup/subrepl
 remotes may exist for the workspace, but they are not release sources.
 
@@ -75,6 +81,13 @@ git remote set-url origin https://github.com/OKHP3/kierans-lifetrkr.git
 
 The GitHub Replit connection is the authorized access path; credentials must
 not be stored in Git config, scripts, or documentation.
+
+If a credential-bearing remote has ever been exposed, delete or revoke that
+credential in GitHub before the next source-control operation. A classic
+personal access token must be revoked by its owner from GitHub Settings →
+Developer settings → Personal access tokens; the Replit GitHub connection
+cannot revoke a separate personal access token. Do not reuse the exposed
+credential after normalizing the remote.
 
 ## Deployment verification and rollback
 

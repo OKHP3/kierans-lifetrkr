@@ -3,6 +3,7 @@
 **Baseline date:** August 24, 2026
 **Artifact:** `kieran-lifetrkr`  
 **Application version:** `0.1.10` (`package.json`, `src/constants.ts`)  
+**Latest published evidence candidate:** `de5fa3a369174d9975ffa0f9af7b47b03b8e2e21`
 **Release posture:** Candidate approved-with-limits for controlled pre-production handoff; public stable release deferred for remaining owner-run live and manual evidence
 
 This document is the current evidence baseline for LifeTrkr. Historical PRDs and session
@@ -188,6 +189,19 @@ For deployment truth:
 ```bash
 bash scripts/verify-deployment.sh
 ```
+
+For release identity and artifact validation:
+
+```bash
+npm run release:check
+```
+
+The release check prints the current reviewed commit and a deterministic artifact
+identity, and writes the generated report to `dist/release-identity.json`. It
+derives the application version from `package.json` and fails if the lockfile or
+release identity disagrees. The candidate commit and dates in this document are
+the exact historical evidence scope above; they must not be treated as current
+without rerunning the check from that candidate.
 
 The deployment workflow must also be checked in GitHub Actions after a `main` push.
 A green local build is not evidence that OAuth, external APIs, accessibility, offline

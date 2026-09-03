@@ -46,6 +46,7 @@ OAuth owner checklist: `docs/OAUTH-CONSENT-CHECKLIST.md`.
 ### Source control synchronization
 - [x] Bind the authorized GitHub connection to the Replit project — August 27, 2026, Replit Agent; healthy bound GitHub connection confirmed through the repository API.
 - [x] Confirm `origin` is `https://github.com/OKHP3/kierans-lifetrkr.git` — August 27, 2026, Replit Agent; embedded credentials removed from local Git configuration.
+- [x] Delete/revoke the previously exposed GitHub personal access token in GitHub Settings → Developer settings → Personal access tokens — owner confirmation received after the remote was normalized; the bound Replit GitHub connection remains the approved synchronization path.
 - [x] Use `npm run sync` for fetch-before-push reconciliation; never force-push `main` — August 27, 2026, Replit Agent; remote-ahead history was preserved with a non-force merge and guarded API publication.
 - [x] Confirm CI and Deploy to GitHub Pages succeed for the pushed commit — August 27, 2026, Replit Agent; CI run [33033411237](https://github.com/OKHP3/kierans-lifetrkr/actions/runs/33033411237) and Pages run [33033411233](https://github.com/OKHP3/kierans-lifetrkr/actions/runs/33033411233) both succeeded.
 - [x] Review `docs/GIT-SYNC.md` for remote-ahead, conflict, and rollback recovery — August 27, 2026, Replit Agent; the documented non-destructive recovery path was used.

@@ -33,14 +33,29 @@ const [authorName, authorEmail, authorDate, committerName, committerEmail, commi
 const message = messageParts.join("\0").trimEnd();
 
 const connector = apiBaseUrl ? null : new ReplitConnectors();
+const proxyFetch = connector?.createProxyFetch("github");
+const directApiBaseUrl = !apiBaseUrl && process.env.GITHUB_PAT
+  ? "https://api.github.com"
+  : null;
 const api = async (path, options = {}) => {
   const request = {
     ...options,
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
   };
-  const response = apiBaseUrl
+  let response = apiBaseUrl
     ? await fetch(`${apiBaseUrl}${path}`, request)
-    : await connector.proxy("github", path, request);
+    : await proxyFetch(path, request);
+  if (!response.ok && response.status === 404 && directApiBaseUrl) {
+    response = await fetch(`${directApiBaseUrl}${path}`, {
+      ...request,
+      headers: {
+        ...request.headers,
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${process.env.GITHUB_PAT}`,
+        "User-Agent": "kierans-lifetrkr-sync",
+      },
+    });
+  }
   const text = await response.text();
   let body;
   try {

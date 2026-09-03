@@ -14,7 +14,9 @@
     "preview": "vite preview",
     "check": "tsc --noEmit",
     "check:a11y": "node scripts/accessibility-check.mjs",
+    "release:check": "node scripts/inspect-artifact.mjs",
     "test:sync": "node --test scripts/sync-regression.test.mjs",
+    "test:service-worker": "node --test scripts/service-worker-regression.test.mjs",
     "sync": "bash scripts/sync.sh",
     "deploy": "npm run build"
   },

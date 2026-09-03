@@ -45,8 +45,11 @@ jobs:
       - name: Safe sync regression tests
         run: npm run test:sync
 
+      - name: Service-worker cache cleanup regression
+        run: npm run test:service-worker
+
       - name: Build
         run: npm run build
 
-      - name: Inspect build artifact
-        run: node scripts/inspect-artifact.mjs
+      - name: Validate release identity and build artifact
+        run: npm run release:check

@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { copyFileSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 const assetsDirectory = 'dist/assets'
@@ -23,4 +23,5 @@ if (!source.includes(marker)) {
 
 const replacement = `const BUILT_ASSETS = ${JSON.stringify(builtAssets)}`
 writeFileSync(serviceWorkerPath, source.replace(marker, replacement))
-console.log(`Service worker prepared with ${builtAssets.length} built app assets.`)
+copyFileSync('dist/index.html', 'dist/404.html')
+console.log(`Service worker prepared with ${builtAssets.length} built app assets and Pages fallback.`)

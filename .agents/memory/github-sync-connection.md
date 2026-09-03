@@ -18,6 +18,19 @@ every sync, compare the remote ref with the expected base, and use a
 authentication is unavailable. Fetch the resulting public commit back and
 compare trees before aligning local refs.
 
+GitHub classic personal access tokens are revoked from the token owner's
+GitHub Settings → Developer settings → Personal access tokens. The bound
+Replit GitHub connection cannot revoke a separate classic PAT.
+
+**Why:** The connection proxy supplies its own OAuth credential and does not
+expose the client secret or token-management authority required to revoke an
+unrelated personal access token.
+
+**How to apply:** If a classic PAT appears in a remote URL, normalize the
+remote immediately, then have the owner delete the PAT before any further
+source-control operation. Never copy the exposed value into a new secret or
+remote.
+
 The Replit workspace may also lack a local Git author identity even when the
 repository and GitHub connection are otherwise ready; the sync commit must use
 a repository-local identity matching the existing project history.
@@ -43,3 +56,18 @@ newer evidence or product changes.
 **How to apply:** Treat the aborted rebase as a stop signal, not a reason to
 force-push or reset. Keep both histories reachable until the merged tree and
 post-publish checks are verified.
+
+When a remote main has a stale or parallel release lineage, a tip-only
+dependency update may also carry deletions of project-specific validation
+scripts from its own parent history. Do not cherry-pick or accept that tip
+blindly; simulate the merge and review package, scripts, and release-document
+conflicts together.
+
+**Why:** A clean local tree can still be far ahead in validated product and
+evidence work while the remote branch contains older provenance that Git cannot
+reconcile by commit order alone.
+
+**How to apply:** Prefer an explicit non-force merge after preserving both refs,
+keep the newer validated local behavior unless the remote change is intentionally
+required, selectively retain remote-only provenance, then run the full release
+checks before publishing.

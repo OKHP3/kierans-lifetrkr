@@ -15,8 +15,9 @@ interface.
 
 **Confirmed repository:** <https://github.com/OKHP3/kierans-lifetrkr>
 
-**Current application version:** v0.1.10, in both package.json and
-src/constants.ts. Treat src/constants.ts → APP_VERSION as the display version.
+**Current application version:** v0.1.10 in package.json. The UI derives
+src/constants.ts → APP_VERSION from package metadata; do not duplicate or
+manually update the display version.
 Do not bump it for documentation-only or infrastructure-only work.
 
 **Inferred longer-term vision:** a Kieran-owned personal tool that remains

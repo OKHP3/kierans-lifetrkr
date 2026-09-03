@@ -50,11 +50,8 @@ jobs:
         env:
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
 
-      - name: Copy index.html to 404.html for SPA routing
-        run: cp dist/index.html dist/404.html
-
-      - name: Inspect Pages artifact
-        run: node scripts/inspect-artifact.mjs
+      - name: Validate release identity and Pages artifact
+        run: npm run release:check
 
       - name: Setup Pages
         uses: actions/configure-pages@v6.0.0
