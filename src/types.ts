@@ -100,6 +100,7 @@ export type RoutineItem = {
   id: string
   title: string
   time?: string
+  description?: string
   optional?: boolean
   sortOrder: number
 }
@@ -131,6 +132,8 @@ export type Habit = {
   colorTag?: string
   active: boolean
   createdAt: string
+  /** Daily target. Missing legacy values mean one completion per day. */
+  timesPerDay?: number
   // v2 fields (optional for backward compat)
   recurrence?: RecurrenceRule
   categoryId?: string
@@ -161,6 +164,8 @@ export type Task = {
   createdAt: string
   completedAt?: string
   source: TaskSource
+  /** Position within the task's status bucket; missing legacy values are migrated on load. */
+  sortOrder?: number
   googleTaskId?: string
   googleTaskListId?: string
 }

@@ -14,6 +14,11 @@
 > and the release posture is approve-with-limits for controlled pre-production.
 > See `docs/VISION-DELIVERY-MATRIX.md` and `docs/RELEASE-TRUTH-BASELINE.md`
 > before treating any shipped, planned, or release-readiness statement as current.
+> The September 3, 2026 product-scope decision narrows the remaining polish
+> boundary: local task ordering with keyboard controls, multi-target habits,
+> lightweight ritual-item metadata/optional state, and ritual ordering are the
+> approved next-release work; item-level recurrence overrides and end-of-day
+> review are intentionally deferred.
 >
 > **Date semantics note (September 3, 2026):** Current source uses configured
 > timezone calendar dates for recurrence evaluation, completion/streak history,
@@ -196,17 +201,23 @@ The following brand assets exist in `src/assets/` but are not yet used in the ap
 
 Integrate `app-icon` into PWA manifest icons. Surface `cat-accent` tastefully in the UI (one placement, subtle). Ensure `og-image.png` in `public/` references the banner asset.
 
-**6.3 End-of-day review (optional, v0.4.x)**
+**6.3 End-of-day review (historical idea — intentionally deferred)**
 A lightweight "wrap up" view accessible from Home (when it's evening) or Today tab:
 - Habits completed today: N of M
 - Ritual items checked: N of M
 - Tasks done: N of M
 - Optional reflective prompt (one of 3–4 rotating questions)
 
-This is optional and should not block v0.4.0 if scope is tight.
+This remains a documented future idea only. It is not part of the current
+release boundary and must not be treated as a silently missing v1.0 feature.
+See `docs/PRODUCT-SCOPE-DECISION.md`.
 
-**6.4 Drag-to-reorder tasks**
-Today tab and Archive tab: allow drag-and-drop reordering of tasks within their status bucket. No external drag library — use native HTML5 drag events. Order persists to localStorage.
+**6.4 Drag-to-reorder tasks (narrowed by current decision)**
+Today and Someday may offer native drag-and-drop as a pointer convenience, but
+the required behavior is persisted ordering within each local status bucket plus
+an equivalent labelled keyboard move control. No external drag library is used,
+and Google resources are never reordered remotely. See
+`docs/PRODUCT-SCOPE-DECISION.md`.
 
 **6.5 Performance audit**
 - Verify no unnecessary re-renders in `useOracle.ts` (oracle should fetch once per day, not on every Home mount)

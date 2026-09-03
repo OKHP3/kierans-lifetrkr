@@ -27,6 +27,13 @@ Build Session at a time.
 > intent and owner prerequisites, but the current delivered-state crosswalk is
 > `docs/VISION-DELIVERY-MATRIX.md`. No stable or `v1.0.0` claim follows from
 > completing a local build alone.
+>
+> **Product-scope decision (September 3, 2026):** The next-release minimum is
+> persisted task ordering with keyboard controls, multi-target habits,
+> lightweight ritual-item metadata/optional state, and ritual ordering. Item-level
+> recurrence overrides and end-of-day review are intentionally deferred. The
+> decision record is `docs/PRODUCT-SCOPE-DECISION.md`; this historical session
+> plan must not imply those deferred items are silently required for v1.0.
 
 ---
 
@@ -389,17 +396,17 @@ network (Google Calendar/Tasks and the oracle worker will always need network).
 - [ ] README and the deployment checklist are updated to match the new, narrower offline claim —
       do not overclaim "offline support" broadly; describe exactly what works offline.
 
-### F.2 — Drag-to-reorder tasks
+### F.2 — Drag-to-reorder tasks (historical plan, narrowed and implemented)
 
-**Do:** Add drag-and-drop reordering for tasks within Today and Someday, using native HTML5 drag
-events (no external library, per PRD-v4.0 §6.4). Persist order to `localStorage`.
+**Historical intent:** Add drag-and-drop reordering for tasks within Today and
+Someday. The current decision narrows the required behavior to persisted local
+ordering with labelled keyboard move controls; native HTML5 drag is only a
+pointer convenience and no external library is used.
 
 **Acceptance criteria:**
-- [ ] Reordering works with mouse drag on desktop.
-- [ ] Order persists across reload.
-- [ ] Does not break keyboard/screen-reader task interaction — if drag-only reordering has no
-      keyboard equivalent, note this as a known accessibility gap in
-      `docs/ACCESSIBILITY-CHECKLIST.md` rather than silently shipping a mouse-only feature.
+- [x] Reordering has a keyboard-accessible move-up/move-down equivalent.
+- [x] Order is persisted within the local status bucket and remains local-only.
+- [ ] Owner browser journey still verifies reload, status moves, and manual accessibility.
 
 ### F.3 — Performance audit
 
@@ -409,6 +416,15 @@ expansion does not recalculate on every scroll event.
 
 **Acceptance criteria:** each of the three checks above is verified with either a render-count log
 or the React DevTools profiler, not just "looks fine."
+
+### F.4 — Deferred scope decision (September 3, 2026)
+
+The current next-release decision is authoritative for the remaining deferred
+capabilities. Multi-target habits, lightweight ritual-item metadata/optional
+state, and ritual ordering are approved minimum behavior and are implemented in
+the current source. Item-level recurrence overrides and end-of-day review are
+intentionally deferred and have no current v1.0 acceptance claim. See
+`docs/PRODUCT-SCOPE-DECISION.md` and `docs/VISION-DELIVERY-MATRIX.md`.
 
 ---
 

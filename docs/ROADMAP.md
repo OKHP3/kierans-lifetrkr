@@ -9,6 +9,12 @@
 > approved with limits for controlled pre-production; stable-release approval is
 > deferred pending the owner-run evidence gates in
 > `docs/VISION-DELIVERY-MATRIX.md` and `docs/RELEASE-TRUTH-BASELINE.md`.
+>
+> **Deferred product scope (September 3, 2026):** The approved next-release
+> boundary is recorded in [`docs/PRODUCT-SCOPE-DECISION.md`](PRODUCT-SCOPE-DECISION.md).
+> Task ordering, multi-target habits, limited ritual-item metadata/optional state,
+> and ritual ordering are required. Item-level recurrence overrides and end-of-day
+> review are intentionally deferred; neither is a silent v1.0 gap.
 
 ---
 
@@ -56,6 +62,18 @@ not separate current release claims.
 - [x] Claude wording is worker-only and optional; the local tarot meaning is the supported fallback
 - [x] Notion persistence and Google writes remain outside the current client-only/read-only product
 
+### Next-release scope decision
+
+The following items define the next coherent local-use increment. They are not
+part of the `v0.1.10` release identity and do not close the owner-run release
+gates.
+
+- [x] Persist manual task order within Today and Someday, with keyboard move controls
+- [x] Support 1–12 habit repetitions per configured day and independent completion
+- [x] Support ritual-item title, time, description, optional marker, and keyboard ordering
+- [ ] Item-level recurrence overrides — intentionally deferred; parent recurrence remains
+- [ ] End-of-day review — intentionally deferred; no review surface is claimed
+
 ---
 
 ## v0.2.0 — Google Calendar + Tasks Live (OWNER-GATED)
@@ -94,8 +112,8 @@ not separate current release claims.
 - [x] App icon integrated (app-icon.png/webp)
 - [x] Cat accent asset placed tastefully in UI (one placement)
 - [ ] og-image.png verified
-- [ ] Drag-to-reorder tasks in Today and Someday (future scope)
-- [ ] End-of-day review view (optional future scope)
+- [x] Task ordering is implemented in source; pointer drag is a convenience and labelled keyboard controls are the required path
+- [ ] End-of-day review view — intentionally deferred by `PRODUCT-SCOPE-DECISION.md`
 - [x] Performance audit recorded (oracle, celestial, calendar recurrence)
 
 ---

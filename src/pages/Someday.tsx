@@ -3,8 +3,9 @@ import { useApp, genId } from '../context/AppContext'
 import { getCalendarDate, getTodayISO } from '../lib/date'
 import { useGoogleTasks } from '../hooks/useGoogleTasks'
 import type { TaskPriority } from '../types'
+import { sortTasksByOrder } from '../lib/taskOrdering'
 
-type SortKey = 'Priority' | 'Date Added' | 'Title'
+type SortKey = 'Manual' | 'Priority' | 'Date Added' | 'Title'
 const PRIORITY_ORDER: Record<TaskPriority, number> = { high: 0, normal: 1, low: 2 }
 const PRIORITY_COLORS: Record<TaskPriority, string> = { high: '#e07070', normal: 'var(--text-ghost)', low: 'var(--text-ghost)' }
 
@@ -12,7 +13,7 @@ export default function Someday() {
   const { state, dispatch } = useApp()
   const { loading: googleLoading, error: googleError, retry: retryGoogleTasks } = useGoogleTasks()
   const [search, setSearch] = useState('')
-  const [sort, setSort] = useState<SortKey>('Priority')
+  const [sort, setSort] = useState<SortKey>('Manual')
   const [showAdd, setShowAdd] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newNotes, setNewNotes] = useState('')
@@ -22,12 +23,13 @@ export default function Someday() {
   const today = getTodayISO(state.settings.timezone)
 
   const backlogTasks = useMemo(() => {
-    let tasks = state.tasks.filter(t => t.status === 'backlog')
+    let tasks = sortTasksByOrder(state.tasks.filter(t => t.status === 'backlog'))
     if (search.trim()) {
       const q = search.toLowerCase()
       tasks = tasks.filter(t => t.title.toLowerCase().includes(q) || (t.notes || '').toLowerCase().includes(q))
     }
     tasks = [...tasks].sort((a, b) => {
+      if (sort === 'Manual') return 0
       if (sort === 'Priority') return PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]
       if (sort === 'Title') return a.title.localeCompare(b.title)
       return b.createdAt.localeCompare(a.createdAt)
@@ -55,6 +57,23 @@ export default function Someday() {
     setShowAdd(false)
   }
 
+  function reorderTask(taskId: string, direction: -1 | 1) {
+    const index = backlogTasks.findIndex(task => task.id === taskId)
+    const targetIndex = index + direction
+    if (index < 0 || targetIndex < 0 || targetIndex >= backlogTasks.length) return
+    const orderedIds = backlogTasks.map(task => task.id)
+    ;[orderedIds[index], orderedIds[targetIndex]] = [orderedIds[targetIndex], orderedIds[index]]
+    dispatch({ type: 'REORDER_TASKS', payload: { status: 'backlog', orderedIds } })
+  }
+
+  function dropTask(taskId: string, targetId: string) {
+    if (taskId === targetId) return
+    const orderedIds = backlogTasks.map(task => task.id).filter(id => id !== taskId)
+    const targetIndex = orderedIds.indexOf(targetId)
+    orderedIds.splice(targetIndex, 0, taskId)
+    dispatch({ type: 'REORDER_TASKS', payload: { status: 'backlog', orderedIds } })
+  }
+
   return (
     <div className="page-content">
       <div style={{ marginBottom: 16 }}>
@@ -77,7 +96,7 @@ export default function Someday() {
       {/* Sort pills + count */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ display: 'flex', gap: 6 }}>
-          {(['Priority', 'Date Added', 'Title'] as SortKey[]).map(s => (
+          {(['Manual', 'Priority', 'Date Added', 'Title'] as SortKey[]).map(s => (
             <button key={s} onClick={() => setSort(s)} style={{ padding: '4px 10px', borderRadius: 20, border: sort === s ? 'none' : '0.5px solid var(--border)', background: sort === s ? 'var(--surface-raised)' : 'transparent', color: sort === s ? 'var(--accent-amethyst)' : 'var(--text-ghost)', fontSize: 11, cursor: 'pointer' }}>{s}</button>
           ))}
         </div>
@@ -94,8 +113,16 @@ export default function Someday() {
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {backlogTasks.map(task => (
-          <div key={task.id} className="card" style={{ padding: '10px 14px' }}>
+        {backlogTasks.map((task, index) => (
+          <div
+            key={task.id}
+            className="card"
+            draggable
+            onDragOver={event => event.preventDefault()}
+            onDrop={event => { event.preventDefault(); const draggedId = event.dataTransfer.getData('text/plain'); if (draggedId) dropTask(draggedId, task.id) }}
+            onDragStart={event => event.dataTransfer.setData('text/plain', task.id)}
+            style={{ padding: '10px 14px' }}
+          >
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
               <span style={{ color: 'var(--text-ghost)', fontSize: 14, marginTop: 1, flexShrink: 0 }}>○</span>
               <div style={{ flex: 1, minWidth: 0 }} onClick={() => setExpandedId(expandedId === task.id ? null : task.id)}>
@@ -107,6 +134,11 @@ export default function Someday() {
                 </div>
                 {task.notes && <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: '4px 0 0' }}>{task.notes}</p>}
               </div>
+            </div>
+            <div style={{ display: 'flex', gap: 4, marginTop: 8, paddingLeft: 24 }}>
+              <button className="btn-ghost" aria-label={`Move ${task.title} up`} disabled={index === 0} onClick={() => reorderTask(task.id, -1)}>↑</button>
+              <button className="btn-ghost" aria-label={`Move ${task.title} down`} disabled={index === backlogTasks.length - 1} onClick={() => reorderTask(task.id, 1)}>↓</button>
+              <span style={{ fontSize: 10, color: 'var(--text-ghost)', alignSelf: 'center', marginLeft: 4 }}>Drag or use arrows to reorder</span>
             </div>
             {expandedId === task.id && (
               <div style={{ display: 'flex', gap: 8, marginTop: 10, paddingLeft: 24 }}>

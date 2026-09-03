@@ -18,6 +18,7 @@
     "test:sync": "node --test scripts/sync-regression.test.mjs",
     "test:service-worker": "node --test scripts/service-worker-regression.test.mjs",
     "test:date": "bun test scripts/date-regression.test.ts",
+    "test:scope": "bun test scripts/scope-regression.test.ts",
     "sync": "bash scripts/sync.sh",
     "deploy": "npm run build"
   },

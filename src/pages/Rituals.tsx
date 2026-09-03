@@ -8,7 +8,7 @@ import DescriptionField from '../components/DescriptionField'
 import RecurrenceEditor from '../components/RecurrenceEditor'
 import { getTodayISO, getDayOfWeek } from '../lib/date'
 import { DAYS_OF_WEEK, DAYS_SHORT, DEFAULT_CATEGORIES, makeDefaultRecurrence } from '../constants'
-import type { RoutineDayOfWeek, RecurrenceRule } from '../types'
+import type { RoutineDayOfWeek, RecurrenceRule, RoutineItem } from '../types'
 
 const DAY_NUM: Record<RoutineDayOfWeek, number> = {
   Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6,
@@ -25,6 +25,9 @@ export default function Rituals() {
   const [showAdd, setShowAdd] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newTime, setNewTime] = useState('')
+  const [newDescription, setNewDescription] = useState('')
+  const [newOptional, setNewOptional] = useState(false)
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
 
   // Filter & sort state
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
@@ -121,17 +124,48 @@ export default function Rituals() {
       type: 'ADD_ROUTINE_ITEM',
       payload: {
         templateId: template.id,
-        item: { id: genId(), title: newTitle.trim(), time: newTime.trim() || undefined, sortOrder: template.items.length },
+        item: {
+          id: genId(),
+          title: newTitle.trim(),
+          time: newTime.trim() || undefined,
+          description: newDescription.trim() || undefined,
+          optional: newOptional || undefined,
+          sortOrder: template.items.length,
+        },
       },
     })
     setNewTitle('')
     setNewTime('')
+    setNewDescription('')
+    setNewOptional(false)
     setShowAdd(false)
   }
 
   function removeItem(itemId: string) {
     if (!template) return
     dispatch({ type: 'REMOVE_ROUTINE_ITEM', payload: { templateId: template.id, itemId } })
+    if (editingItemId === itemId) setEditingItemId(null)
+  }
+
+  function updateItem(item: RoutineItem, patch: Partial<RoutineItem>) {
+    if (!template) return
+    dispatch({ type: 'UPDATE_ROUTINE_ITEM', payload: { templateId: template.id, item: { ...item, ...patch } } })
+  }
+
+  function moveItem(itemId: string, direction: -1 | 1) {
+    if (!template) return
+    const index = template.items.findIndex(item => item.id === itemId)
+    const targetIndex = index + direction
+    if (index < 0 || targetIndex < 0 || targetIndex >= template.items.length) return
+    const items = [...template.items]
+    ;[items[index], items[targetIndex]] = [items[targetIndex], items[index]]
+    dispatch({
+      type: 'REORDER_ROUTINE',
+      payload: {
+        templateId: template.id,
+        items: items.map((item, itemIndex) => ({ ...item, sortOrder: itemIndex })),
+      },
+    })
   }
 
   function toggleItem(itemId: string) {
@@ -210,7 +244,7 @@ export default function Rituals() {
           return (
             <button
               key={day}
-              onClick={() => { setSelectedDay(day); setEditMode(false); setShowAdd(false) }}
+              onClick={() => { setSelectedDay(day); setEditMode(false); setShowAdd(false); setEditingItemId(null) }}
               style={{
                 flexShrink: 0, padding: '5px 12px', borderRadius: 20,
                 border: isSelected ? 'none' : '0.5px solid var(--border)',
@@ -308,7 +342,7 @@ export default function Rituals() {
           </p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {template.items.map(item => (
+            {template.items.map((item, index) => (
               <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 {editMode ? (
                   <>
@@ -316,21 +350,36 @@ export default function Rituals() {
                       <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
                       <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
                     </svg>
-                    <span style={{ flex: 1, fontSize: 14, color: 'var(--text-primary)' }}>{item.title}</span>
-                    {item.time && <span style={{ fontSize: 11, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>{item.time}</span>}
-                    <button onClick={() => removeItem(item.id)} style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: 18, padding: '0 4px', lineHeight: 1 }}>×</button>
+                    <button className="btn-ghost" aria-label={`${editingItemId === item.id ? 'Close' : 'Edit'} ${item.title}`} style={{ fontSize: 11, padding: '3px 6px' }} onClick={() => setEditingItemId(editingItemId === item.id ? null : item.id)}>
+                      {editingItemId === item.id ? 'done' : 'edit'}
+                    </button>
+                    <button className="btn-ghost" aria-label={`Move ${item.title} up`} disabled={index === 0} style={{ fontSize: 14, padding: '3px 6px' }} onClick={() => moveItem(item.id, -1)}>↑</button>
+                    <button className="btn-ghost" aria-label={`Move ${item.title} down`} disabled={index === template.items.length - 1} style={{ fontSize: 14, padding: '3px 6px' }} onClick={() => moveItem(item.id, 1)}>↓</button>
+                    <button onClick={() => removeItem(item.id)} aria-label={`Delete ${item.title}`} style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: 18, padding: '0 4px', lineHeight: 1 }}>×</button>
                   </>
                 ) : (
                   <>
                     <CheckCircle done={isItemDone(item.id)} onToggle={() => toggleItem(item.id)} />
                     <div style={{ flex: 1 }}>
                       <span style={{ fontSize: 14, color: isItemDone(item.id) ? 'var(--text-ghost)' : 'var(--text-primary)', textDecoration: isItemDone(item.id) ? 'line-through' : 'none' }}>
-                        {item.title}
+                        {item.title} {item.optional && <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontStyle: 'italic' }}>(optional)</span>}
                       </span>
                       {item.time && <span style={{ fontSize: 11, color: 'var(--text-ghost)', marginLeft: 8, fontFamily: 'Space Mono, monospace' }}>{item.time}</span>}
+                      {item.description && <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: '3px 0 0' }}>{item.description}</p>}
                     </div>
                     {!isToday && <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontStyle: 'italic' }}>template</span>}
                   </>
+                )}
+                {editMode && editingItemId === item.id && (
+                  <div style={{ margin: '8px 0 0 26px', display: 'grid', gap: 8 }}>
+                    <input className="input-field" aria-label={`${item.title} name`} value={item.title} onChange={event => updateItem(item, { title: event.target.value })} />
+                    <input className="input-field" aria-label={`${item.title} time`} placeholder="Time (optional, e.g. 7:00 AM)" value={item.time ?? ''} onChange={event => updateItem(item, { time: event.target.value.trim() || undefined })} />
+                    <textarea className="input-field" aria-label={`${item.title} description`} rows={2} placeholder="Description (optional)" value={item.description ?? ''} onChange={event => updateItem(item, { description: event.target.value || undefined })} />
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-secondary)' }}>
+                      <input type="checkbox" aria-label={`Mark ${item.title} as optional`} checked={item.optional ?? false} onChange={event => updateItem(item, { optional: event.target.checked || undefined })} />
+                      Optional ritual item
+                    </label>
+                  </div>
                 )}
               </div>
             ))}
@@ -343,9 +392,14 @@ export default function Rituals() {
         <div className="card" style={{ marginTop: 12 }}>
           <input className="input-field" aria-label="Ritual name" placeholder="Ritual name" value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && addItem()} autoFocus />
           <input className="input-field" aria-label="Ritual time" style={{ marginTop: 8 }} placeholder="Time (optional, e.g. 7:00 AM)" value={newTime} onChange={e => setNewTime(e.target.value)} onKeyDown={e => e.key === 'Enter' && addItem()} />
+          <textarea className="input-field" aria-label="Ritual description" style={{ marginTop: 8 }} placeholder="Description (optional)" rows={2} value={newDescription} onChange={e => setNewDescription(e.target.value)} />
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 12, color: 'var(--text-secondary)' }}>
+            <input type="checkbox" aria-label="Mark ritual item as optional" checked={newOptional} onChange={e => setNewOptional(e.target.checked)} />
+            Optional ritual item
+          </label>
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
             <button className="btn-primary" style={{ flex: 1 }} onClick={addItem}>Add</button>
-            <button className="btn-ghost" onClick={() => { setShowAdd(false); setNewTitle(''); setNewTime('') }}>Cancel</button>
+            <button className="btn-ghost" onClick={() => { setShowAdd(false); setNewTitle(''); setNewTime(''); setNewDescription(''); setNewOptional(false) }}>Cancel</button>
           </div>
         </div>
       )}

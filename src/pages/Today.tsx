@@ -4,6 +4,7 @@ import CheckCircle from '../components/CheckCircle'
 import { getCalendarDate, getTodayISO } from '../lib/date'
 import { useGoogleTasks } from '../hooks/useGoogleTasks'
 import type { TaskPriority } from '../types'
+import { sortTasksByOrder } from '../lib/taskOrdering'
 
 const PRIORITY_ORDER: Record<TaskPriority, number> = { high: 0, normal: 1, low: 2 }
 const PRIORITY_COLORS: Record<TaskPriority, string> = {
@@ -25,9 +26,7 @@ export default function Today() {
   const today = getTodayISO(state.settings.timezone)
 
   const activeTasks = useMemo(() =>
-    state.tasks
-      .filter(t => t.status === 'today')
-      .sort((a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]),
+    sortTasksByOrder(state.tasks.filter(t => t.status === 'today')),
     [state.tasks]
   )
 
@@ -56,6 +55,23 @@ export default function Today() {
     setShowAdd(false)
   }
 
+  function reorderTask(taskId: string, direction: -1 | 1) {
+    const index = activeTasks.findIndex(task => task.id === taskId)
+    const targetIndex = index + direction
+    if (index < 0 || targetIndex < 0 || targetIndex >= activeTasks.length) return
+    const orderedIds = activeTasks.map(task => task.id)
+    ;[orderedIds[index], orderedIds[targetIndex]] = [orderedIds[targetIndex], orderedIds[index]]
+    dispatch({ type: 'REORDER_TASKS', payload: { status: 'today', orderedIds } })
+  }
+
+  function dropTask(taskId: string, targetId: string) {
+    if (taskId === targetId) return
+    const orderedIds = activeTasks.map(task => task.id).filter(id => id !== taskId)
+    const targetIndex = orderedIds.indexOf(targetId)
+    orderedIds.splice(targetIndex, 0, taskId)
+    dispatch({ type: 'REORDER_TASKS', payload: { status: 'today', orderedIds } })
+  }
+
   return (
     <div className="page-content">
       <div style={{ marginBottom: 6 }}>
@@ -76,8 +92,16 @@ export default function Today() {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {activeTasks.map(task => (
-            <div key={task.id} className="card" style={{ padding: '10px 14px' }}>
+            {activeTasks.map((task, index) => (
+            <div
+              key={task.id}
+              className="card"
+              draggable
+              onDragStart={event => event.dataTransfer.setData('text/plain', task.id)}
+              onDragOver={event => event.preventDefault()}
+              onDrop={event => { event.preventDefault(); const draggedId = event.dataTransfer.getData('text/plain'); if (draggedId) dropTask(draggedId, task.id) }}
+              style={{ padding: '10px 14px' }}
+            >
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                 <CheckCircle
                   done={false}
@@ -94,6 +118,11 @@ export default function Today() {
                   </div>
                   {task.notes && <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: '4px 0 0' }}>{task.notes}</p>}
                 </div>
+              </div>
+              <div style={{ display: 'flex', gap: 4, marginTop: 8, paddingLeft: 34 }}>
+                <button className="btn-ghost" aria-label={`Move ${task.title} up`} disabled={index === 0} onClick={() => reorderTask(task.id, -1)}>↑</button>
+                <button className="btn-ghost" aria-label={`Move ${task.title} down`} disabled={index === activeTasks.length - 1} onClick={() => reorderTask(task.id, 1)}>↓</button>
+                <span style={{ fontSize: 10, color: 'var(--text-ghost)', alignSelf: 'center', marginLeft: 4 }}>Drag or use arrows to reorder</span>
               </div>
               {expandedId === task.id && (
                 <div style={{ display: 'flex', gap: 8, marginTop: 10, paddingLeft: 34 }}>

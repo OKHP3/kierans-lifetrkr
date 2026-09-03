@@ -76,6 +76,14 @@ The source of truth for types is `src/types.ts`. In particular, the implementati
 uses `RecurrenceRule` and optional compatibility fields; older PRD type listings must
 not be used to infer current payloads.
 
+The next-release scope decision adds optional `Task.sortOrder`,
+`Habit.timesPerDay`, `RoutineItem.description`, and indexed
+`HabitCompletion.completionIndex` values. Missing values remain valid legacy data
+and are defaulted on load or during completion evaluation; no persistence key or
+namespace changes. Item-level recurrence overrides and end-of-day review are
+explicitly deferred rather than release gaps. See
+[`docs/PRODUCT-SCOPE-DECISION.md`](PRODUCT-SCOPE-DECISION.md).
+
 ## 4. External and browser-facing services
 
 | Service | Use | Current boundary | Evidence status |
@@ -269,10 +277,11 @@ rules requires a fresh identity and evidence pass.
 |---|---|---|
 | `npm run check` | PASS | TypeScript completed with no errors |
 | `npm run check:a11y` | PASS | Accessibility source check covered 30 JSX/TSX files |
+| `npm run test:scope` | PASS | Three regression tests cover legacy task ordering and indexed habit completion |
 | `npm run test:service-worker` | PASS | One regression test passed |
 | `npm run test:sync` | PASS | Nine sync regression tests passed |
 | `npm run build` | PASS | Vite production build and service-worker preparation completed |
-| `npm run release:check` | PASS | `v0.1.10`; reviewed source `393c2aa74766d0572943306e372f5e35ec6cf950+dirty`; artifact `sha256:4a0cfe843a17d25960f7113fef526f5ef7c6ee5c9e96effd9add30d9e4c39347` |
+| `npm run release:check` | PASS | `v0.1.10`; reviewed source `d6c0aa0bb64793b06d7139633dba5fbb3833e5a0+dirty`; artifact `sha256:f814ae12bed94b01bb62d896e4e81de84bb23a497a04a1b563c1b1776bc414c8` |
 | `node scripts/inspect-artifact.mjs` | PASS | Eight required deployment files present |
 | `git diff --check` | PASS | No whitespace errors in tracked changes |
 
@@ -557,3 +566,22 @@ manual accessibility, real browser storage quota/private-mode behavior, and
 live optional-worker activation remain unresolved. This addendum records
 handoff readiness evidence; it does not promote the release beyond
 `approve-with-limits` or claim stable/v1.0 approval.
+
+## 17. Deferred product scope addendum
+
+**Decision date:** September 3, 2026
+**Decision record:** [`docs/PRODUCT-SCOPE-DECISION.md`](PRODUCT-SCOPE-DECISION.md)
+
+The approved next-release increment is deliberately small: persisted local task
+ordering with labelled keyboard controls, 1–12 independently completable habit
+repetitions, lightweight ritual-item metadata/optional state, and persisted ritual
+ordering. The source preserves the existing client-only architecture, storage
+namespace, configured-timezone date model, read-only Google boundary, and oracle
+privacy boundary.
+
+The following are not missing parts of an otherwise complete v1.0: item-level
+recurrence overrides and end-of-day review are intentionally deferred. They have
+no current release acceptance claim or stable-release implication. The source
+regression suite covers migration/order and habit completion semantics; the
+standard type, accessibility, build, artifact, and owner-run release gates still
+apply, and this addendum does not change the `approve-with-limits` posture.

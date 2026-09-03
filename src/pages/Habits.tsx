@@ -9,18 +9,19 @@ import RecurrenceEditor from '../components/RecurrenceEditor'
 import { addCalendarDays, getDayOfWeekForDate, getTodayISO, recurrenceOccursOnDate } from '../lib/date'
 import { DEFAULT_CATEGORIES, makeDefaultRecurrence } from '../constants'
 import type { Habit, RecurrenceRule } from '../types'
+import { completionCount, habitTarget, isHabitComplete } from '../lib/habitCompletion'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function getStreak(habitId: string, completions: { habitId: string; date: string }[], today: string): number {
+function getStreak(habit: Habit, completions: { habitId: string; date: string; completionIndex?: number }[], today: string): number {
   let streak = 0
   let dateStr = today
   for (let i = 0; i < 365; i++) {
-    if (i === 0 && !completions.some(c => c.habitId === habitId && c.date === dateStr)) {
+    if (i === 0 && !isHabitComplete(habit, completions, dateStr)) {
       dateStr = addCalendarDays(dateStr, -1)
       continue
     }
-    if (completions.some(c => c.habitId === habitId && c.date === dateStr)) {
+    if (isHabitComplete(habit, completions, dateStr)) {
       streak++
       dateStr = addCalendarDays(dateStr, -1)
     } else {
@@ -30,13 +31,13 @@ function getStreak(habitId: string, completions: { habitId: string; date: string
   return streak
 }
 
-function getLast7(habitId: string, completions: { habitId: string; date: string }[], today: string): { label: string; done: boolean }[] {
+function getLast7(habit: Habit, completions: { habitId: string; date: string; completionIndex?: number }[], today: string): { label: string; done: boolean }[] {
   const result: { label: string; done: boolean }[] = []
   for (let i = 6; i >= 0; i--) {
     const dateStr = addCalendarDays(today, -i)
     result.push({
       label: getDayOfWeekForDate(dateStr).slice(0, 1),
-      done: completions.some(c => c.habitId === habitId && c.date === dateStr),
+      done: isHabitComplete(habit, completions, dateStr),
     })
   }
   return result
@@ -48,13 +49,9 @@ function computeNextDue(habit: Habit, completions: { habitId: string; date: stri
   const rec = habit.recurrence
   if (!rec || rec.frequency === 'none') return '9999-12-31'
 
-  const completed = new Set(completions
-    .filter(c => c.habitId === habit.id)
-    .map(c => c.date)
-  )
   for (let offset = 0; offset <= 366; offset++) {
     const candidate = addCalendarDays(today, offset)
-    if (recurrenceOccursOnDate(rec, candidate) && !completed.has(candidate)) return candidate
+    if (recurrenceOccursOnDate(rec, candidate) && !isHabitComplete(habit, completions, candidate)) return candidate
   }
   return '9999-12-31'
 }
@@ -65,6 +62,7 @@ type HabitForm = {
   categoryId?: string
   tags: string[]
   recurrence: RecurrenceRule
+  timesPerDay: number
   showDetails: boolean
   showRecurrence: boolean
 }
@@ -73,6 +71,7 @@ function freshForm(today: string): HabitForm {
   return {
     name: '', desc: '', categoryId: undefined, tags: [],
     recurrence: { ...makeDefaultRecurrence(today), frequency: 'daily' },
+    timesPerDay: 1,
     showDetails: false, showRecurrence: false,
   }
 }
@@ -84,6 +83,7 @@ function habitToForm(h: Habit, today: string): HabitForm {
     categoryId: h.categoryId,
     tags: h.tags ?? [],
     recurrence: h.recurrence ?? { ...makeDefaultRecurrence(today), frequency: 'daily' },
+    timesPerDay: habitTarget(h),
     showDetails: !!(h.categoryId || (h.tags ?? []).length > 0 || h.description),
     showRecurrence: !!h.recurrence && h.recurrence.frequency !== 'none',
   }
@@ -109,7 +109,7 @@ export default function Habits() {
 
   const activeHabits = state.habits.filter(h => h.active)
   const doneToday = activeHabits.filter(h =>
-    state.habitCompletions.some(c => c.habitId === h.id && c.date === today)
+    isHabitComplete(h, state.habitCompletions, today)
   ).length
 
   // Derive filter options from active habits
@@ -123,9 +123,9 @@ export default function Habits() {
   // Apply filters
   let visibleHabits = [...activeHabits]
   if (statusFilter === 'done')
-    visibleHabits = visibleHabits.filter(h => state.habitCompletions.some(c => c.habitId === h.id && c.date === today))
+    visibleHabits = visibleHabits.filter(h => isHabitComplete(h, state.habitCompletions, today))
   if (statusFilter === 'not-done')
-    visibleHabits = visibleHabits.filter(h => !state.habitCompletions.some(c => c.habitId === h.id && c.date === today))
+    visibleHabits = visibleHabits.filter(h => !isHabitComplete(h, state.habitCompletions, today))
   if (categoryFilter)
     visibleHabits = visibleHabits.filter(h => h.categoryId === categoryFilter)
   if (tagFilter)
@@ -137,7 +137,7 @@ export default function Habits() {
   if (sortBy === 'name')
     visibleHabits = [...visibleHabits].sort((a, b) => a.name.localeCompare(b.name))
   else if (sortBy === 'progress')
-    visibleHabits = [...visibleHabits].sort((a, b) => getStreak(b.id, state.habitCompletions, today) - getStreak(a.id, state.habitCompletions, today))
+    visibleHabits = [...visibleHabits].sort((a, b) => getStreak(b, state.habitCompletions, today) - getStreak(a, state.habitCompletions, today))
   else if (sortBy === 'next-due')
     visibleHabits = [...visibleHabits].sort((a, b) => {
       const da = computeNextDue(a, state.habitCompletions, today)
@@ -159,6 +159,7 @@ export default function Habits() {
         categoryId: addForm.categoryId, tags: addForm.tags,
         recurrence: addForm.recurrence,
         active: true, createdAt: today, updatedAt: today,
+        timesPerDay: Math.max(1, Math.floor(addForm.timesPerDay || 1)),
       },
     })
     setAddForm(null)
@@ -177,6 +178,7 @@ export default function Habits() {
         description: editForm.desc.trim() || undefined,
         categoryId: editForm.categoryId, tags: editForm.tags,
         recurrence: editForm.recurrence, updatedAt: today,
+        timesPerDay: Math.max(1, Math.floor(editForm.timesPerDay || 1)),
       },
     })
     cancelEdit()
@@ -257,9 +259,11 @@ export default function Habits() {
       {/* Habits list */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {visibleHabits.map(habit => {
-          const done = state.habitCompletions.some(c => c.habitId === habit.id && c.date === today)
-          const streak = getStreak(habit.id, state.habitCompletions, today)
-          const last7 = getLast7(habit.id, state.habitCompletions, today)
+          const target = habitTarget(habit)
+          const completed = completionCount(state.habitCompletions, habit.id, today)
+          const done = completed >= target
+          const streak = getStreak(habit, state.habitCompletions, today)
+          const last7 = getLast7(habit, state.habitCompletions, today)
           const cat = habit.categoryId ? DEFAULT_CATEGORIES.find(c => c.id === habit.categoryId) : undefined
           const dotColor = habit.colorTag ?? 'var(--accent-amethyst)'
           const isEditing = editingId === habit.id
@@ -267,10 +271,13 @@ export default function Habits() {
           return (
             <div key={habit.id} className="card">
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                <CheckCircle
-                  done={done}
-                  onToggle={() => dispatch({ type: 'TOGGLE_HABIT', payload: { habitId: habit.id, date: today } })}
-                />
+                {target === 1 && (
+                  <CheckCircle
+                    done={done}
+                    ariaLabel={`${done ? 'Mark incomplete' : 'Mark complete'} ${habit.name}`}
+                    onToggle={() => dispatch({ type: 'TOGGLE_HABIT_COMPLETION', payload: { habitId: habit.id, date: today, completionIndex: 0 } })}
+                  />
+                )}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden' }}>
@@ -291,6 +298,23 @@ export default function Habits() {
                       <button onClick={() => dispatch({ type: 'REMOVE_HABIT', payload: habit.id })} style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: 16, padding: '0 2px', lineHeight: 1 }}>×</button>
                     </div>
                   </div>
+                  {target > 1 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8 }} aria-label={`${completed} of ${target} repetitions complete`}>
+                      {Array.from({ length: target }, (_, index) => {
+                        const repetitionDone = state.habitCompletions.some(c => c.habitId === habit.id && c.date === today && (c.completionIndex ?? 0) === index)
+                        return (
+                          <CheckCircle
+                            key={index}
+                            size={18}
+                            done={repetitionDone}
+                            ariaLabel={`${repetitionDone ? 'Mark incomplete' : 'Mark complete'} repetition ${index + 1} of ${target} for ${habit.name}`}
+                            onToggle={() => dispatch({ type: 'TOGGLE_HABIT_COMPLETION', payload: { habitId: habit.id, date: today, completionIndex: index } })}
+                          />
+                        )
+                      })}
+                      <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>{completed}/{target} today</span>
+                    </div>
+                  )}
 
                   {!isEditing && habit.description && (
                     <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: '3px 0 0' }}>{habit.description}</p>
@@ -351,6 +375,9 @@ export default function Habits() {
                   </button>
                   {editForm.showRecurrence && (
                     <div style={{ marginTop: 10, paddingTop: 10, borderTop: '0.5px solid var(--border)' }}>
+                      <label className="label-muted" style={{ display: 'block', marginBottom: 6 }}>Times per day</label>
+                      <input className="input-field" type="number" min={1} max={12} aria-label="Times per day" value={editForm.timesPerDay} onChange={e => patchEdit({ timesPerDay: Math.max(1, Math.min(12, parseInt(e.target.value) || 1)) })} />
+                      <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: '5px 0 10px' }}>Each repetition can be completed separately.</p>
                       <RecurrenceEditor value={editForm.recurrence} onChange={recurrence => patchEdit({ recurrence })} />
                     </div>
                   )}
@@ -406,6 +433,9 @@ export default function Habits() {
           </button>
           {addForm.showRecurrence && (
             <div style={{ marginTop: 10, paddingTop: 10, borderTop: '0.5px solid var(--border)' }}>
+              <label className="label-muted" style={{ display: 'block', marginBottom: 6 }}>Times per day</label>
+              <input className="input-field" type="number" min={1} max={12} aria-label="Times per day" value={addForm.timesPerDay} onChange={e => patchAdd({ timesPerDay: Math.max(1, Math.min(12, parseInt(e.target.value) || 1)) })} />
+              <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: '5px 0 10px' }}>Each repetition can be completed separately.</p>
               <RecurrenceEditor value={addForm.recurrence} onChange={recurrence => patchAdd({ recurrence })} />
             </div>
           )}

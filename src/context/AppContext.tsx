@@ -7,6 +7,7 @@ import type {
 import { storage } from '../lib/storage'
 import { getTodayISO } from '../lib/date'
 import { DAYS_OF_WEEK } from '../constants'
+import { normalizeTaskOrder, nextTaskOrder, reorderTasks } from '../lib/taskOrdering'
 
 // ─── Initial State ──────────────────────────────────────────────────────────
 
@@ -80,6 +81,7 @@ type Action =
   | { type: 'CLEAR_ORACLE' }
   | { type: 'SET_LOADING_ORACLE'; payload: boolean }
   | { type: 'ADD_ROUTINE_ITEM'; payload: { templateId: string; item: RoutineItem } }
+  | { type: 'UPDATE_ROUTINE_ITEM'; payload: { templateId: string; item: RoutineItem } }
   | { type: 'REMOVE_ROUTINE_ITEM'; payload: { templateId: string; itemId: string } }
   | { type: 'REORDER_ROUTINE'; payload: { templateId: string; items: RoutineItem[] } }
   | { type: 'TOGGLE_ROUTINE_ITEM'; payload: { templateId: string; itemId: string; date: string } }
@@ -88,10 +90,12 @@ type Action =
   | { type: 'UPDATE_HABIT'; payload: Habit }
   | { type: 'REMOVE_HABIT'; payload: string }
   | { type: 'TOGGLE_HABIT'; payload: { habitId: string; date: string } }
+  | { type: 'TOGGLE_HABIT_COMPLETION'; payload: { habitId: string; date: string; completionIndex: number } }
   | { type: 'ADD_TASK'; payload: Task }
   | { type: 'UPDATE_TASK'; payload: Task }
   | { type: 'DELETE_TASK'; payload: string }
   | { type: 'SET_TASK_STATUS'; payload: { taskId: string; status: Task['status'] } }
+  | { type: 'REORDER_TASKS'; payload: { status: Task['status']; orderedIds: string[] } }
   | { type: 'CLEAR_ALL_DATA' }
 
 // ─── Reducer ────────────────────────────────────────────────────────────────
@@ -103,6 +107,17 @@ function reducer(state: AppState, action: Action): AppState {
       return {
         ...state,
         ...action.payload,
+        // A profile switch must replace, not merge, user-owned collections.
+        // Missing values mean the new namespace is empty.
+        routineCompletions: action.payload.routineCompletions ?? [],
+        habits: action.payload.habits ?? [],
+        habitCompletions: action.payload.habitCompletions ?? [],
+        tasks: action.payload.tasks ?? [],
+        calendarEvents: action.payload.calendarEvents ?? [],
+        googleTasks: [],
+        taskLists: [],
+        lastGoogleSync: null,
+        oracle: null,
         settings: loadedSettings,
         routineTemplates: action.payload.routineTemplates?.length
           ? action.payload.routineTemplates
@@ -197,6 +212,16 @@ function reducer(state: AppState, action: Action): AppState {
         ),
       }
 
+    case 'UPDATE_ROUTINE_ITEM':
+      return {
+        ...state,
+        routineTemplates: state.routineTemplates.map(t =>
+          t.id === action.payload.templateId
+            ? { ...t, items: t.items.map(item => item.id === action.payload.item.id ? action.payload.item : item) }
+            : t
+        ),
+      }
+
     case 'REMOVE_ROUTINE_ITEM':
       return {
         ...state,
@@ -273,24 +298,49 @@ function reducer(state: AppState, action: Action): AppState {
 
     case 'TOGGLE_HABIT': {
       const { habitId, date } = action.payload
-      const exists = state.habitCompletions.some(
-        c => c.habitId === habitId && c.date === date
+      const target = Math.max(1, Math.floor(state.habits.find(h => h.id === habitId)?.timesPerDay || 1))
+      const completionIndex = 0
+      const exists = state.habitCompletions.some(c =>
+        c.habitId === habitId && c.date === date && (c.completionIndex ?? 0) === completionIndex
       )
       return {
         ...state,
         habitCompletions: exists
-          ? state.habitCompletions.filter(c => !(c.habitId === habitId && c.date === date))
-          : [...state.habitCompletions, { habitId, date }],
+          ? state.habitCompletions.filter(c => !(c.habitId === habitId && c.date === date && (c.completionIndex ?? 0) === completionIndex))
+          : [...state.habitCompletions, { habitId, date, completionIndex: Math.min(completionIndex, target - 1) }],
+      }
+    }
+
+    case 'TOGGLE_HABIT_COMPLETION': {
+      const { habitId, date, completionIndex } = action.payload
+      const target = Math.max(1, Math.floor(state.habits.find(h => h.id === habitId)?.timesPerDay || 1))
+      const index = Math.max(0, Math.min(Math.floor(completionIndex), target - 1))
+      const exists = state.habitCompletions.some(c =>
+        c.habitId === habitId && c.date === date && (c.completionIndex ?? 0) === index
+      )
+      return {
+        ...state,
+        habitCompletions: exists
+          ? state.habitCompletions.filter(c => !(c.habitId === habitId && c.date === date && (c.completionIndex ?? 0) === index))
+          : [...state.habitCompletions, { habitId, date, completionIndex: index }],
       }
     }
 
     case 'ADD_TASK':
-      return { ...state, tasks: [...state.tasks, action.payload] }
+      return {
+        ...state,
+        tasks: [
+          ...state.tasks,
+          { ...action.payload, sortOrder: action.payload.sortOrder ?? nextTaskOrder(state.tasks, action.payload.status) },
+        ],
+      }
 
     case 'UPDATE_TASK':
       return {
         ...state,
-        tasks: state.tasks.map(t => t.id === action.payload.id ? action.payload : t),
+        tasks: state.tasks.map(t => t.id === action.payload.id
+          ? { ...action.payload, sortOrder: action.payload.sortOrder ?? t.sortOrder ?? nextTaskOrder(state.tasks, action.payload.status) }
+          : t),
       }
 
     case 'DELETE_TASK':
@@ -298,6 +348,8 @@ function reducer(state: AppState, action: Action): AppState {
 
     case 'SET_TASK_STATUS': {
       const { taskId, status } = action.payload
+      const task = state.tasks.find(t => t.id === taskId)
+      const movedStatus = task?.status !== status
       return {
         ...state,
         tasks: state.tasks.map(t =>
@@ -305,12 +357,19 @@ function reducer(state: AppState, action: Action): AppState {
             ? {
                 ...t,
                 status,
+                sortOrder: movedStatus ? nextTaskOrder(state.tasks, status) : t.sortOrder,
                 completedAt: status === 'done' ? getTodayISO(state.settings.timezone) : undefined,
               }
             : t
         ),
       }
     }
+
+    case 'REORDER_TASKS':
+      return {
+        ...state,
+        tasks: reorderTasks(state.tasks, action.payload.status, action.payload.orderedIds),
+      }
 
     case 'CLEAR_ALL_DATA':
       return {
@@ -375,13 +434,24 @@ function loadPersistedState(): Partial<AppState> {
       const habits = storage.getList<Habit>(key, HABIT_DEFAULTS)
       if (habits.length > 0) result.habits = habits
     } else if (key === 'routineTemplates') {
-      const templates = storage.getList<RoutineTemplate>(key, ROUTINE_TEMPLATE_DEFAULTS)
+      const templates = storage.getList<RoutineTemplate>(key, ROUTINE_TEMPLATE_DEFAULTS).map(template => ({
+        ...template,
+        items: template.items.map((item, index) => ({
+          ...item,
+          sortOrder: Number.isFinite(item.sortOrder) ? item.sortOrder : index,
+        })),
+      }))
       if (templates.length > 0) result.routineTemplates = templates
     } else if (key === 'calendarEvents') {
       // Only restore persisted manual events; Google events are fetched fresh each session
       const events = storage.getList<CalendarEvent>(key, CALENDAR_EVENT_DEFAULTS)
         .filter(e => e.source === 'manual')
       if (events.length > 0) result.calendarEvents = events
+    } else if (key === 'tasks') {
+      const tasks = storage.getList<Task>(key, {
+        id: '', title: '', status: 'backlog', priority: 'normal', createdAt: '', source: 'manual',
+      })
+      if (tasks.length > 0) result.tasks = normalizeTaskOrder(tasks)
     } else {
       const val = storage.get<unknown>(key)
       if (val !== null) (result as Record<string, unknown>)[key] = val
@@ -432,8 +502,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const userId = state.profile?.sub ?? 'guest'
-    if (pendingUser.current && pendingUser.current !== userId) return
-    if (pendingUser.current === userId) pendingUser.current = null
+    // Do not persist the previous user's in-memory snapshot into the new
+    // namespace while the profile-switch LOAD_STATE is still being applied.
+    if (pendingUser.current) {
+      if (pendingUser.current === userId) pendingUser.current = null
+      return
+    }
     if (!hydrated.current) {
       // The first persistence effect runs with the reducer's empty initial
       // state; let the queued LOAD_STATE render happen first.

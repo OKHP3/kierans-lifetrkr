@@ -13,12 +13,20 @@
 > approve-with-limits for controlled pre-production; stable and `v1.0.0` claims
 > remain deferred. Use `docs/VISION-DELIVERY-MATRIX.md`,
 > `docs/RELEASE-TRUTH-BASELINE.md`, and `src/types.ts` for current truth.
+> The September 3, 2026 next-release scope decision is recorded in
+> `docs/PRODUCT-SCOPE-DECISION.md`: task ordering, multi-target habits,
+> lightweight ritual-item metadata/optional state, and ritual ordering are
+> approved; item-level recurrence overrides and end-of-day review are deferred.
 >
 > **Date semantics note (September 3, 2026):** The current source routes
 > user-visible dates, weekdays, recurrence, completion, streak, and calendar
 > labels through configured-timezone calendar-date helpers. The deterministic
 > harness and local build checks pass; owner-run browser timezone/DST acceptance
 > remains separate evidence.
+>
+> **Historical type note:** The older type listings in this document describe
+> superseded shapes. Current optional compatibility fields and the approved
+> deferred-scope boundary are defined by `src/types.ts` and the decision record.
 
 ---
 
