@@ -1,4 +1,5 @@
 import type { CosmicEvent } from '../types'
+import { addCalendarDays } from './date'
 
 // ─── Moon Phase (deterministic Julian-day calculation) ────────────────────────
 
@@ -169,13 +170,11 @@ export function getDailyWisdom(dateStr: string): CosmicEvent {
 /** Returns notable moon-phase CosmicEvents within the given ISO date range (inclusive). */
 export function getCosmicEventsForDateRange(startStr: string, endStr: string): CosmicEvent[] {
   const events: CosmicEvent[] = []
-  const current = new Date(startStr + 'T12:00:00Z')
-  const end = new Date(endStr + 'T12:00:00Z')
-  while (current <= end) {
-    const ds = current.toISOString().split('T')[0]
+  let ds = startStr
+  while (ds <= endStr) {
     const ev = getMoonPhaseForDate(ds)
     if (ev) events.push(ev)
-    current.setUTCDate(current.getUTCDate() + 1)
+    ds = addCalendarDays(ds, 1)
   }
   return events
 }

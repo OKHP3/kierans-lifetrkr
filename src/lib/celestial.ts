@@ -1,11 +1,10 @@
 import type { MoonPhase, MoonPhaseName, AstroSeason, ZodiacSign } from '../types'
+import { addCalendarDays, getTodayISO } from './date'
 
 // ─── Moon Phase (Julian day math — no external API) ──────────────────────────
 
-function toJulianDate(date: Date): number {
-  const y = date.getFullYear()
-  const m = date.getMonth() + 1
-  const d = date.getDate()
+function toJulianDate(date: string): number {
+  const [y, m, d] = date.split('-').map(Number)
   return (
     367 * y
     - Math.floor(7 * (y + Math.floor((m + 9) / 12)) / 4)
@@ -28,7 +27,7 @@ const MOON_PHASES: { name: MoonPhaseName; emoji: string; min: number; max: numbe
 const KNOWN_NEW_MOON = 2451550.1  // Jan 6, 2000
 const SYNODIC_MONTH  = 29.53058867
 
-export function getMoonPhase(date: Date = new Date()): MoonPhase {
+export function getMoonPhaseForDate(date: string): MoonPhase {
   const jd = toJulianDate(date)
   const raw = ((jd - KNOWN_NEW_MOON) % SYNODIC_MONTH) / SYNODIC_MONTH
   const phase = ((raw % 1) + 1) % 1
@@ -43,22 +42,28 @@ export function getMoonPhase(date: Date = new Date()): MoonPhase {
   }
 }
 
+export function getMoonPhase(
+  date: Date = new Date(),
+  timezone = Intl.DateTimeFormat().resolvedOptions().timeZone,
+): MoonPhase {
+  return getMoonPhaseForDate(getTodayISO(timezone, date))
+}
+
 export function getNextLunarEvents(
   count: number = 3,
+  timezone = Intl.DateTimeFormat().resolvedOptions().timeZone,
 ): { type: 'New Moon' | 'Full Moon'; date: Date; emoji: string }[] {
   const events: { type: 'New Moon' | 'Full Moon'; date: Date; emoji: string }[] = []
-  const now = new Date()
-  let d = new Date(now)
-  while (events.length < count * 2) {
-    d = new Date(d.getTime() + 86400000)
-    const phase = getMoonPhase(d)
+  const today = getTodayISO(timezone)
+  for (let offset = 1; events.length < count * 2 && offset <= 4000; offset++) {
+    const date = addCalendarDays(today, offset)
+    const phase = getMoonPhaseForDate(date)
     if (phase.daysUntilNext <= 1) {
       if (phase.name === 'New Moon')
-        events.push({ type: 'New Moon',  date: new Date(d), emoji: '🌑' })
+        events.push({ type: 'New Moon',  date: new Date(`${date}T12:00:00Z`), emoji: '🌑' })
       if (phase.name === 'Full Moon')
-        events.push({ type: 'Full Moon', date: new Date(d), emoji: '🌕' })
+        events.push({ type: 'Full Moon', date: new Date(`${date}T12:00:00Z`), emoji: '🌕' })
     }
-    if (events.length >= count * 2) break
   }
   return events.slice(0, count * 2)
 }
@@ -80,8 +85,12 @@ const ASTRO_SEASONS: (AstroSeason & { startMD: number; endMD: number })[] = [
   { sign: 'Sagittarius', emoji: '♐', element: 'Fire',  dates: 'Nov 22 – Dec 21', startMD: 1122, endMD: 1221 },
 ]
 
-export function getAstroSeason(date: Date = new Date()): AstroSeason {
-  const md = (date.getMonth() + 1) * 100 + date.getDate()
+export function getAstroSeason(
+  date: Date = new Date(),
+  timezone = Intl.DateTimeFormat().resolvedOptions().timeZone,
+): AstroSeason {
+  const [, month, day] = getTodayISO(timezone, date).split('-').map(Number)
+  const md = month * 100 + day
   const found = ASTRO_SEASONS.find(s => {
     if (s.startMD > s.endMD) return md >= s.startMD || md <= s.endMD
     return md >= s.startMD && md <= s.endMD
@@ -105,8 +114,9 @@ export const MERCURY_RETROGRADE = [
 
 export function getMercuryStatus(
   date: Date = new Date(),
+  timezone = Intl.DateTimeFormat().resolvedOptions().timeZone,
 ): { retrograde: boolean; endDate: string | null } {
-  const iso = date.toISOString().split('T')[0]
+  const iso = getTodayISO(timezone, date)
   const period = MERCURY_RETROGRADE.find(r => iso >= r.start && iso <= r.end)
   return { retrograde: !!period, endDate: period?.end ?? null }
 }

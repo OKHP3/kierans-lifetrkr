@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useApp, genId } from '../context/AppContext'
 import CheckCircle from '../components/CheckCircle'
-import { getTodayISO } from '../lib/date'
+import { getCalendarDate, getTodayISO } from '../lib/date'
 import { useGoogleTasks } from '../hooks/useGoogleTasks'
 import type { TaskPriority } from '../types'
 
@@ -118,11 +118,11 @@ export default function Today() {
                 <p role="alert" style={{ fontSize: 12, color: '#e07070', margin: '0 0 8px' }}>{googleError}</p>
                 <button className="btn-ghost" style={{ fontSize: 12 }} onClick={retryGoogleTasks}>Retry</button>
               </div>
-            ) : state.googleTasks.filter(t => t.due?.startsWith(today) && t.status === 'needsAction').length === 0 ? (
+            ) : state.googleTasks.filter(t => t.due && getCalendarDate(t.due, state.settings.timezone) === today && t.status === 'needsAction').length === 0 ? (
               <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: 0 }}>No Google Tasks due today.</p>
             ) : (
               state.googleTasks
-                .filter(t => t.due?.startsWith(today) && t.status === 'needsAction')
+                .filter(t => t.due && getCalendarDate(t.due, state.settings.timezone) === today && t.status === 'needsAction')
                 .map(gt => (
                   <div key={gt.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '0.5px solid var(--border-subtle)' }}>
                     <span style={{ color: 'var(--text-ghost)', fontSize: 14 }}>○</span>

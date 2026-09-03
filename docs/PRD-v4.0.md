@@ -14,6 +14,11 @@
 > and the release posture is approve-with-limits for controlled pre-production.
 > See `docs/VISION-DELIVERY-MATRIX.md` and `docs/RELEASE-TRUTH-BASELINE.md`
 > before treating any shipped, planned, or release-readiness statement as current.
+>
+> **Date semantics note (September 3, 2026):** Current source uses configured
+> timezone calendar dates for recurrence evaluation, completion/streak history,
+> daily visibility, and calendar labels. Local deterministic coverage passes;
+> browser timezone/DST acceptance remains an owner-run check.
 
 ---
 

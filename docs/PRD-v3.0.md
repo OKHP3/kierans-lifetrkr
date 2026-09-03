@@ -13,6 +13,12 @@
 > approve-with-limits for controlled pre-production; stable and `v1.0.0` claims
 > remain deferred. Use `docs/VISION-DELIVERY-MATRIX.md`,
 > `docs/RELEASE-TRUTH-BASELINE.md`, and `src/types.ts` for current truth.
+>
+> **Date semantics note (September 3, 2026):** The current source routes
+> user-visible dates, weekdays, recurrence, completion, streak, and calendar
+> labels through configured-timezone calendar-date helpers. The deterministic
+> harness and local build checks pass; owner-run browser timezone/DST acceptance
+> remains separate evidence.
 
 ---
 

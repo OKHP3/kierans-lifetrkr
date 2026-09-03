@@ -512,7 +512,32 @@ optional-worker activation, and ownership handoff. This addendum expires on
 any change to the release tree, routes, persistence behavior, OAuth scopes,
 external endpoints, workflow, or Pages configuration.
 
-## 15. Ownership handoff execution addendum
+## 15. Deterministic date semantics addendum
+
+**Verification date:** September 3, 2026
+**Scope:** local source, deterministic harness, accessibility check, production build,
+and running preview. No local records were sent to an external service.
+
+The configured timezone is now the source of truth for current dates and weekdays,
+calendar month labels, event date/time labels, recurrence expansion, habit streak
+history, completion dates, and Google-task due-date comparisons. Date-only values
+remain `YYYY-MM-DD` strings; changing timezone does not rewrite historical
+completion records or alter the existing guest/Google-subject storage namespaces.
+Recurrence arithmetic uses UTC-neutral calendar dates, so DST transitions do not
+change the number or identity of calendar days.
+
+| Check | Result | Evidence |
+|---|---|---|
+| Deterministic date/recurrence harness | PASS | `npm run test:date`; six suites cover timezone midnight boundaries, DST day offsets, inactive/active weekday, inactive/active specific-day, weekly/monthly/yearly/custom recurrence, and event labels |
+| Type-check | PASS | `npm run check` |
+| Accessibility source check | PASS | `npm run check:a11y` |
+| Production build | PASS | `npm run build` |
+
+Owner-run browser timezone/DST acceptance, physical-device behavior, storage
+quota/private-mode behavior, and Google OAuth/API lifecycle checks remain
+separate manual evidence and are not claimed by this addendum.
+
+## 16. Ownership handoff execution addendum
 
 **Execution date:** August 27, 2026
 **Performer:** Replit Agent

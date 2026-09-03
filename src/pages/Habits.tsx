@@ -6,24 +6,23 @@ import CategoryPicker from '../components/CategoryPicker'
 import TagInput from '../components/TagInput'
 import DescriptionField from '../components/DescriptionField'
 import RecurrenceEditor from '../components/RecurrenceEditor'
-import { getTodayISO } from '../lib/date'
+import { addCalendarDays, getDayOfWeekForDate, getTodayISO, recurrenceOccursOnDate } from '../lib/date'
 import { DEFAULT_CATEGORIES, makeDefaultRecurrence } from '../constants'
 import type { Habit, RecurrenceRule } from '../types'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function getStreak(habitId: string, completions: { habitId: string; date: string }[]): number {
+function getStreak(habitId: string, completions: { habitId: string; date: string }[], today: string): number {
   let streak = 0
-  const d = new Date()
+  let dateStr = today
   for (let i = 0; i < 365; i++) {
-    const dateStr = d.toISOString().split('T')[0]
     if (i === 0 && !completions.some(c => c.habitId === habitId && c.date === dateStr)) {
-      d.setDate(d.getDate() - 1)
+      dateStr = addCalendarDays(dateStr, -1)
       continue
     }
     if (completions.some(c => c.habitId === habitId && c.date === dateStr)) {
       streak++
-      d.setDate(d.getDate() - 1)
+      dateStr = addCalendarDays(dateStr, -1)
     } else {
       break
     }
@@ -31,15 +30,12 @@ function getStreak(habitId: string, completions: { habitId: string; date: string
   return streak
 }
 
-function getLast7(habitId: string, completions: { habitId: string; date: string }[]): { label: string; done: boolean }[] {
+function getLast7(habitId: string, completions: { habitId: string; date: string }[], today: string): { label: string; done: boolean }[] {
   const result: { label: string; done: boolean }[] = []
-  const d = new Date()
   for (let i = 6; i >= 0; i--) {
-    const tmp = new Date(d)
-    tmp.setDate(d.getDate() - i)
-    const dateStr = tmp.toISOString().split('T')[0]
+    const dateStr = addCalendarDays(today, -i)
     result.push({
-      label: tmp.toLocaleDateString('en-US', { weekday: 'narrow' }),
+      label: getDayOfWeekForDate(dateStr).slice(0, 1),
       done: completions.some(c => c.habitId === habitId && c.date === dateStr),
     })
   }
@@ -48,65 +44,19 @@ function getLast7(habitId: string, completions: { habitId: string; date: string 
 
 type SortKey = 'name' | 'progress' | 'next-due' | 'category'
 
-const DOW_NUM: Record<string, number> = {
-  sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6,
-}
-
-function computeNextDue(habit: Habit, completions: { habitId: string; date: string }[]): string {
+function computeNextDue(habit: Habit, completions: { habitId: string; date: string }[], today: string): string {
   const rec = habit.recurrence
   if (!rec || rec.frequency === 'none') return '9999-12-31'
 
-  const todayDate = new Date()
-  todayDate.setHours(0, 0, 0, 0)
-  const todayStr = todayDate.toISOString().split('T')[0]
-
-  const habDates = completions
+  const completed = new Set(completions
     .filter(c => c.habitId === habit.id)
     .map(c => c.date)
-    .sort()
-  const lastDone = habDates.length > 0 ? habDates[habDates.length - 1] : null
-
-  // Helper: advance a Date by the interval and return its ISO date string
-  function advance(base: Date): string {
-    const d = new Date(base)
-    const n = rec.interval || 1
-    if (rec.frequency === 'daily') d.setDate(d.getDate() + n)
-    else if (rec.frequency === 'weekly') d.setDate(d.getDate() + 7 * n)
-    else if (rec.frequency === 'monthly') d.setMonth(d.getMonth() + n)
-    else if (rec.frequency === 'yearly') d.setFullYear(d.getFullYear() + n)
-    return d.toISOString().split('T')[0]
+  )
+  for (let offset = 0; offset <= 366; offset++) {
+    const candidate = addCalendarDays(today, offset)
+    if (recurrenceOccursOnDate(rec, candidate) && !completed.has(candidate)) return candidate
   }
-
-  // If done today, next due is one interval from today
-  if (lastDone === todayStr) return advance(todayDate)
-
-  // For weekly with specific days of week, find the next scheduled day
-  if (rec.frequency === 'weekly' && rec.daysOfWeek && rec.daysOfWeek.length > 0) {
-    const scheduled = new Set(rec.daysOfWeek.map(d => DOW_NUM[d] ?? -1))
-    for (let i = 0; i <= 7; i++) {
-      const check = new Date(todayDate)
-      check.setDate(todayDate.getDate() + i)
-      if (scheduled.has(check.getDay())) return check.toISOString().split('T')[0]
-    }
-  }
-
-  // Compute next due from last completion (or start date / createdAt)
-  const baseStr = lastDone ?? rec.startDate ?? habit.createdAt ?? todayStr
-  const base = new Date(baseStr)
-  base.setHours(0, 0, 0, 0)
-
-  let next = new Date(base)
-  // Advance until we get a date >= today
-  let guard = 0
-  while (next < todayDate && guard < 1000) {
-    next = new Date(next)
-    const nStr = advance(next)
-    next = new Date(nStr)
-    guard++
-  }
-
-  const nextStr = next.toISOString().split('T')[0]
-  return nextStr < todayStr ? todayStr : nextStr
+  return '9999-12-31'
 }
 
 type HabitForm = {
@@ -119,21 +69,21 @@ type HabitForm = {
   showRecurrence: boolean
 }
 
-function freshForm(): HabitForm {
+function freshForm(today: string): HabitForm {
   return {
     name: '', desc: '', categoryId: undefined, tags: [],
-    recurrence: { ...makeDefaultRecurrence(), frequency: 'daily' },
+    recurrence: { ...makeDefaultRecurrence(today), frequency: 'daily' },
     showDetails: false, showRecurrence: false,
   }
 }
 
-function habitToForm(h: Habit): HabitForm {
+function habitToForm(h: Habit, today: string): HabitForm {
   return {
     name: h.name,
     desc: h.description ?? '',
     categoryId: h.categoryId,
     tags: h.tags ?? [],
-    recurrence: h.recurrence ?? { ...makeDefaultRecurrence(), frequency: 'daily' },
+    recurrence: h.recurrence ?? { ...makeDefaultRecurrence(today), frequency: 'daily' },
     showDetails: !!(h.categoryId || (h.tags ?? []).length > 0 || h.description),
     showRecurrence: !!h.recurrence && h.recurrence.frequency !== 'none',
   }
@@ -187,11 +137,11 @@ export default function Habits() {
   if (sortBy === 'name')
     visibleHabits = [...visibleHabits].sort((a, b) => a.name.localeCompare(b.name))
   else if (sortBy === 'progress')
-    visibleHabits = [...visibleHabits].sort((a, b) => getStreak(b.id, state.habitCompletions) - getStreak(a.id, state.habitCompletions))
+    visibleHabits = [...visibleHabits].sort((a, b) => getStreak(b.id, state.habitCompletions, today) - getStreak(a.id, state.habitCompletions, today))
   else if (sortBy === 'next-due')
     visibleHabits = [...visibleHabits].sort((a, b) => {
-      const da = computeNextDue(a, state.habitCompletions)
-      const db = computeNextDue(b, state.habitCompletions)
+      const da = computeNextDue(a, state.habitCompletions, today)
+      const db = computeNextDue(b, state.habitCompletions, today)
       return da !== db ? da.localeCompare(db) : a.name.localeCompare(b.name)
     })
   else if (sortBy === 'category')
@@ -214,7 +164,7 @@ export default function Habits() {
     setAddForm(null)
   }
 
-  function startEdit(habit: Habit) { setEditingId(habit.id); setEditForm(habitToForm(habit)) }
+  function startEdit(habit: Habit) { setEditingId(habit.id); setEditForm(habitToForm(habit, today)) }
   function cancelEdit() { setEditingId(null); setEditForm(null) }
   function patchEdit(patch: Partial<HabitForm>) { setEditForm(f => f ? { ...f, ...patch } : null) }
   function saveEdit(habit: Habit) {
@@ -300,7 +250,7 @@ export default function Habits() {
       {activeHabits.length === 0 && !addForm && (
         <div className="card" style={{ textAlign: 'center', padding: '32px 20px' }}>
           <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: '0 0 12px' }}>No habits yet.</p>
-          <button className="btn-primary" onClick={() => setAddForm(freshForm())}>Add your first habit</button>
+          <button className="btn-primary" onClick={() => setAddForm(freshForm(today))}>Add your first habit</button>
         </div>
       )}
 
@@ -308,8 +258,8 @@ export default function Habits() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {visibleHabits.map(habit => {
           const done = state.habitCompletions.some(c => c.habitId === habit.id && c.date === today)
-          const streak = getStreak(habit.id, state.habitCompletions)
-          const last7 = getLast7(habit.id, state.habitCompletions)
+          const streak = getStreak(habit.id, state.habitCompletions, today)
+          const last7 = getLast7(habit.id, state.habitCompletions, today)
           const cat = habit.categoryId ? DEFAULT_CATEGORIES.find(c => c.id === habit.categoryId) : undefined
           const dotColor = habit.colorTag ?? 'var(--accent-amethyst)'
           const isEditing = editingId === habit.id
@@ -467,7 +417,7 @@ export default function Habits() {
       )}
 
       {!addForm && activeHabits.length > 0 && (
-        <button className="fab" onClick={() => setAddForm(freshForm())}>+</button>
+        <button className="fab" onClick={() => setAddForm(freshForm(today))}>+</button>
       )}
     </div>
   )

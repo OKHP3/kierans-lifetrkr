@@ -19,6 +19,7 @@ type SortKey = 'default' | 'title' | 'next-occ' | 'category'
 export default function Rituals() {
   const { state, dispatch } = useApp()
   const todayFull = getDayOfWeek(state.settings.timezone)
+  const today = getTodayISO(state.settings.timezone)
   const [selectedDay, setSelectedDay] = useState<RoutineDayOfWeek>(todayFull)
   const [editMode, setEditMode] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
@@ -37,9 +38,8 @@ export default function Rituals() {
   const [metaDesc, setMetaDesc] = useState('')
   const [metaCategoryId, setMetaCategoryId] = useState<string | undefined>()
   const [metaTags, setMetaTags] = useState<string[]>([])
-  const [metaRecurrence, setMetaRecurrence] = useState<RecurrenceRule>(makeDefaultRecurrence())
+  const [metaRecurrence, setMetaRecurrence] = useState<RecurrenceRule>(makeDefaultRecurrence(today))
 
-  const today = getTodayISO(state.settings.timezone)
   const isToday = selectedDay === todayFull
   const template = state.routineTemplates.find(t => t.dayOfWeek === selectedDay)
   const completion = state.routineCompletions.find(
@@ -53,6 +53,7 @@ export default function Rituals() {
 
   // Close the panel (not re-init) when day changes — user must re-open to see the new day's data
   useEffect(() => { setShowMeta(false) }, [selectedDay])
+  useEffect(() => { setSelectedDay(todayFull) }, [state.settings.timezone, todayFull])
 
   // Initialize form from current template data when the panel opens
   function openMeta() {
@@ -60,7 +61,7 @@ export default function Rituals() {
     setMetaDesc(template.description ?? '')
     setMetaCategoryId(template.categoryId)
     setMetaTags(template.tags ?? [])
-    setMetaRecurrence(template.recurrence ?? makeDefaultRecurrence())
+    setMetaRecurrence(template.recurrence ?? makeDefaultRecurrence(today))
     setShowMeta(true)
   }
 
@@ -84,7 +85,7 @@ export default function Rituals() {
     return true
   })
 
-  const todayNum = new Date().getDay()
+  const todayNum = DAY_NUM[todayFull]
   if (sortBy === 'title') {
     filteredDays = [...filteredDays].sort((a, b) => a.localeCompare(b))
   } else if (sortBy === 'next-occ') {

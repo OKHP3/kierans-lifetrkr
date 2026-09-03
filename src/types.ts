@@ -227,6 +227,9 @@ export type AppState = {
 export type RecurrenceFrequency =
   | 'none'
   | 'daily'
+  | 'weekdays'
+  | 'weekends'
+  | 'specific_days'
   | 'weekly'
   | 'monthly'
   | 'yearly'

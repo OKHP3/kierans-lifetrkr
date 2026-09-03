@@ -124,7 +124,7 @@ export const DEFAULT_CATEGORIES: LifeTrkrCategory[] = [
 
 // ─── Default Recurrence ────────────────────────────────────────────────────
 
-/** Static default — use makeDefaultRecurrence() when you need today's date as startDate. */
+/** Static default — callers with a configured timezone should pass today's calendar date. */
 export const DEFAULT_RECURRENCE: RecurrenceRule = {
   frequency: 'none',
   interval: 1,
@@ -133,9 +133,9 @@ export const DEFAULT_RECURRENCE: RecurrenceRule = {
   exceptions: [],
 }
 
-export function makeDefaultRecurrence(): RecurrenceRule {
+export function makeDefaultRecurrence(startDate = ''): RecurrenceRule {
   return {
     ...DEFAULT_RECURRENCE,
-    startDate: new Date().toISOString().split('T')[0],
+    startDate,
   }
 }

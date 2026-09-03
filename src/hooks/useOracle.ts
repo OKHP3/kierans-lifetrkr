@@ -1,16 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { getMoonPhase, getAstroSeason, getMercuryStatus } from '../lib/celestial'
+import { getTodayISO } from '../lib/date'
 import { fetchTarotCard, fetchHoroscope, generateOracleMessage, clearOracleCache } from '../lib/oracle'
 import type { OracleReading } from '../types'
-
-function getTodayISO(timezone: string): string {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit',
-  }).formatToParts(new Date())
-  const values = Object.fromEntries(parts.map(part => [part.type, part.value]))
-  return `${values.year}-${values.month}-${values.day}`
-}
 
 export function useOracle() {
   const { state, dispatch } = useApp()
@@ -32,9 +25,9 @@ export function useOracle() {
       try {
         const [tarotCard, moon, season, mercury] = await Promise.all([
           fetchTarotCard(settings.timezone),
-          Promise.resolve(getMoonPhase()),
-          Promise.resolve(getAstroSeason()),
-          Promise.resolve(getMercuryStatus()),
+          Promise.resolve(getMoonPhase(new Date(), settings.timezone)),
+          Promise.resolve(getAstroSeason(new Date(), settings.timezone)),
+          Promise.resolve(getMercuryStatus(new Date(), settings.timezone)),
         ])
 
         const horoscope = settings.birthSign

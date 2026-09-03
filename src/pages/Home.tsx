@@ -5,7 +5,7 @@ import CheckCircle from '../components/CheckCircle'
 import { OracleCard } from '../components/OracleCard'
 import { useOracle } from '../hooks/useOracle'
 import { getMoonPhase, getAstroSeason, getMercuryStatus, shouldShowMercuryBanner } from '../lib/celestial'
-import { getTodayISO, getDayOfWeek, getGreeting, getSeasonalBadge, getDailyQuote, formatEventTime, formatEventDate } from '../lib/date'
+import { getCalendarDate, getTodayISO, getDayOfWeek, getGreeting, getSeasonalBadge, getDailyQuote, formatDateLabel, formatEventTime, formatEventDate } from '../lib/date'
 import catAccent from '../assets/images/cat-accent.png'
 
 // Easter egg — fixed content per PRD
@@ -24,14 +24,14 @@ export default function Home() {
 
   const today = getTodayISO(state.settings.timezone)
   const dayOfWeek = getDayOfWeek(state.settings.timezone)
-  const greeting = getGreeting()
-  const seasonalBadge = getSeasonalBadge()
-  const dailyQuote = getDailyQuote()
+  const greeting = getGreeting(state.settings.timezone)
+  const seasonalBadge = getSeasonalBadge(state.settings.timezone)
+  const dailyQuote = getDailyQuote(state.settings.timezone)
 
   // Celestial data is memoized for the current local date.
-  const moon    = useMemo(() => getMoonPhase(), [today])
-  const season  = useMemo(() => getAstroSeason(), [today])
-  const mercury = useMemo(() => getMercuryStatus(), [today])
+  const moon    = useMemo(() => getMoonPhase(new Date(), state.settings.timezone), [today, state.settings.timezone])
+  const season  = useMemo(() => getAstroSeason(new Date(), state.settings.timezone), [today, state.settings.timezone])
+  const mercury = useMemo(() => getMercuryStatus(new Date(), state.settings.timezone), [today, state.settings.timezone])
 
   const displayName = state.settings.displayName || state.profile?.name
 
@@ -48,7 +48,7 @@ export default function Home() {
   ).length
 
   const upcomingEvents = state.calendarEvents
-    .filter(e => e.start.slice(0, 10) >= today)
+    .filter(e => getCalendarDate(e.start, state.settings.timezone) >= today)
     .sort((a, b) => a.start.localeCompare(b.start))
     .slice(0, 3)
 
@@ -74,7 +74,7 @@ export default function Home() {
             )}
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            {formatDateLabel(today)}
           </p>
           {seasonalBadge && (
             <span style={{ display: 'inline-block', marginTop: 6, fontSize: 11, color: 'var(--accent-amethyst)', border: '0.5px solid var(--accent-amethyst)', borderRadius: 20, padding: '2px 10px', letterSpacing: '0.06em' }}>
@@ -151,7 +151,7 @@ export default function Home() {
                   <div>
                     <p style={{ fontSize: 13, color: 'var(--text-primary)', margin: 0, lineHeight: 1.3 }}>{event.title}</p>
                     <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: '2px 0 0', fontFamily: 'Space Mono, monospace' }}>
-                      {formatEventDate(event.start, event.allDay)} {!event.allDay && formatEventTime(event.start, false)}
+                      {formatEventDate(event.start, event.allDay, state.settings.timezone)} {!event.allDay && formatEventTime(event.start, false, state.settings.timezone)}
                     </p>
                   </div>
                 </div>

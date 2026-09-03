@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext'
 import { useTheme } from '../context/ThemeContext'
 import GoogleConnectButton from '../components/GoogleConnectButton'
 import { getMoonPhase, getAstroSeason, getMercuryStatus } from '../lib/celestial'
+import { getCalendarDateParts, getTodayISO } from '../lib/date'
 import { storage } from '../lib/storage'
 import { APP_VERSION } from '../constants'
 import type { ZodiacSign } from '../types'
@@ -103,15 +104,15 @@ export default function Settings() {
 
   let age: number | null = null
   if (bYear && bMonth && bDay) {
-    const now = new Date()
-    age = now.getFullYear() - bYear
-    if (now.getMonth() + 1 < bMonth || (now.getMonth() + 1 === bMonth && now.getDate() < bDay)) age--
+    const { year, month, day } = getCalendarDateParts(getTodayISO(s.timezone))
+    age = year - bYear
+    if (month < bMonth || (month === bMonth && day < bDay)) age--
   }
 
   // Celestial snapshot for the celestial info card
-  const moon    = getMoonPhase()
-  const season  = getAstroSeason()
-  const mercury = getMercuryStatus()
+  const moon    = getMoonPhase(new Date(), s.timezone)
+  const season  = getAstroSeason(new Date(), s.timezone)
+  const mercury = getMercuryStatus(new Date(), s.timezone)
 
   function clearAllData() {
     if (!confirm('Clear all local app data? This cannot be undone. Your Google account will remain connected.')) return

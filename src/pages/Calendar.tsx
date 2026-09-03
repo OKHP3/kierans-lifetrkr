@@ -1,7 +1,17 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp, genId } from '../context/AppContext'
-import { getTodayISO, formatEventTime, recurrenceOccursOnDate } from '../lib/date'
+import {
+  addCalendarDays,
+  formatDateLabel,
+  formatEventTime,
+  getCalendarDate,
+  getCalendarDateParts,
+  getDayOfWeekForDate,
+  getDaysInMonth,
+  getTodayISO,
+  recurrenceOccursOnDate,
+} from '../lib/date'
 import { getMoonPhaseEmoji, getDailyCard, getDailyWisdom, getCosmicEventsForDateRange } from '../lib/cosmic'
 import { getMercuryStatus, shouldShowMercuryBanner } from '../lib/celestial'
 import { useGoogleAuth } from '../hooks/useGoogleAuth'
@@ -19,9 +29,6 @@ const MONTH_NAMES = [
   'July','August','September','October','November','December',
 ]
 const DAY_LABELS = ['S','M','T','W','T','F','S']
-const DOW_NUM: Record<string, number> = {
-  sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6,
-}
 const DOW_SHORT: Record<string, string> = {
   monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', thursday: 'Thu',
   friday: 'Fri', saturday: 'Sat', sunday: 'Sun',
@@ -29,79 +36,14 @@ const DOW_SHORT: Record<string, string> = {
 
 // ─── Recurrence Expansion ────────────────────────────────────────────────────
 
-function eventOccursOnDate(event: CalendarEvent, ds: string): boolean {
-  const startDate = event.start.split('T')[0]
-  if (startDate === ds) return true
+function eventOccursOnDate(event: CalendarEvent, ds: string, timezone: string): boolean {
+  const startDate = getCalendarDate(event.start, timezone)
+  if (!event.recurrence || event.recurrence.frequency === 'none') return startDate === ds
   return recurrenceOccursOnDate(
     event.recurrence ? { ...event.recurrence, startDate } : undefined,
     ds,
   )
 
-  /* Legacy implementation retained temporarily for reference; the shared
-     evaluator above is the only reachable recurrence path.
-  const rec = event.recurrence
-  if (!rec || rec.frequency === 'none') return false
-  if (ds < startDate) return false
-
-  // onDate end
-  const endDate = rec.end.mode === 'onDate' ? (rec.end as { mode: 'onDate'; date: string }).date : null
-  if (endDate && ds > endDate) return false
-
-  // Exception dates
-  if (rec.exceptions?.includes(ds)) return false
-
-  const start = new Date(startDate + 'T00:00:00')
-  const check = new Date(ds + 'T00:00:00')
-  const msPerDay = 86400000
-  const daysDiff = Math.round((check.getTime() - start.getTime()) / msPerDay)
-  const n = rec.interval || 1
-
-  let occurrenceIndex = -1  // 0-based; -1 means not yet computed
-
-  if (rec.frequency === 'daily') {
-    if (daysDiff % n !== 0) return false
-    occurrenceIndex = daysDiff / n
-  } else if (rec.frequency === 'weekly') {
-    if (rec.daysOfWeek && rec.daysOfWeek.length > 0) {
-      const checkDow = check.getDay()
-      if (!rec.daysOfWeek.some(d => (DOW_NUM[d] ?? -1) === checkDow)) return false
-      const weeksDiff = Math.floor(daysDiff / 7)
-      if (weeksDiff % n !== 0) return false
-      // Compute occurrence index: (fullCycles * daysPerCycle) + position within current week
-      const fullCycles = Math.floor(weeksDiff / n)
-      const sortedDows = rec.daysOfWeek
-        .map(d => DOW_NUM[d] ?? -1).filter(d => d >= 0).sort((a, b) => a - b)
-      const posInWeek = sortedDows.indexOf(checkDow)
-      occurrenceIndex = fullCycles * sortedDows.length + (posInWeek >= 0 ? posInWeek : 0)
-    } else {
-      if (daysDiff % (7 * n) !== 0) return false
-      occurrenceIndex = daysDiff / (7 * n)
-    }
-  } else if (rec.frequency === 'monthly') {
-    const monthsDiff =
-      (check.getFullYear() - start.getFullYear()) * 12 + (check.getMonth() - start.getMonth())
-    if (monthsDiff % n !== 0) return false
-    const dom = rec.dayOfMonth ?? start.getDate()
-    if (check.getDate() !== dom) return false
-    occurrenceIndex = monthsDiff / n
-  } else if (rec.frequency === 'yearly') {
-    const yearsDiff = check.getFullYear() - start.getFullYear()
-    if (yearsDiff % n !== 0) return false
-    if (check.getMonth() !== start.getMonth() || check.getDate() !== start.getDate()) return false
-    occurrenceIndex = yearsDiff / n
-  } else {
-    return false
-  }
-
-  // afterCount end: occurrence index is 0-based; start date is index 0
-  if (rec.end.mode === 'afterCount') {
-    // +1 because start date itself is occurrence 0, so total = index + 1 (where index starts at 1 for recurrences)
-    const count = rec.end.mode === 'afterCount' ? (rec.end as { mode: 'afterCount'; count: number }).count : null
-    if (count !== null && occurrenceIndex + 1 >= count) return false
-  }
-
-  return true
-  */
 }
 
 // ─── Recurrence Label ─────────────────────────────────────────────────────────
@@ -124,17 +66,11 @@ function formatRecurrenceLabel(rec: RecurrenceRule | undefined): string {
 
 // ─── Date-range helpers ───────────────────────────────────────────────────────
 
-function getWeekRange(): { start: string; end: string } {
-  const now = new Date()
-  const day = now.getDay() // 0=Sun
-  const monday = new Date(now)
-  monday.setDate(now.getDate() - ((day + 6) % 7))
-  const sunday = new Date(monday)
-  sunday.setDate(monday.getDate() + 6)
-  return {
-    start: monday.toISOString().split('T')[0],
-    end: sunday.toISOString().split('T')[0],
-  }
+function getWeekRange(today: string): { start: string; end: string } {
+  const dayNumber = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    .indexOf(getDayOfWeekForDate(today))
+  const start = addCalendarDays(today, -((dayNumber + 6) % 7))
+  return { start, end: addCalendarDays(start, 6) }
 }
 
 function dateInRange(dateStr: string, range: 'all' | 'today' | 'this-week' | 'upcoming' | 'past', today: string): boolean {
@@ -143,7 +79,7 @@ function dateInRange(dateStr: string, range: 'all' | 'today' | 'this-week' | 'up
   if (range === 'upcoming') return dateStr >= today
   if (range === 'past') return dateStr < today
   if (range === 'this-week') {
-    const { start, end } = getWeekRange()
+    const { start, end } = getWeekRange(today)
     return dateStr >= start && dateStr <= end
   }
   return true
@@ -157,11 +93,11 @@ type EventForm = {
   recurrence: RecurrenceRule; showDetails: boolean; showRecurrence: boolean
 }
 
-function freshForm(): EventForm {
+function freshForm(today: string): EventForm {
   return {
     title: '', allDay: false, time: '', endTime: '', location: '',
     desc: '', categoryId: undefined, tags: [],
-    recurrence: { ...makeDefaultRecurrence(), frequency: 'none' },
+    recurrence: { ...makeDefaultRecurrence(today), frequency: 'none' },
     showDetails: false, showRecurrence: false,
   }
 }
@@ -171,13 +107,19 @@ function freshForm(): EventForm {
 export default function Calendar() {
   const { state, dispatch } = useApp()
   const navigate = useNavigate()
-  const now = new Date()
-  const [year, setYear] = useState(now.getFullYear())
-  const [month, setMonth] = useState(now.getMonth())
-  const [selectedDay, setSelectedDay] = useState<number | null>(now.getDate())
+  const today = getTodayISO(state.settings.timezone)
+  const todayParts = getCalendarDateParts(today)
+  const [year, setYear] = useState(todayParts.year)
+  const [month, setMonth] = useState(todayParts.month - 1)
+  const [selectedDay, setSelectedDay] = useState<number | null>(todayParts.day)
   const [form, setForm] = useState<EventForm | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [cardExpanded, setCardExpanded] = useState(false)
+  useEffect(() => {
+    setYear(todayParts.year)
+    setMonth(todayParts.month - 1)
+    setSelectedDay(todayParts.day)
+  }, [state.settings.timezone])
 
   // Filter state
   const [sourceFilter, setSourceFilter] = useState('all')
@@ -187,10 +129,10 @@ export default function Calendar() {
   const [tagFilter, setTagFilter] = useState<string | null>(null)
   const [showCosmic, setShowCosmic] = useState(true)
 
-  const today = getTodayISO(state.settings.timezone)
-  const mercury = useMemo(() => getMercuryStatus(), [today])
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const firstDay = new Date(year, month, 1).getDay()
+  const mercury = useMemo(() => getMercuryStatus(new Date(), state.settings.timezone), [today, state.settings.timezone])
+  const daysInMonth = getDaysInMonth(year, month + 1)
+  const firstDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    .indexOf(getDayOfWeekForDate(`${year}-${String(month + 1).padStart(2, '0')}-01`))
   const cells: (number | null)[] = [
     ...Array(firstDay).fill(null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
@@ -249,7 +191,7 @@ export default function Calendar() {
     } finally {
       setSyncing(false)
     }
-  }, [isConnected, syncing, getToken, state.settings.calendarDaysAhead, state.settings.showGoogleCalendar, dispatch])
+  }, [isConnected, syncing, getToken, state.settings.calendarDaysAhead, state.settings.showGoogleCalendar, state.settings.timezone, dispatch])
 
   // Auto-sync when Google connects
   const prevConnected = useRef(false)
@@ -284,7 +226,7 @@ export default function Calendar() {
     if (!birthMonth || !birthDay) return []
     const name = displayName.trim()
     const title = `🎂 ${name ? `${name}'s Birthday` : 'Birthday'}`
-    const thisYear = new Date().getFullYear()
+    const thisYear = getCalendarDateParts(today).year
     return [thisYear, thisYear + 1].map(y => {
       const ds = `${y}-${birthMonth.padStart(2, '0')}-${birthDay.padStart(2, '0')}`
       return {
@@ -307,7 +249,7 @@ export default function Calendar() {
     // Stored events that occur on this day (handles recurrence)
     const stored = state.calendarEvents
       .filter(e => e.source !== 'google' || state.settings.showGoogleCalendar)
-      .filter(e => eventOccursOnDate(e, ds))
+      .filter(e => eventOccursOnDate(e, ds, state.settings.timezone))
 
     // Cosmic events (notable moon phases) for this day
     const cosmicEvs: CalendarEvent[] = showCosmic
@@ -339,7 +281,7 @@ export default function Calendar() {
       state.calendarEvents.some(e =>
         e.source !== 'cosmic' &&
         (e.source !== 'google' || state.settings.showGoogleCalendar) &&
-        eventOccursOnDate(e, ds)
+        eventOccursOnDate(e, ds, state.settings.timezone)
       ) ||
       birthdayEvents.some(e => e.start === ds)
     )
@@ -361,7 +303,7 @@ export default function Calendar() {
       desc: event.description ?? '',
       categoryId: event.categoryId,
       tags: event.tags ?? [],
-      recurrence: event.recurrence ?? { ...makeDefaultRecurrence(), frequency: 'none' },
+      recurrence: event.recurrence ?? { ...makeDefaultRecurrence(today), frequency: 'none' },
       showDetails: !!(event.description || event.categoryId || (event.tags ?? []).length > 0),
       showRecurrence: !!(event.recurrence && event.recurrence.frequency !== 'none'),
     })
@@ -541,7 +483,7 @@ export default function Calendar() {
             }
             const storedDay = state.calendarEvents
               .filter(e => e.source !== 'google' || state.settings.showGoogleCalendar)
-              .filter(e => eventOccursOnDate(e, ds))
+              .filter(e => eventOccursOnDate(e, ds, state.settings.timezone))
             for (const e of storedDay) {
               const cat = e.categoryId ? DEFAULT_CATEGORIES.find(c => c.id === e.categoryId) : undefined
               const emoji = cat?.emoji ?? (e.source === 'google' ? 'G' : '')
@@ -633,7 +575,7 @@ export default function Calendar() {
       {selectedDay && selectedDateStr && (
         <div style={{ marginTop: 16 }}>
           <p className="section-label">
-            {new Date(year, month, selectedDay).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            {formatDateLabel(selectedDateStr)}
           </p>
 
           {/* Cosmic section */}
@@ -769,7 +711,7 @@ export default function Calendar() {
                       {event.description && <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: '3px 0 0', lineHeight: 1.4 }}>{event.description}</p>}
                       {!event.allDay && (
                         <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: '3px 0 0', fontFamily: 'Space Mono, monospace' }}>
-                          {formatEventTime(event.start, false)}{event.end ? ` – ${formatEventTime(event.end, false)}` : ''}
+                          {formatEventTime(event.start, false, state.settings.timezone)}{event.end ? ` – ${formatEventTime(event.end, false, state.settings.timezone)}` : ''}
                         </p>
                       )}
                       {event.allDay && !isCosmic && !isBirthday && <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: '3px 0 0' }}>All day</p>}
@@ -846,7 +788,7 @@ export default function Calendar() {
               </div>
             </div>
           ) : (
-            <button className="btn-ghost" style={{ marginTop: 12, width: '100%' }} onClick={() => setForm(freshForm())}>
+            <button className="btn-ghost" style={{ marginTop: 12, width: '100%' }} onClick={() => setForm(freshForm(today))}>
               + Add event
             </button>
           )}
