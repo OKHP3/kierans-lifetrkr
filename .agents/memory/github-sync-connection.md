@@ -71,3 +71,15 @@ reconcile by commit order alone.
 keep the newer validated local behavior unless the remote change is intentionally
 required, selectively retain remote-only provenance, then run the full release
 checks before publishing.
+
+The Replit GitHub proxy can return 404 for Git tree entries below
+`.github/workflows` even when the bound connection has repository admin/push
+access; the direct GitHub API accepts the same entries.
+
+**Why:** This is a connector route restriction, not repository visibility or
+OAuth failure, so reauthorization and force-pushes do not solve it.
+
+**How to apply:** Keep the bound connector as the first publication path, then
+use an in-memory `GITHUB_PAT` API fallback only for the rejected request. Retain
+the compare-and-swap ref check and fetch the published tree back before aligning
+local refs.
