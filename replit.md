@@ -12,10 +12,10 @@ kieran-lifetrkr/
 │   │                        #   GoogleConnectButton, TokenExpiryBanner
 │   ├── hooks/               # useGoogleAuth, useToast
 │   ├── lib/                 # storage.ts, date.ts, googleCalendar.ts, googleTasks.ts
-│   ├── pages/               # Home, Calendar, Today, Someday, Rituals, Habits, Settings
+│   ├── pages/               # Home, Calendar, Today, Someday, Rituals, Habits, Settings, Origin, Privacy
 │   ├── types.ts             # All TypeScript types
 │   ├── constants.ts         # GOOGLE_CLIENT_ID, SCOPES, DAILY_QUOTES, SEASONAL_DATES
-│   ├── App.tsx              # HashRouter + Routes (7 routes incl. /settings)
+│   ├── App.tsx              # HashRouter + Routes (9 current routes)
 │   └── main.tsx             # Entry point
 ├── docs/                    # PRD, Architecture, Design System, Roadmap, Handoff
 ├── vite.config.ts           # Vite — host 0.0.0.0:5000, no proxy, base conditional
@@ -49,9 +49,10 @@ npm run preview      # Preview the production build locally
 
 | Phase | Feature | Status |
 |---|---|---|
-| Current | Full UI shell, local browser data | ✅ Current |
-| Integration | Google Calendar and Tasks | 🔧 Wired, release evidence pending |
-| Future | Notion backend sync | 📋 Not planned for the current client-only product |
+| Current | Full UI shell, local browser data, local oracle fallback, PWA shell | ✅ v0.1.10 pre-production |
+| Integration | Google Calendar and Tasks | 🔧 Source/local-harness checked; owner real-account evidence pending |
+| Release | Public stable / v1.0.0 | ⏸ Deferred until owner-run live and manual gates close |
+| Out of scope | Notion backend sync and Google writes | 🚫 Excluded by the current client-only/read-only boundary |
 
 ## Environment Variables
 
@@ -125,3 +126,10 @@ Built on Father's Day, Summer Solstice 2026. The fourth hill. ✦
 - App is for Kieran's personal use — single user, no server-side auth needed
 - Dark mode default, with theme toggle available (dark / light / system)
 - Mobile-first layout, max-width 480px on mobile; desktop sidebar at ≥ 768px
+
+## Release truth
+
+The current release is `v0.1.10`, approved with limits for controlled
+pre-production use. It is not a stable or `v1.0.0` release. See
+`docs/VISION-DELIVERY-MATRIX.md` for the capability crosswalk and
+`docs/RELEASE-TRUTH-BASELINE.md` for evidence and expiry rules.

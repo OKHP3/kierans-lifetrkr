@@ -4,7 +4,7 @@
 > and a daily oracle — one interface, no noise.
 
 **Live:** https://okhp3.github.io/kierans-lifetrkr/#/
-**Status:** v0.1.10 pre-production · stable release deferred pending evidence
+**Status:** v0.1.10 pre-production · approve-with-limits; stable release deferred pending evidence
 **License:** MIT — free to use, fork, and build on
 
 ---
@@ -175,6 +175,9 @@ Settings and `docs/HANDOFF.md` for the provider boundary.
 
 See `.env.example` for the full list.
 
+For the current vision-to-delivery crosswalk, evidence tiers, and release
+boundary, see [`docs/VISION-DELIVERY-MATRIX.md`](docs/VISION-DELIVERY-MATRIX.md).
+
 ---
 
 ## Privacy
@@ -216,7 +219,7 @@ v1.0.0 is not a placeholder — it is earned.
 
 | File | Contents |
 |---|---|
-| `docs/PRD-v4.0.md` | Current agent build brief — drives v0.2.0 + v0.3.0 |
+| `docs/PRD-v4.0.md` | Historical build brief — intent and dated planning context |
 | `docs/PRD-v3.0.md` | Complete product vision and TypeScript type definitions |
 | `docs/DESIGN.md` | Moonlit Hearth design system — full color, type, component spec |
 | `docs/HANDOFF.md` | Jamie → Kieran ownership transfer checklist |
@@ -224,6 +227,7 @@ v1.0.0 is not a placeholder — it is earned.
 | `docs/RELEASE-TRUTH-BASELINE.md` | Current artifact inventory, claims, gates, and validation protocol |
 | `docs/DEPLOYMENT-CHECKLIST.md` | Clean install, Pages artifact, route, and offline-claim checks |
 | `docs/RELEASE-REVIEW-RECORD.md` | Frozen candidate identity, evidence ledger, review, risks, and decision |
+| `docs/VISION-DELIVERY-MATRIX.md` | Current vision-to-delivery crosswalk and evidence-tiered release boundary |
 | `docs/OAUTH-CONSENT-CHECKLIST.md` | Exact owner-facing Google OAuth consent and verification checklist |
 
 ---

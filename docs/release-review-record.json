@@ -8,6 +8,29 @@
     "sha256": "de5fa3a369174d9975ffa0f9af7b47b03b8e2e21",
     "version": "v0.1.10"
   },
+  "current_reconciliation": {
+    "date": "2026-09-03",
+    "source_reference": "393c2aa74766d0572943306e372f5e35ec6cf950",
+    "version": "v0.1.10",
+    "decision": "approve-with-limits",
+    "stable_release": "deferred-for-evidence",
+    "matrix": "docs/VISION-DELIVERY-MATRIX.md",
+    "validation": {
+      "date": "2026-09-03",
+      "passed": [
+        "npm run check",
+        "npm run check:a11y",
+        "npm run test:service-worker",
+        "npm run test:sync",
+        "npm run build",
+        "npm run release:check",
+        "node scripts/inspect-artifact.mjs",
+        "git diff --check"
+      ],
+      "artifact_identity": "sha256:4a0cfe843a17d25960f7113fef526f5ef7c6ee5c9e96effd9add30d9e4c39347",
+      "dirty_suffix_reason": "Four pre-existing deleted files under attached_assets were not modified during reconciliation."
+    }
+  },
   "decision_question": "Can the frozen candidate be handed to Kieran as a controlled pre-production release without claiming universal reliability, completed account transfer, or offline support?",
   "acceptance_criteria": [
     "Artifact identity, hashes, criteria, evidence, and review record are frozen together.",

@@ -7,6 +7,15 @@
 **Identity validation:** `npm run release:check` from the candidate commit; the generated report is `dist/release-identity.json`
 **Review status:** complete with bounded approval; published Pages evidence closed
 
+> **Current reconciliation (September 3, 2026):** This record preserves the
+> frozen candidate review above. The current source/documentation reference is
+> `393c2aa74766d0572943306e372f5e35ec6cf950`, still `v0.1.10`. The release
+> decision remains `approve-with-limits` for controlled pre-production, with
+> stable and `v1.0.0` approval deferred. See
+> [`docs/VISION-DELIVERY-MATRIX.md`](VISION-DELIVERY-MATRIX.md) for the current
+> capability crosswalk; the frozen hashes below are not silently relabeled as
+> evidence for this newer tree.
+
 ## Decision question and scope
 
 Can the frozen candidate be handed to Kieran as a controlled pre-production
@@ -129,6 +138,43 @@ expires immediately if the package/lockfile, routes, persistence keys/types,
 OAuth scopes, external endpoints, oracle boundary, Pages workflow, or release
 commit changes. Kieran owns account and service verification after transfer;
 Jamie owns the candidate and evidence record until then.
+
+## Current reconciliation addendum — September 3, 2026
+
+The current source and documentation were reconciled without changing the
+frozen review outcome. The current tree remains a client-only React/Vite SPA
+with browser-local persistence, a read-only Google boundary, a local oracle
+fallback, and an optional worker boundary. The current source reference is
+`393c2aa74766d0572943306e372f5e35ec6cf950`; application identity remains
+`v0.1.10`.
+
+The following are source or bounded-test closures, not stable-release approval:
+dark-default initialization, first-launch flow, oracle regeneration, privacy
+route, service-worker shell, cat accent, current architecture documentation,
+targeted recurrence/Mercury/oracle fallback behavior, and simulated storage
+failure recovery. Real Google lifecycle and account isolation, physical-device
+PWA behavior, manual accessibility, real browser quota/private-mode behavior,
+live worker activation, and owner handoff remain open.
+
+The authoritative current crosswalk is
+[`docs/VISION-DELIVERY-MATRIX.md`](VISION-DELIVERY-MATRIX.md). This addendum
+expires with any release-tree, route, persistence, OAuth, external-service,
+workflow, or deployment change.
+
+### Fresh local validation recorded for this reconciliation
+
+On September 3, 2026, the current tree passed `npm run check`,
+`npm run check:a11y`, `npm run test:service-worker`, `npm run test:sync`,
+`npm run build`, `npm run release:check`,
+`node scripts/inspect-artifact.mjs`, and `git diff --check`.
+
+The checks observed `v0.1.10`, reviewed source
+`393c2aa74766d0572943306e372f5e35ec6cf950+dirty`, and artifact identity
+`sha256:4a0cfe843a17d25960f7113fef526f5ef7c6ee5c9e96effd9add30d9e4c39347`.
+The dirty suffix is from four pre-existing deleted `attached_assets/` files;
+those files were not restored or modified. These are local/source and bounded
+regression results only, not live-account, live-device, manual-accessibility,
+live-worker, storage-quota, or ownership evidence.
 
 ## Checks not run
 

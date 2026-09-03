@@ -83,3 +83,15 @@ OAuth failure, so reauthorization and force-pushes do not solve it.
 use an in-memory `GITHUB_PAT` API fallback only for the rejected request. Retain
 the compare-and-swap ref check and fetch the published tree back before aligning
 local refs.
+
+Release records must keep source/build evidence separate from owner-controlled
+account, device, deployment, and manual validation evidence. When parallel
+histories disagree, preserve the narrower evidence tier and the explicit owner
+gate rather than upgrading an older candidate's claim.
+
+**Why:** A rebase can make stale historical wording appear current, especially
+when publication and ownership records were written for a different commit.
+
+**How to apply:** Reconcile release identity and decision wording against the
+actual tree and freshly observed checks, while leaving historical candidate
+hashes and unrun owner checks clearly bounded.

@@ -25,6 +25,7 @@ an account transfer without Kieran's authorization.
 **Execution status:** `BLOCKED — owner-controlled transfer and service-account steps remain`
 
 Candidate and review record: `docs/RELEASE-REVIEW-RECORD.md`.
+Current capability crosswalk: `docs/VISION-DELIVERY-MATRIX.md`.
 Google activation evidence: `docs/GOOGLE-READONLY-EVIDENCE.md`.
 Privacy notice: `https://okhp3.github.io/kierans-lifetrkr/#/privacy`.
 OAuth owner checklist: `docs/OAUTH-CONSENT-CHECKLIST.md`.

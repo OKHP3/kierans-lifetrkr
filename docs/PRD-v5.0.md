@@ -8,7 +8,7 @@ Build Session at a time.
 **Date:** August 26, 2026
 **Live app:** https://okhp3.github.io/kierans-lifetrkr/#/
 **Repository:** https://github.com/OKHP3/kierans-lifetrkr
-**Status:** Approved — planning authority for closing every open item on the roadmap through v1.0.0
+**Status:** Historical build-session plan — current status is governed by the release matrix
 
 > **How to use this document (Replit agent):** Work one Build Session at a time, in order, unless
 > a session is explicitly marked optional or independent. Each session lists a **Do**, an
@@ -20,10 +20,21 @@ Build Session at a time.
 
 ---
 
-## Section 0 — Ground truth as of August 26, 2026
+> **Current-status notice (September 3, 2026):** This document is a dated
+> execution plan, not the current release record. The current source baseline is
+> `v0.1.10` at `393c2aa74766d0572943306e372f5e35ec6cf950`, with
+> `approve-with-limits` pre-production posture. Its session checklists preserve
+> intent and owner prerequisites, but the current delivered-state crosswalk is
+> `docs/VISION-DELIVERY-MATRIX.md`. No stable or `v1.0.0` claim follows from
+> completing a local build alone.
 
-This section is the starting audit. Do not re-derive it; verify against it as you go, and correct
-this document if source has moved since.
+---
+
+## Section 0 — Historical ground truth snapshot as of August 26, 2026
+
+This section was the starting audit for the plan. It is retained for provenance.
+Do not use its “still open” list as the current status; compare it with the
+current matrix before acting on any item.
 
 **Confirmed resolved (do not re-open without new evidence):**
 
@@ -65,16 +76,16 @@ Full detail and file-level evidence for every item above lives in
 
 ---
 
-## Section 1 — Versioning alignment
+## Section 1 — Versioning alignment (historical plan, reconciled)
 
 | Version | Scope | Status | This document's session |
 |---|---|---|---|
-| v0.1.10 | Current source baseline | Shipped, pre-production | — |
-| v0.1.11 | Doc-hygiene + cheap UI fixes | This session's target | Build Session A |
-| v0.2.0 | Google Calendar + Tasks live | Blocked on manual GCP setup | Build Session C |
-| v0.3.0 | Oracle activation + recurrence verification | Blocked on manual Worker deploy | Build Sessions B, D |
-| v0.4.0 | PWA + brand polish + drag-reorder | Independent, can run any time after A | Build Session F |
-| v0.5.0 | Privacy policy + OAuth production verification | Blocked on v0.2.0 | Build Session G |
+| v0.1.10 | Current source baseline | **Current, pre-production; approve-with-limits** | Source/documentation work from Session A is present; no version bump is claimed |
+| v0.1.11 | Doc-hygiene + cheap UI fixes | Historical session target; not released as a version | Build Session A |
+| v0.2.0 | Google Calendar + Tasks live | Owner-gated; real-account evidence pending | Build Session C |
+| v0.3.0 | Oracle activation + recurrence verification | Partial; local fallback and targeted checks pass, live worker/date evidence pending | Build Sessions B, D |
+| v0.4.0 | PWA + brand polish + drag-reorder | Source/transport work present; device and future polish remain pending | Build Session F |
+| v0.5.0 | Privacy policy + OAuth production verification | Privacy route is present; external verification remains an owner/product decision | Build Session G |
 | — | Release-evidence gates | Blocks any "stable" claim | Build Session E |
 | — | Kieran ownership handoff | Final step, after evidence gates close | Build Session H |
 | v1.0.0 | Production, Google-verified, Kieran-owned | Reserved | — |

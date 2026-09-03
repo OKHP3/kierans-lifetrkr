@@ -1,9 +1,10 @@
 # LifeTrkr Release Truth Baseline
 
-**Baseline date:** August 24, 2026
+**Baseline date:** September 3, 2026 — reconciliation refresh
 **Artifact:** `kieran-lifetrkr`  
 **Application version:** `0.1.10` (`package.json`, `src/constants.ts`)  
 **Latest published evidence candidate:** `de5fa3a369174d9975ffa0f9af7b47b03b8e2e21`
+**Current source reference:** `393c2aa74766d0572943306e372f5e35ec6cf950`
 **Release posture:** Candidate approved-with-limits for controlled pre-production handoff; public stable release deferred for remaining owner-run live and manual evidence
 
 This document is the current evidence baseline for LifeTrkr. Historical PRDs and session
@@ -103,7 +104,7 @@ helpers. Real-account lifecycle testing remains a handoff verification item.
 | Google access is read-only | Supported in code and local harness | Read-only scopes, GET-only client paths, and no Google mutation helpers | Real OAuth test account confirms requested consent and API behavior |
 | Oracle key is private | Supported in code | No `VITE_ANTHROPIC_API_KEY`; Claude path targets optional worker URL | Production bundle inspection and worker deployment review |
 | Daily oracle is stable for a day | Supported in code | Date-scoped tarot, horoscope, and message caches use configured timezone | Reload/date-rollover/regeneration tests with a controlled clock |
-| Dark mode is the default | Disputed | Theme context defaults to `system`; project intent says dark | First launch on light-system device must render dark, unless product decision changes |
+| Dark mode is the default for new profiles | Supported in current source | `ThemeContext` and the pre-mount theme application default to `dark`; explicit saved `light`/`system` preferences remain honored | Clean-profile browser check on a light-system device; any theme initialization change |
 | PWA has an installable manifest | Supported in code | `public/manifest.json`, subpath-safe metadata | Browser install prompt/standalone launch remains a manual check |
 | Offline app shell is supported | Supported in code; manual device verification remains | Versioned worker precaches the built shell and same-origin assets; external services are not cached | Verify online load → offline reload → reconnect on supported browsers |
 | GitHub Pages build artifact is reproducible | Supported for published candidate | Clean `npm ci`, lockfile portability, check, audit, build, artifact inspection, and post-push hash match | Re-run from a fresh clone after release-tree changes |
@@ -240,6 +241,45 @@ Run on August 24, 2026 from the frozen candidate `2bd74eadfbca7d0fa29cf35783762d
 
 The complete bounded decision, hashes, independent reviews, falsification pass,
 and risk ownership are recorded in `docs/RELEASE-REVIEW-RECORD.md`.
+
+## 16. Current reconciliation snapshot
+
+This refresh was performed against the current `v0.1.10` source reference
+`393c2aa74766d0572943306e372f5e35ec6cf950`. The release decision remains
+`approve-with-limits` for controlled pre-production. The current
+vision-to-delivery classifications and capability-level evidence boundaries
+are in [`docs/VISION-DELIVERY-MATRIX.md`](VISION-DELIVERY-MATRIX.md).
+
+The current tree contains the previously planned local/documentation work:
+dark-default initialization, first-launch onboarding, oracle regeneration,
+privacy route, service-worker shell, cat accent, and current architecture
+documentation. Their presence is source evidence only unless the matrix says a
+bounded runtime check was performed. It does not close real Google-account,
+physical-device, manual accessibility, real browser storage, live worker, or
+ownership-transfer gates.
+
+The older frozen candidate, publication hashes, workflow links, and dated
+addenda in this file remain valid only for the candidate and environments named
+in those records. A new release artifact or any change listed in the expiry
+rules requires a fresh identity and evidence pass.
+
+### Fresh local validation — September 3, 2026
+
+| Check | Result | Observation |
+|---|---|---|
+| `npm run check` | PASS | TypeScript completed with no errors |
+| `npm run check:a11y` | PASS | Accessibility source check covered 30 JSX/TSX files |
+| `npm run test:service-worker` | PASS | One regression test passed |
+| `npm run test:sync` | PASS | Nine sync regression tests passed |
+| `npm run build` | PASS | Vite production build and service-worker preparation completed |
+| `npm run release:check` | PASS | `v0.1.10`; reviewed source `393c2aa74766d0572943306e372f5e35ec6cf950+dirty`; artifact `sha256:4a0cfe843a17d25960f7113fef526f5ef7c6ee5c9e96effd9add30d9e4c39347` |
+| `node scripts/inspect-artifact.mjs` | PASS | Eight required deployment files present |
+| `git diff --check` | PASS | No whitespace errors in tracked changes |
+
+The `+dirty` suffix reflects the pre-existing deleted files under
+`attached_assets/`, which were not restored or modified during this
+reconciliation. These local checks do not close owner-run account, device,
+manual accessibility, live worker, storage-quota, or handoff gates.
 
 ## 14. Privacy and OAuth readiness addendum
 

@@ -1,9 +1,14 @@
 # Kieran's LifeTrkr — Current Architecture
 
-**Status:** Current as of August 2026  
+**Status:** Current as of September 3, 2026
 **Scope:** Client-only release architecture
 
-This document describes the architecture that is actually shipped. Earlier
+This document describes the architecture that is actually shipped. It is
+current architecture documentation, not a stable-release approval. The
+application baseline is `v0.1.10` and the release posture is
+`approve-with-limits` for controlled pre-production. See
+`docs/VISION-DELIVERY-MATRIX.md` for the vision-to-delivery evidence boundary.
+Earlier
 Express, Notion, Vercel, and server-backed OAuth proposals are historical and
 are not part of the current application.
 

@@ -5,19 +5,24 @@
 **Live app:** https://okhp3.github.io/kierans-lifetrkr/#/
 **Repository:** https://github.com/OKHP3/kierans-lifetrkr
 **Notion hub:** https://app.notion.com/p/overkillhill/Kieran-s-LifeTrkr-Project-Hub-386812e0ced481878291e92d5e428ce5
-**Status:** Approved — planning authority for v0.2.0 and beyond
+**Status:** Historical planning record — current status is governed by the release matrix
 
-> **Baseline notice (August 22, 2026):** This document contains historical planning
-> material and a dated audit, not a current release assertion. Current source truth
-> is `v0.1.10`, uses Someday rather than Archive, and uses the React 19 / Vite 8 /
-> Tailwind 4 toolchain. See `docs/RELEASE-TRUTH-BASELINE.md` before treating any
-> shipped, planned, or release-readiness statement as current.
+> **Baseline notice (September 3, 2026):** This document contains historical
+> planning material and a dated `v0.1.8` audit, not a current release assertion.
+> Current source truth is `v0.1.10`, uses Someday rather than Archive, and uses
+> the React 19 / Vite 8 / Tailwind 4 toolchain. The shipped app is client-only,
+> and the release posture is approve-with-limits for controlled pre-production.
+> See `docs/VISION-DELIVERY-MATRIX.md` and `docs/RELEASE-TRUTH-BASELINE.md`
+> before treating any shipped, planned, or release-readiness statement as current.
 
 ---
 
-## Section 1 — Current State Audit (v0.1.8)
+## Section 1 — Historical State Audit (v0.1.8)
 
-The June 22, 2026 second build session advanced from v0.1.0 (UI shell only) to v0.1.8, pulling in most of the planned v0.3.0 feature set ahead of schedule.
+The June 22, 2026 second build session advanced from v0.1.0 (UI shell only) to
+v0.1.8, pulling in most of the planned v0.3.0 feature set ahead of schedule.
+The bullets in this section remain a historical snapshot; later source and
+evidence work supersede its open-item wording.
 
 ### Shipped and live (v0.1.8)
 
@@ -41,7 +46,7 @@ The June 22, 2026 second build session advanced from v0.1.0 (UI shell only) to v
 - **Claude oracle message:** `generateOracleMessage()` in `oracle.ts` calls the configured oracle worker. Without a worker, it falls back gracefully to `card.meaning_up` (the tarot card's upright meaning). The fallback is functional but generic.
 - **Horoscope:** `fetchHoroscope()` requires `birthSign` set in Settings. When set, it calls freehoroscopeapi.com. Reliability of this free API is unknown.
 
-### Known bugs / gaps from live review
+### Known bugs / gaps from the June 22, 2026 snapshot
 
 - `APP_VERSION` in `src/constants.ts` is still `'v0.1.0'` — displayed version in SideNav footer says `v0.1.0` but deployed build is v0.1.8
 - Default theme is `Auto` — on most systems (light OS) this launches the app in light/parchment mode. PRD-v3.0 specifies dark as the default. The Moonlit Hearth aesthetic is intended for dark mode; light mode is "Morning Parchment" (secondary).
@@ -61,10 +66,10 @@ The June 22, 2026 second build session advanced from v0.1.0 (UI shell only) to v
 |---|---|---|---|
 | v0.1.0 | Phase 1 UI shell | SHIPPED June 21 | First session |
 | v0.1.1–v0.1.8 | Recurrence, celestial, oracle, categories | SHIPPED June 22 | Second session — pulled v0.3.0 work forward |
-| v0.2.0 | Google Calendar + Tasks live | NEXT | Activate VITE_GOOGLE_CLIENT_ID |
-| v0.3.0 | Close remaining Phase 3 gaps | Planned | First-launch, About, Regenerate oracle, dark default, Claude oracle activation |
-| v0.4.0 | PWA + brand assets + polish | Planned | Offline, add-to-home-screen, og-image |
-| v0.5.0 | OAuth verification + privacy policy | Planned | GCP app verification submission |
+| v0.2.0 | Google Calendar + Tasks live | OWNER-GATED | Activate and test with a real account; see current matrix |
+| v0.3.0 | Close remaining Phase 3 gaps | PARTIAL | Local fallback and targeted checks are recorded; live worker/date evidence remains owner-gated |
+| v0.4.0 | PWA + brand assets + polish | PARTIAL | Shell, manifest, and assets are present; device install/offline evidence remains owner-gated |
+| v0.5.0 | OAuth verification + privacy policy | OWNER/PRODUCT-GATED | Privacy route is present; external verification decision and submission are not claimed |
 | v1.0.0 | Production — Google-verified, Kieran-owned | Reserved | Account handoff complete |
 
 ---

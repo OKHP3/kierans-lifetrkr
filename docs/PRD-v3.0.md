@@ -3,12 +3,16 @@
 **Date:** June 22, 2026  
 **Live app:** https://okhp3.github.io/kierans-lifetrkr/#/  
 **Repository:** https://github.com/OKHP3/kierans-lifetrkr  
-**Status:** Approved — single source of truth for all agent sessions  
+**Status:** Historical product vision and type reference — not current release status
 
-> **Baseline notice (August 22, 2026):** This PRD records product intent and historical
-> architecture. It is not a claim that every listed feature or acceptance criterion
-> is currently verified. For current routes, schemas, external calls, release gates,
-> and evidence status, use `docs/RELEASE-TRUTH-BASELINE.md` and `src/types.ts`.
+> **Current-status notice (September 3, 2026):** This PRD records product intent
+> and dated architecture/type material. It is not a claim that every listed
+> feature or acceptance criterion is currently verified. The current source
+> baseline is `v0.1.10`, a client-only React/Vite SPA using HashRouter,
+> browser-local storage, and direct read-only Google paths. Release posture is
+> approve-with-limits for controlled pre-production; stable and `v1.0.0` claims
+> remain deferred. Use `docs/VISION-DELIVERY-MATRIX.md`,
+> `docs/RELEASE-TRUTH-BASELINE.md`, and `src/types.ts` for current truth.
 
 ---
 
@@ -20,7 +24,7 @@
 - Any user in the world can use the app by visiting the URL and connecting their Google account. All their data is isolated to their own browser via localStorage namespaced by their Google sub ID.
 - The architecture is: React 18 + Vite + TypeScript + Tailwind CSS, deployed as a static site on GitHub Pages, built in Replit.
 - Design motif is Moonlit Hearth: deep jewel tones, amethyst primary, warmly mystical without being theatrical. Black cat. Crescent moon. Not goth. Not OKHP3-branded.
-- Versioning is strictly pre-1.0. v1.0.0 is reserved for the first stable Google-verified Kieran-owned production release. Current build is v0.1.0 (Phase 1 shipped June 21, 2026).
+- Versioning is strictly pre-1.0. v1.0.0 is reserved for the first stable Google-verified Kieran-owned production release. The historical Phase 1 build was v0.1.0; the current source baseline is v0.1.10 with bounded pre-production approval.
 - This PRD covers the complete arc from current state through v0.5.0, with full implementation detail for v0.2.0 and v0.3.0 sessions.
 
 ---

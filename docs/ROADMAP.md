@@ -1,18 +1,22 @@
 # Kieran's LifeTrkr — Roadmap
 
-**Last updated:** June 22, 2026 — second build session  
+**Last updated:** September 3, 2026 — release-truth reconciliation
 **Versioning:** See PRD-v3.0 Section 3 for semantic versioning discipline.
 
-> **Current release truth (August 22, 2026):** The source baseline is `v0.1.10`.
-> This roadmap is a planning document, not proof that its checkboxes are shipped.
-> Stable-release approval is deferred pending the evidence gates in
-> `docs/RELEASE-TRUTH-BASELINE.md`.
+> **Current release truth (September 3, 2026):** The source baseline is
+> `v0.1.10` at `393c2aa74766d0572943306e372f5e35ec6cf950`. This roadmap is a
+> planning document, not proof that its checkboxes are shipped. The candidate is
+> approved with limits for controlled pre-production; stable-release approval is
+> deferred pending the owner-run evidence gates in
+> `docs/VISION-DELIVERY-MATRIX.md` and `docs/RELEASE-TRUTH-BASELINE.md`.
 
 ---
 
 ## v0.1.x — UI Shell + Core Features (SHIPPED)
 
-Phase 1 shipped June 21, 2026. Phase 1 patches (v0.1.1–v0.1.8) shipped June 22, 2026.
+The original shell shipped June 21, 2026. Later source work brought the current
+baseline to `v0.1.10`; the dated session labels below are historical lineage,
+not separate current release claims.
 
 ### Shipped
 - [x] React 19 + Vite 8 + TypeScript + Tailwind CSS v4 SPA
@@ -45,82 +49,76 @@ Phase 1 shipped June 21, 2026. Phase 1 patches (v0.1.1–v0.1.8) shipped June 22
 - [x] Settings: Oracle & Celestial section (Daily Oracle toggle, Mercury Rx banner, moon phase on calendar, sun sign picker)
 - [x] Easter egg: triple-tap ✦ reveals generational lineage modal
 
-### Known gaps (v0.1.x patch items)
-- [ ] APP_VERSION constant not bumped — displays v0.1.0, should match deployed version
-- [ ] Default theme should be Dark, not Auto
-- [ ] First-launch welcome screen (PRD-v3.0 Section 16.1)
-- [ ] Settings: About section
-- [ ] Settings: "Regenerate today's oracle" button
-- [ ] VITE_ANTHROPIC_API_KEY not set — Claude oracle falls back to card.meaning_up
+### Current boundaries (not defects in the v0.1.10 source baseline)
+- [x] Version identity is derived from `package.json` and displays `v0.1.10`
+- [x] New profiles default to dark; explicit light/system preferences remain supported
+- [x] First-launch welcome flow, Settings About, privacy route, and oracle regeneration are present
+- [x] Claude wording is worker-only and optional; the local tarot meaning is the supported fallback
+- [x] Notion persistence and Google writes remain outside the current client-only/read-only product
 
 ---
 
-## v0.2.0 — Google Calendar + Tasks Live (NEXT)
+## v0.2.0 — Google Calendar + Tasks Live (OWNER-GATED)
 
 **Prerequisite:** GCP project setup (see PRD-v4.0 Section 4 and PRD-v3.0 Section 19)
 
 ### Deliverables
-- [ ] VITE_GOOGLE_CLIENT_ID set in Replit Secrets
-- [ ] Google auth flow verified end-to-end (connect, token, expiry, reconnect, disconnect)
+- [ ] Owner confirms configured `VITE_GOOGLE_CLIENT_ID` without recording its value
+- [ ] Owner verifies Google auth flow end-to-end (connect, token, expiry, reconnect, disconnect)
 - [ ] Calendar tab: real Google events loaded from primary calendar
 - [ ] Home upcoming strip: real Google events
 - [ ] Today tab: "From Google Tasks" section (tasks due today)
-- [ ] Archive tab: "From Google Tasks" section (undated tasks)
+- [ ] Someday tab: "From Google Tasks" section (undated tasks)
 - [ ] TokenExpiryBanner verified functional
 - [ ] Settings: Google Calendar (days ahead, refresh) and Tasks (list selection) sections
-- [ ] Deploy + test with Kieran's Google account
+- [ ] Owner runs the two-account isolation and Kieran smoke matrix
 
 ---
 
-## v0.3.0 — Close Remaining Gaps
+## v0.3.0 — Oracle and date verification (PARTIAL / OWNER-GATED)
 
 ### Deliverables
-- [ ] Dark mode as default theme (first-time users)
-- [ ] APP_VERSION bumped and kept current
-- [ ] First-launch experience screen
-- [ ] Settings About section
-- [ ] Settings "Regenerate today's oracle" button
-- [ ] VITE_ANTHROPIC_API_KEY activated via Replit external_apis
-- [ ] Claude oracle confirmed live (genuine AI-generated daily message)
-- [ ] Recurrence `isActiveToday()` filtering verified for habits and ritual items
-- [ ] Mercury retrograde banner on Calendar verified
-- [ ] Horoscope section renders when birthSign is set
+- [x] Dark mode default, first-launch flow, About, and oracle regeneration are implemented
+- [x] Recurrence, Mercury banner, horoscope isolation, and local oracle fallback are runtime-tested for recorded states
+- [ ] Optional Claude worker deployed and live wording verified by owner
+- [ ] Controlled-clock date rollover and regeneration evidence recorded for the current release
 
 ---
 
-## v0.4.0 — PWA + Brand + Polish
+## v0.4.0 — PWA + Brand + Polish (SOURCE COMPLETE / DEVICE-GATED)
 
 ### Deliverables
 - [x] PWA manifest verified (start_url, display: standalone, theme/bg colors, icons)
 - [x] Versioned service worker for offline shell caching
-- [ ] "Add to Home Screen" works on iOS and Android
-- [ ] App icon integrated (app-icon.png/webp)
+- [ ] "Add to Home Screen" works on iOS and Android (owner device evidence)
+- [x] App icon integrated (app-icon.png/webp)
 - [x] Cat accent asset placed tastefully in UI (one placement)
 - [ ] og-image.png verified
-- [ ] Drag-to-reorder tasks in Today and Archive
-- [ ] End-of-day review view (optional)
+- [ ] Drag-to-reorder tasks in Today and Someday (future scope)
+- [ ] End-of-day review view (optional future scope)
 - [x] Performance audit recorded (oracle, celestial, calendar recurrence)
 
 ---
 
-## v0.5.0 — OAuth Verification
+## v0.5.0 — OAuth Verification (OWNER DECISION / GATED)
 
 ### Deliverables
-- [ ] Privacy policy page at stable URL
+- [x] Privacy policy page at stable URL
 - [ ] GCP OAuth consent screen configured for production
 - [ ] App submitted to Google for verification (sensitive scopes: calendar.readonly, tasks.readonly)
 - [ ] Awaiting Google approval (4–6 weeks)
 
 ---
 
-## v1.0.0 — Production (Reserved)
+## v1.0.0 — Production (Reserved, no current claim)
 
 **Criteria for v1.0.0:**
-- Google OAuth verification approved
-- App runs stably on Kieran's Google account
+- Google OAuth verification decision completed if the product is opened beyond
+  the controlled owner/test-user model
+- App passes the owner-run lifecycle and accessibility/storage/device evidence
 - GitHub repo transferred to Kieran's account (OKHP3 → Kieran's personal account)
-- Kieran owns the GCP project
-- VITE_GOOGLE_CLIENT_ID reflects Kieran's own credential
+- Kieran owns the GCP project and accepts the handoff
+- The configured client ID is owned and managed under the intended account
 
 ---
 
