@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { getDetectedTimezone, getTimezoneOptions, getTodayISO } from '../src/lib/date.ts'
+import { getDetectedTimezone, getTimezoneOptions, getTodayISO, normalizeTimezone } from '../src/lib/date.ts'
 import { initialState, persistState, reducer } from '../src/context/AppContext.tsx'
 
 class MemoryStorage {
@@ -32,6 +32,43 @@ test('timezone selector choices include the detected zone and required practical
   assert.equal(options[0], getDetectedTimezone())
   assert.ok(options.includes('America/Los_Angeles'))
   assert.ok(options.includes('Asia/Tokyo'))
+})
+
+test('invalid persisted timezone is recovered without changing completion dates', () => {
+  const localStorage = new MemoryStorage()
+  Object.assign(globalThis, { localStorage })
+
+  const storedRoutineCompletions = [{
+    date: '2026-09-02',
+    routineTemplateId: 'wednesday',
+    completedItemIds: ['stretch'],
+  }]
+  const storedHabitCompletions = [{
+    habitId: 'water',
+    date: '2026-09-02',
+    completionIndex: 0,
+  }]
+  const recovered = reducer(initialState, {
+    type: 'LOAD_STATE',
+    payload: {
+      settings: { ...initialState.settings, timezone: 'Not/An-IANA-Zone' },
+      routineCompletions: storedRoutineCompletions,
+      habitCompletions: storedHabitCompletions,
+    },
+  })
+
+  assert.equal(recovered.settings.timezone, getDetectedTimezone())
+  assert.equal(normalizeTimezone('Not/An-IANA-Zone'), getDetectedTimezone())
+  assert.deepEqual(recovered.routineCompletions, storedRoutineCompletions)
+  assert.deepEqual(recovered.habitCompletions, storedHabitCompletions)
+  assert.equal(persistState(recovered), true)
+
+  const savedSettings = JSON.parse(localStorage.getItem('lifetrkr:guest:settings')!)
+  const savedRoutineCompletions = JSON.parse(localStorage.getItem('lifetrkr:guest:routineCompletions')!)
+  const savedHabitCompletions = JSON.parse(localStorage.getItem('lifetrkr:guest:habitCompletions')!)
+  assert.equal(savedSettings.timezone, getDetectedTimezone())
+  assert.deepEqual(savedRoutineCompletions, storedRoutineCompletions)
+  assert.deepEqual(savedHabitCompletions, storedHabitCompletions)
 })
 
 test('timezone changes persist without rewriting stored completion dates', () => {

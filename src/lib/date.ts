@@ -7,7 +7,23 @@ import type {
 } from '../types'
 import { DAYS_OF_WEEK, SEASONAL_DATES, DAILY_QUOTES } from '../constants'
 
-const DEFAULT_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
+const DEFAULT_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+
+/** Return whether a value is a usable IANA timezone for Intl date formatting. */
+export function isValidTimezone(timezone: unknown): timezone is string {
+  if (typeof timezone !== 'string' || !timezone) return false
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: timezone }).format()
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** Recover invalid persisted timezone values without allowing date views to throw. */
+export function normalizeTimezone(timezone: unknown): string {
+  return isValidTimezone(timezone) ? timezone : getDetectedTimezone()
+}
 
 /** Common IANA zones for users who want to override the browser default. */
 export const PRACTICAL_TIMEZONES = [
@@ -39,14 +55,14 @@ export const PRACTICAL_TIMEZONES = [
 ] as const
 
 export function getDetectedTimezone(): string {
-  return DEFAULT_TIMEZONE || 'UTC'
+  return isValidTimezone(DEFAULT_TIMEZONE) ? DEFAULT_TIMEZONE : 'UTC'
 }
 
 /** Include the browser zone and a saved zone even when they are not in the common list. */
 export function getTimezoneOptions(currentTimezone?: string): string[] {
   return [...new Set([
     getDetectedTimezone(),
-    currentTimezone,
+    isValidTimezone(currentTimezone) ? currentTimezone : undefined,
     ...PRACTICAL_TIMEZONES,
   ].filter((timezone): timezone is string => Boolean(timezone)))]
 }
@@ -65,7 +81,7 @@ export function getCalendarDateParts(date: string): { year: number; month: numbe
 
 function datePartsInTimeZone(date: Date, timezone = DEFAULT_TIMEZONE): CalendarDateParts {
   const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone,
+    timeZone: normalizeTimezone(timezone),
     year: 'numeric',
     month: 'numeric',
     day: 'numeric',
@@ -102,7 +118,7 @@ export function getSeasonalBadge(timezone = DEFAULT_TIMEZONE, now: Date = new Da
 
 export function getGreeting(timezone = DEFAULT_TIMEZONE, now: Date = new Date()): string {
   const hour = Number(new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone,
+    timeZone: normalizeTimezone(timezone),
     hour: 'numeric',
     hour12: false,
   }).format(now))
@@ -151,7 +167,7 @@ export function formatEventTime(
   }
   const date = new Date(isoString)
   return new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone,
+    timeZone: normalizeTimezone(timezone),
     hour: 'numeric',
     minute: '2-digit',
   }).format(date)
@@ -166,7 +182,7 @@ export function formatEventDate(
     ? calendarDateToUTC(getCalendarDate(isoString, timezone))
     : new Date(isoString)
   return new Intl.DateTimeFormat('en-US', {
-    timeZone: allDay || !hasExplicitTimezone(isoString) ? 'UTC' : timezone,
+    timeZone: allDay || !hasExplicitTimezone(isoString) ? 'UTC' : normalizeTimezone(timezone),
     month: 'short',
     day: 'numeric',
   }).format(date)

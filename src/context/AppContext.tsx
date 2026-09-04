@@ -5,7 +5,7 @@ import type {
   RoutineDayOfWeek, RoutineItem, OracleReading,
 } from '../types'
 import { storage } from '../lib/storage'
-import { getTodayISO, routineItemOccursOnDate } from '../lib/date'
+import { getDetectedTimezone, getTodayISO, normalizeTimezone, routineItemOccursOnDate } from '../lib/date'
 import { DAYS_OF_WEEK } from '../constants'
 import { normalizeTaskOrder, nextTaskOrder, reorderTasks } from '../lib/taskOrdering'
 
@@ -14,7 +14,7 @@ import { normalizeTaskOrder, nextTaskOrder, reorderTasks } from '../lib/taskOrde
 const defaultSettings: UserSettings = {
   displayName: '',
   email: '',
-  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  timezone: getDetectedTimezone(),
   googleConnected: false,
   calendarDaysAhead: 14,
   showGoogleCalendar: true,
@@ -103,7 +103,11 @@ type Action =
 export function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'LOAD_STATE': {
-      const loadedSettings = { ...defaultSettings, ...(action.payload.settings || {}) }
+      const loadedSettings = {
+        ...defaultSettings,
+        ...(action.payload.settings || {}),
+        timezone: normalizeTimezone(action.payload.settings?.timezone ?? defaultSettings.timezone),
+      }
       return {
         ...state,
         ...action.payload,
@@ -152,8 +156,13 @@ export function reducer(state: AppState, action: Action): AppState {
         lastGoogleSync: null,
       }
 
-    case 'UPDATE_SETTINGS':
-      return { ...state, settings: { ...state.settings, ...action.payload } }
+    case 'UPDATE_SETTINGS': {
+      const nextSettings = { ...state.settings, ...action.payload }
+      return {
+        ...state,
+        settings: { ...nextSettings, timezone: normalizeTimezone(nextSettings.timezone) },
+      }
+    }
 
     case 'SET_GOOGLE_CONNECTED':
       return { ...state, isGoogleConnected: action.payload }

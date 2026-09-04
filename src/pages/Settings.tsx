@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext'
 import { useTheme } from '../context/ThemeContext'
 import GoogleConnectButton from '../components/GoogleConnectButton'
 import { getMoonPhase, getAstroSeason, getMercuryStatus } from '../lib/celestial'
-import { getCalendarDateParts, getDetectedTimezone, getTimezoneOptions, getTodayISO } from '../lib/date'
+import { getCalendarDateParts, getDetectedTimezone, getTimezoneOptions, getTodayISO, normalizeTimezone } from '../lib/date'
 import { storage } from '../lib/storage'
 import { APP_VERSION } from '../constants'
 import type { ZodiacSign } from '../types'
@@ -87,7 +87,8 @@ export default function Settings() {
   const { isLoadingOracle, regenerate } = useOracle()
   const s = state.settings
   const detectedTimezone = getDetectedTimezone()
-  const timezoneOptions = getTimezoneOptions(s.timezone)
+  const configuredTimezone = normalizeTimezone(s.timezone)
+  const timezoneOptions = getTimezoneOptions(configuredTimezone)
 
   function update(patch: Partial<typeof s>) {
     dispatch({ type: 'UPDATE_SETTINGS', payload: patch })
@@ -106,15 +107,15 @@ export default function Settings() {
 
   let age: number | null = null
   if (bYear && bMonth && bDay) {
-    const { year, month, day } = getCalendarDateParts(getTodayISO(s.timezone))
+    const { year, month, day } = getCalendarDateParts(getTodayISO(configuredTimezone))
     age = year - bYear
     if (month < bMonth || (month === bMonth && day < bDay)) age--
   }
 
   // Celestial snapshot for the celestial info card
-  const moon    = getMoonPhase(new Date(), s.timezone)
-  const season  = getAstroSeason(new Date(), s.timezone)
-  const mercury = getMercuryStatus(new Date(), s.timezone)
+  const moon    = getMoonPhase(new Date(), configuredTimezone)
+  const season  = getAstroSeason(new Date(), configuredTimezone)
+  const mercury = getMercuryStatus(new Date(), configuredTimezone)
 
   function clearAllData() {
     if (!confirm('Clear all local app data? This cannot be undone. Your Google account will remain connected.')) return
@@ -394,7 +395,7 @@ export default function Settings() {
             id="timezone-select"
             className="input-field"
             aria-label="Timezone"
-            value={s.timezone}
+            value={configuredTimezone}
             onChange={e => update({ timezone: e.target.value })}
           >
             {timezoneOptions.map(timezone => (
