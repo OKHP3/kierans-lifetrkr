@@ -533,6 +533,24 @@ async function main() {
       startDate: configured.date,
     }, 'override did not survive reload')
 
+    const beforePreview = await page.evaluate(`JSON.parse(
+      localStorage.getItem('lifetrkr:guest:routineCompletions') || '[]'
+    )`)
+    await page.clickButton('Preview')
+    await page.waitFor(
+      'document.body.innerText.includes("Upcoming schedule")',
+      'upcoming ritual schedule preview',
+    )
+    const afterPreview = await page.evaluate(`(() => ({
+      completions: JSON.parse(localStorage.getItem('lifetrkr:guest:routineCompletions') || '[]'),
+      hasUpcomingDate: document.body.innerText.includes('Today') || document.body.innerText.includes('Monday'),
+      hasStatusLegend: document.body.innerText.includes('Inherited = follows the ritual')
+    }))()`)
+    assert.deepEqual(afterPreview.completions, beforePreview, 'preview changed completion history')
+    assert.equal(afterPreview.hasUpcomingDate, true, 'preview did not show an upcoming date')
+    assert.equal(afterPreview.hasStatusLegend, true, 'preview did not show schedule status guidance')
+    await page.clickButton('Close preview')
+
     await page.clickButton('Edit')
     await page.click(`button[aria-label="Edit Keyboard ritual"]`)
     const itemFrequency = `#item-${created.id}-recurrence-frequency`

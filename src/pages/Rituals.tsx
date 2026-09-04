@@ -6,7 +6,7 @@ import CategoryPicker from '../components/CategoryPicker'
 import TagInput from '../components/TagInput'
 import DescriptionField from '../components/DescriptionField'
 import RecurrenceEditor from '../components/RecurrenceEditor'
-import { getTodayISO, getDayOfWeek, routineItemOccursOnDate } from '../lib/date'
+import { formatDateLabel, getDayOfWeek, getTodayISO, getUpcomingRoutineSchedule, routineItemOccursOnDate } from '../lib/date'
 import { DAYS_OF_WEEK, DAYS_SHORT, DEFAULT_CATEGORIES, makeDefaultRecurrence } from '../constants'
 import type { RoutineDayOfWeek, RecurrenceRule, RoutineItem } from '../types'
 
@@ -29,6 +29,7 @@ export default function Rituals() {
   const [newOptional, setNewOptional] = useState(false)
   const [newRecurrence, setNewRecurrence] = useState<RecurrenceRule | undefined>()
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
+  const [showPreview, setShowPreview] = useState(false)
 
   // Filter & sort state
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
@@ -58,9 +59,15 @@ export default function Rituals() {
   const templateCategory = template?.categoryId
     ? DEFAULT_CATEGORIES.find(c => c.id === template.categoryId)
     : undefined
+  const upcomingPreview = template
+    ? getUpcomingRoutineSchedule(template, today)
+    : []
 
   // Close the panel (not re-init) when day changes — user must re-open to see the new day's data
-  useEffect(() => { setShowMeta(false) }, [selectedDay])
+  useEffect(() => {
+    setShowMeta(false)
+    setShowPreview(false)
+  }, [selectedDay])
   useEffect(() => { setSelectedDay(todayFull) }, [state.settings.timezone, todayFull])
 
   // Initialize form from current template data when the panel opens
@@ -310,6 +317,15 @@ export default function Rituals() {
           >
             {showMeta ? 'Close' : 'Details'}
           </button>
+           <button
+             className="btn-ghost"
+             style={{ fontSize: 11, padding: '3px 10px' }}
+             onClick={() => { setShowPreview(p => !p); setShowMeta(false) }}
+             disabled={!template || template.items.length === 0}
+             aria-expanded={showPreview}
+           >
+             {showPreview ? 'Close preview' : 'Preview'}
+           </button>
         </div>
       </div>
 
@@ -338,6 +354,68 @@ export default function Rituals() {
           <button className="btn-primary" style={{ width: '100%' }} onClick={saveMeta}>Save details</button>
         </div>
       )}
+
+       {/* Upcoming schedule preview */}
+       {showPreview && template && (
+         <div className="card" aria-label={`Upcoming ${selectedDay} ritual schedule`} style={{ marginBottom: 16 }}>
+           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+             <div>
+               <p style={{ fontSize: 11, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', margin: 0 }}>
+                 Upcoming schedule
+               </p>
+               <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '5px 0 0', lineHeight: 1.4 }}>
+                 The next dates for this {selectedDay} ritual. Previewing never changes completion history.
+               </p>
+             </div>
+             <span style={{ fontSize: 10, color: 'var(--text-ghost)', whiteSpace: 'nowrap' }}>
+               next {upcomingPreview.length}
+             </span>
+           </div>
+           {upcomingPreview.length === 0 ? (
+             <p style={{ fontSize: 12, color: 'var(--text-ghost)', margin: 0 }}>
+               No upcoming dates match this ritual schedule.
+             </p>
+           ) : (
+             <div role="list" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+               {upcomingPreview.map(({ date, items }) => (
+                 <div key={date} role="listitem" style={{ paddingTop: 10, borderTop: '0.5px solid var(--border-subtle)' }}>
+                   <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 7 }}>
+                     <strong style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 500 }}>
+                       {date === today ? 'Today' : formatDateLabel(date)}
+                     </strong>
+                     <span style={{ fontSize: 10, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>{date}</span>
+                   </div>
+                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                     {items.map(({ item, status }) => {
+                       const statusLabel = status === 'inherited' ? 'Inherited' : status === 'due' ? 'Due' : 'Skipped'
+                       const statusColor = status === 'inherited'
+                         ? 'var(--text-secondary)'
+                         : status === 'due'
+                           ? 'var(--accent-sage)'
+                           : 'var(--accent-rose)'
+                       return (
+                         <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                           <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, color: status === 'skipped' ? 'var(--text-muted)' : 'var(--text-secondary)' }}>
+                             {item.title}
+                           </span>
+                           <span style={{ flexShrink: 0, fontSize: 10, color: statusColor, border: `0.5px solid ${statusColor}`, borderRadius: 10, padding: '2px 7px' }}>
+                             {statusLabel}
+                           </span>
+                         </div>
+                       )
+                     })}
+                   </div>
+                 </div>
+               ))}
+             </div>
+           )}
+           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12, paddingTop: 10, borderTop: '0.5px solid var(--border-subtle)' }}>
+             <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Inherited = follows the ritual</span>
+             <span style={{ fontSize: 10, color: 'var(--accent-sage)' }}>Due = override is active</span>
+             <span style={{ fontSize: 10, color: 'var(--accent-rose)' }}>Skipped = override is inactive</span>
+           </div>
+         </div>
+       )}
 
       {/* Progress */}
       {dueItems.length > 0 && isToday && (

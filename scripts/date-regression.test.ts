@@ -8,6 +8,7 @@ import {
   getDayOfWeek,
   getDayOfWeekForDate,
   getTodayISO,
+  getUpcomingRoutineSchedule,
   recurrenceOccursOnDate,
   routineItemOccursOnDate,
 } from '../src/lib/date.ts'
@@ -92,6 +93,31 @@ test('routine item overrides intersect the parent schedule and honor date except
   assert.equal(routineItemOccursOnDate(mondayTemplate, dailyOverride, '2026-09-01'), false)
   assert.equal(routineItemOccursOnDate(mondayTemplate, skippedMonday, '2026-08-31'), false)
   assert.equal(routineItemOccursOnDate(mondayTemplate, neverItem, '2026-08-31'), false)
+})
+
+test('routine schedule preview labels inherited, due, and skipped items without writing history', () => {
+  const skippedDate = '2026-08-31'
+  const template = {
+    dayOfWeek: 'Monday' as const,
+    items: [
+      { id: 'inherited', title: 'Inherited', sortOrder: 0 },
+      { id: 'due', title: 'Due', sortOrder: 1, recurrence: rule('daily') },
+      { id: 'skipped', title: 'Skipped', sortOrder: 2, recurrence: { ...rule('daily'), exceptions: [skippedDate] } },
+      { id: 'never', title: 'Never', sortOrder: 3, recurrence: { ...rule('daily'), frequency: 'none' as const } },
+    ],
+  }
+
+  const preview = getUpcomingRoutineSchedule(template, '2026-08-24', 21, 2)
+  assert.deepEqual(preview.map(entry => entry.date), ['2026-08-24', skippedDate])
+  assert.deepEqual(
+    preview[1].items.map(entry => [entry.item.id, entry.status]),
+    [
+      ['inherited', 'inherited'],
+      ['due', 'due'],
+      ['skipped', 'skipped'],
+      ['never', 'skipped'],
+    ],
+  )
 })
 
 test('event date and time labels use configured timezone while date-only records stay stable', () => {

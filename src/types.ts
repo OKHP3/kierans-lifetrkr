@@ -125,6 +125,18 @@ export type RoutineCompletion = {
   completedItemIds: string[]
 }
 
+export type RoutineItemScheduleStatus = 'inherited' | 'due' | 'skipped'
+
+export type RoutinePreviewItem = {
+  item: RoutineItem
+  status: RoutineItemScheduleStatus
+}
+
+export type RoutineSchedulePreviewDate = {
+  date: string
+  items: RoutinePreviewItem[]
+}
+
 // ─── Habits ────────────────────────────────────────────────────────────────
 
 export type Habit = {

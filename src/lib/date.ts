@@ -1,4 +1,10 @@
-import type { RecurrenceRule, RoutineDayOfWeek, RoutineItem, RoutineTemplate } from '../types'
+import type {
+  RecurrenceRule,
+  RoutineDayOfWeek,
+  RoutineItem,
+  RoutineSchedulePreviewDate,
+  RoutineTemplate,
+} from '../types'
 import { DAYS_OF_WEEK, SEASONAL_DATES, DAILY_QUOTES } from '../constants'
 
 const DEFAULT_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -298,6 +304,36 @@ export function routineItemOccursOnDate(
 ): boolean {
   if (!routineTemplateOccursOnDate(template, date)) return false
   return item.recurrence ? recurrenceOccursOnDate(item.recurrence, date) : true
+}
+
+/**
+ * Expand a selected ritual template into upcoming configured-local calendar dates.
+ * The parent and item evaluators above remain the only source of scheduling truth.
+ */
+export function getUpcomingRoutineSchedule(
+  template: Pick<RoutineTemplate, 'dayOfWeek' | 'recurrence' | 'items'>,
+  startDate: string,
+  lookAheadDays = 366,
+  maxDates = 5,
+): RoutineSchedulePreviewDate[] {
+  if (lookAheadDays <= 0 || maxDates <= 0) return []
+
+  const preview: RoutineSchedulePreviewDate[] = []
+  for (let offset = 0; offset < lookAheadDays && preview.length < maxDates; offset += 1) {
+    const date = addCalendarDays(startDate, offset)
+    if (!routineTemplateOccursOnDate(template, date)) continue
+
+    preview.push({
+      date,
+      items: template.items.map(item => ({
+        item,
+        status: item.recurrence
+          ? routineItemOccursOnDate(template, item, date) ? 'due' : 'skipped'
+          : 'inherited',
+      })),
+    })
+  }
+  return preview
 }
 
 /** Returns true if a recurrence pattern is active on the given date (defaults to today). */
