@@ -10,11 +10,11 @@
 > deferred pending the owner-run evidence gates in
 > `docs/VISION-DELIVERY-MATRIX.md` and `docs/RELEASE-TRUTH-BASELINE.md`.
 >
-> **Deferred product scope (September 3, 2026):** The approved next-release
+> **Product scope (September 3, 2026):** The approved next-release
 > boundary is recorded in [`docs/PRODUCT-SCOPE-DECISION.md`](PRODUCT-SCOPE-DECISION.md).
 > Task ordering, multi-target habits, limited ritual-item metadata/optional state,
-> and ritual ordering are required. Item-level recurrence overrides and end-of-day
-> review are intentionally deferred; neither is a silent v1.0 gap.
+> ritual ordering, and limited item-level recurrence overrides are required.
+> End-of-day review remains intentionally deferred; it is not a silent v1.0 gap.
 
 ---
 
@@ -71,7 +71,7 @@ gates.
 - [x] Persist manual task order within Today and Someday, with keyboard move controls
 - [x] Support 1–12 habit repetitions per configured day and independent completion
 - [x] Support ritual-item title, time, description, optional marker, and keyboard ordering
-- [ ] Item-level recurrence overrides — intentionally deferred; parent recurrence remains
+- [x] Item-level recurrence overrides — optional item rules intersect with the parent schedule and preserve legacy items
 - [ ] End-of-day review — intentionally deferred; no review surface is claimed
 
 ---

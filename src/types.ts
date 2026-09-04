@@ -102,6 +102,8 @@ export type RoutineItem = {
   time?: string
   description?: string
   optional?: boolean
+  /** When present, the item is due only when this rule and its parent occur. */
+  recurrence?: RecurrenceRule
   sortOrder: number
 }
 

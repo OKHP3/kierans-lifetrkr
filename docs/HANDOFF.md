@@ -127,6 +127,7 @@ events and local task actions never write back to Google.
 - [ ] **BLOCKED — owner action:** Empty calendars/task lists show empty states rather than errors
 - [ ] **BLOCKED — owner action:** Expiring the GIS token shows reconnect guidance, and Disconnect clears the session token
 - [ ] **BLOCKED — owner action:** Connect, disconnect, and reconnect with a second Google account does not expose the first account's profile or local namespace
+- [ ] **BLOCKED — owner action:** With disposable/test data, seed guest plus two Google subjects with distinct historical completion dates; change each timezone, reload, and confirm dates remain unchanged and no namespace shows another's records. Record only labels, dates, results, and redacted key names.
 - [ ] **SOURCE/LOCAL PASS; OWNER RUNTIME PENDING:** Oracle generates and caches correctly; local fallback and simulated worker states passed on August 27, 2026
 - [ ] **PENDING TRANSFER:** README ownership section updated after the transfer is actually accepted
 

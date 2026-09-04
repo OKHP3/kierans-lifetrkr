@@ -1,4 +1,4 @@
-import type { RecurrenceRule, RoutineDayOfWeek } from '../types'
+import type { RecurrenceRule, RoutineDayOfWeek, RoutineItem, RoutineTemplate } from '../types'
 import { DAYS_OF_WEEK, SEASONAL_DATES, DAILY_QUOTES } from '../constants'
 
 const DEFAULT_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -233,6 +233,29 @@ export function recurrenceOccursOnDate(rule: RecurrenceRule | undefined, date: s
   }
 
   return rule.end.mode !== 'afterCount' || (rule.end.count > 0 && occurrenceIndex < rule.end.count)
+}
+
+/** Evaluate the existing day-of-week template plus its optional recurrence rule. */
+export function routineTemplateOccursOnDate(
+  template: Pick<RoutineTemplate, 'dayOfWeek' | 'recurrence'>,
+  date: string,
+): boolean {
+  if (getDayOfWeekForDate(date) !== template.dayOfWeek) return false
+  // A missing or "does not repeat" template rule preserves the legacy
+  // day-of-week schedule. An item override can use "none" to opt out.
+  return !template.recurrence || template.recurrence.frequency === 'none'
+    ? true
+    : recurrenceOccursOnDate(template.recurrence, date)
+}
+
+/** An item inherits its parent schedule unless it has an explicit override. */
+export function routineItemOccursOnDate(
+  template: Pick<RoutineTemplate, 'dayOfWeek' | 'recurrence'>,
+  item: Pick<RoutineItem, 'recurrence'>,
+  date: string,
+): boolean {
+  if (!routineTemplateOccursOnDate(template, date)) return false
+  return item.recurrence ? recurrenceOccursOnDate(item.recurrence, date) : true
 }
 
 /** Returns true if a recurrence pattern is active on the given date (defaults to today). */

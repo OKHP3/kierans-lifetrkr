@@ -3,6 +3,7 @@ import type { RecurrenceRule, DayOfWeek, RecurrenceFrequency } from '../types'
 interface Props {
   value: RecurrenceRule
   onChange: (rule: RecurrenceRule) => void
+  idPrefix?: string
 }
 
 const FREQ_OPTIONS: { value: RecurrenceFrequency; label: string }[] = [
@@ -29,7 +30,7 @@ const inputClass =
 
 const labelClass = 'block text-xs font-mono text-textSecondary mb-1'
 
-export default function RecurrenceEditor({ value, onChange }: Props) {
+export default function RecurrenceEditor({ value, onChange, idPrefix = 'recurrence' }: Props) {
   const { frequency, interval, daysOfWeek = [], end } = value
 
   function set(patch: Partial<RecurrenceRule>) {
@@ -58,7 +59,7 @@ export default function RecurrenceEditor({ value, onChange }: Props) {
       <div>
         <label className={labelClass}>Repeats</label>
         <select
-          id="recurrence-frequency"
+          id={`${idPrefix}-frequency`}
           aria-label="Repeat frequency"
           value={frequency}
           onChange={e => set({ frequency: e.target.value as RecurrenceFrequency })}
@@ -76,7 +77,7 @@ export default function RecurrenceEditor({ value, onChange }: Props) {
           <label className={labelClass}>Every</label>
           <div className="flex items-center gap-2">
             <input
-              id="recurrence-interval"
+              id={`${idPrefix}-interval`}
               type="number"
               aria-label={`Repeat every number of ${unitLabel}s`}
               min={1}
@@ -128,7 +129,7 @@ export default function RecurrenceEditor({ value, onChange }: Props) {
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
-                name="recurrence-end"
+                name={`${idPrefix}-end`}
                 aria-label="Never ends"
                 checked={end.mode === 'never'}
                 onChange={() => set({ end: { mode: 'never' } })}

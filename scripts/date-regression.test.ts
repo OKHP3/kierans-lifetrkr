@@ -9,6 +9,7 @@ import {
   getDayOfWeekForDate,
   getTodayISO,
   recurrenceOccursOnDate,
+  routineItemOccursOnDate,
 } from '../src/lib/date.ts'
 
 const instantNearUtcMidnight = new Date('2026-09-03T01:30:00Z')
@@ -75,6 +76,21 @@ test('weekly, monthly, yearly, and custom recurrence use calendar dates', () => 
   const custom = rule('custom', '2026-08-24', { interval: 3 })
   assert.equal(recurrenceOccursOnDate(custom, '2026-08-27'), true)
   assert.equal(recurrenceOccursOnDate(custom, '2026-08-28'), false)
+})
+
+test('routine item overrides intersect the parent schedule and honor date exceptions', () => {
+  const mondayTemplate = { dayOfWeek: 'Monday' as const }
+  const inheritedItem = {}
+  const dailyOverride = { recurrence: rule('daily') }
+  const skippedMonday = { recurrence: { ...rule('daily'), exceptions: ['2026-08-31'] } }
+  const neverItem = { recurrence: { ...rule('daily'), frequency: 'none' as const } }
+
+  assert.equal(routineItemOccursOnDate(mondayTemplate, inheritedItem, '2026-08-31'), true)
+  assert.equal(routineItemOccursOnDate(mondayTemplate, inheritedItem, '2026-09-01'), false)
+  assert.equal(routineItemOccursOnDate(mondayTemplate, dailyOverride, '2026-08-31'), true)
+  assert.equal(routineItemOccursOnDate(mondayTemplate, dailyOverride, '2026-09-01'), false)
+  assert.equal(routineItemOccursOnDate(mondayTemplate, skippedMonday, '2026-08-31'), false)
+  assert.equal(routineItemOccursOnDate(mondayTemplate, neverItem, '2026-08-31'), false)
 })
 
 test('event date and time labels use configured timezone while date-only records stay stable', () => {

@@ -5,7 +5,7 @@ import type {
   RoutineDayOfWeek, RoutineItem, OracleReading,
 } from '../types'
 import { storage } from '../lib/storage'
-import { getTodayISO } from '../lib/date'
+import { getTodayISO, routineItemOccursOnDate } from '../lib/date'
 import { DAYS_OF_WEEK } from '../constants'
 import { normalizeTaskOrder, nextTaskOrder, reorderTasks } from '../lib/taskOrdering'
 
@@ -244,6 +244,9 @@ function reducer(state: AppState, action: Action): AppState {
 
     case 'TOGGLE_ROUTINE_ITEM': {
       const { templateId, itemId, date } = action.payload
+      const template = state.routineTemplates.find(t => t.id === templateId)
+      const item = template?.items.find(i => i.id === itemId)
+      if (!template || !item || !routineItemOccursOnDate(template, item, date)) return state
       const existing = state.routineCompletions.find(
         c => c.routineTemplateId === templateId && c.date === date
       )

@@ -77,11 +77,13 @@ uses `RecurrenceRule` and optional compatibility fields; older PRD type listings
 not be used to infer current payloads.
 
 The next-release scope decision adds optional `Task.sortOrder`,
-`Habit.timesPerDay`, `RoutineItem.description`, and indexed
-`HabitCompletion.completionIndex` values. Missing values remain valid legacy data
-and are defaulted on load or during completion evaluation; no persistence key or
-namespace changes. Item-level recurrence overrides and end-of-day review are
-explicitly deferred rather than release gaps. See
+`Habit.timesPerDay`, `RoutineItem.description`, `RoutineItem.recurrence`, and
+indexed `HabitCompletion.completionIndex` values. Missing values remain valid
+legacy data and are defaulted on load or during completion evaluation; no
+persistence key or namespace changes. An item recurrence override is evaluated
+with the existing parent template schedule, and date-only completion history is
+not rewritten when the rule changes. End-of-day review remains explicitly
+deferred. See
 [`docs/PRODUCT-SCOPE-DECISION.md`](PRODUCT-SCOPE-DECISION.md).
 
 ## 4. External and browser-facing services
@@ -107,6 +109,7 @@ helpers. Real-account lifecycle testing remains a handoff verification item.
 | The app is client-only and has no publisher database | Supported | No server entrypoint or database; browser storage in source | Clean checkout confirms no backend runtime is required |
 | Local data is namespaced by Google subject | Supported in code | `storage.ts`, profile namespace logic, and storage failure harness | Account-switch journey proves isolation and guest recovery |
 | Manual core workflows persist across reload | Provisional | Reducer and persistence effects exist | Browser journey covering create/edit/complete/delete/reload |
+| Ritual item recurrence overrides preserve inherited schedules and date exceptions | Supported in code | Optional `RoutineItem.recurrence`, shared calendar-date evaluator, reducer guard, and regression harness | Browser journey covers create/edit/complete/reload and the configured-timezone/account paths |
 | Someday is the current deferred-task surface | Supported | Route, navigation, and page use Someday; status is `backlog` | Route and navigation smoke test; no active Archive route |
 | Google Calendar and Tasks are usable | Provisional | Fetch clients, UI states, and local pagination/error harness pass; real-account evidence is recorded separately | Real OAuth test account: connect, refresh, expiry, disconnect, account switch, empty/error data |
 | Google access is read-only | Supported in code and local harness | Read-only scopes, GET-only client paths, and no Google mutation helpers | Real OAuth test account confirms requested consent and API behavior |
@@ -277,6 +280,7 @@ rules requires a fresh identity and evidence pass.
 |---|---|---|
 | `npm run check` | PASS | TypeScript completed with no errors |
 | `npm run check:a11y` | PASS | Accessibility source check covered 30 JSX/TSX files |
+| `npm run test:account-isolation` | PASS | Guest plus two simulated Google subjects retained distinct historical completion dates after timezone updates and reload reads |
 | `npm run test:scope` | PASS | Three regression tests cover legacy task ordering and indexed habit completion |
 | `npm run test:service-worker` | PASS | One regression test passed |
 | `npm run test:sync` | PASS | Nine sync regression tests passed |
@@ -546,7 +550,36 @@ Owner-run browser timezone/DST acceptance, physical-device behavior, storage
 quota/private-mode behavior, and Google OAuth/API lifecycle checks remain
 separate manual evidence and are not claimed by this addendum.
 
-## 16. Ownership handoff execution addendum
+## 16. Account isolation and historical-date verification addendum
+
+**Verification date:** September 3, 2026
+**Scope:** local storage namespace and date-only completion preservation
+**Evidence:** `npm run test:account-isolation`
+
+The local regression harness seeded one guest namespace and two simulated Google
+subject namespaces with different routine and habit completion dates. It then
+changed each namespace's stored timezone and performed fresh storage reads to
+represent a reload. All three namespaces retained their original date-only
+completion records, and each read returned only the active namespace's records.
+The harness uses an in-memory `localStorage` implementation only; it does not
+invoke OAuth, Google APIs, or any external service and does not send local
+records outside the process.
+
+| Check | Result | Boundary |
+|---|---|---|
+| Guest historical routine and habit dates survive a timezone update and reload read | PASS | Local namespace harness |
+| Google subject A and subject B historical routine and habit dates survive a timezone update and reload read | PASS | Local namespace harness |
+| Guest, subject A, and subject B completion keys remain distinct | PASS | Local namespace harness |
+| Browser storage quota/private mode and real reload persistence | NOT RUN | Requires owner-run browser/device evidence; simulated storage failures are recorded separately |
+| Google consent, token expiry/reconnect, disconnect, and real account switching | NOT RUN | Requires owner-run disposable/test-account OAuth journey; no token or personal record was used |
+
+This closes the deterministic local regression gap for historical-date
+preservation but does not upgrade the real browser account-switch claim. The
+owner-run matrix must record only profile labels, timezone changes, pass/fail
+results, and redacted key names; never record tokens, email addresses, or
+completion contents.
+
+## 17. Ownership handoff execution addendum
 
 **Execution date:** August 27, 2026
 **Performer:** Replit Agent
@@ -567,21 +600,24 @@ live optional-worker activation remain unresolved. This addendum records
 handoff readiness evidence; it does not promote the release beyond
 `approve-with-limits` or claim stable/v1.0 approval.
 
-## 17. Deferred product scope addendum
+## 18. Product scope increment addendum
 
 **Decision date:** September 3, 2026
 **Decision record:** [`docs/PRODUCT-SCOPE-DECISION.md`](PRODUCT-SCOPE-DECISION.md)
 
 The approved next-release increment is deliberately small: persisted local task
 ordering with labelled keyboard controls, 1–12 independently completable habit
-repetitions, lightweight ritual-item metadata/optional state, and persisted ritual
-ordering. The source preserves the existing client-only architecture, storage
-namespace, configured-timezone date model, read-only Google boundary, and oracle
-privacy boundary.
+repetitions, lightweight ritual-item metadata/optional state, persisted ritual
+ordering, and limited item-level recurrence overrides. Item rules are optional
+fields on existing routine items, inherit the parent when absent, and intersect
+the parent schedule when present. Explicit date exceptions can therefore skip an
+individual item without changing its parent ritual. The source preserves the
+existing client-only architecture, storage namespace, configured-timezone date
+model, read-only Google boundary, and oracle privacy boundary.
 
-The following are not missing parts of an otherwise complete v1.0: item-level
-recurrence overrides and end-of-day review are intentionally deferred. They have
-no current release acceptance claim or stable-release implication. The source
-regression suite covers migration/order and habit completion semantics; the
-standard type, accessibility, build, artifact, and owner-run release gates still
-apply, and this addendum does not change the `approve-with-limits` posture.
+End-of-day review remains intentionally deferred; it is not a missing part of an
+otherwise complete v1.0. The source regression suite covers migration/order,
+habit completion semantics, calendar-date recurrence, item schedule intersection,
+reload persistence, and account namespaces. The standard type, accessibility,
+build, artifact, and owner-run release gates still apply, and this addendum does
+not change the `approve-with-limits` posture.

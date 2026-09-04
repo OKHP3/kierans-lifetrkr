@@ -164,7 +164,8 @@ workflow, or deployment change.
 ### Fresh local validation recorded for this reconciliation
 
 On September 3, 2026, the current tree passed `npm run check`,
-`npm run check:a11y`, `npm run test:service-worker`, `npm run test:sync`,
+`npm run check:a11y`, `npm run test:account-isolation`,
+`npm run test:service-worker`, `npm run test:sync`,
 `npm run build`, `npm run release:check`,
 `node scripts/inspect-artifact.mjs`, and `git diff --check`.
 
@@ -175,6 +176,24 @@ The dirty suffix is from four pre-existing deleted `attached_assets/` files;
 those files were not restored or modified. These are local/source and bounded
 regression results only, not live-account, live-device, manual-accessibility,
 live-worker, storage-quota, or ownership evidence.
+
+## Account isolation and historical-date verification addendum
+
+**Verification date:** September 3, 2026
+**Evidence:** `npm run test:account-isolation`; detailed results in
+[`docs/RELEASE-TRUTH-BASELINE.md`](RELEASE-TRUTH-BASELINE.md)
+
+The local harness seeded guest, subject-A, and subject-B namespaces with
+different routine and habit completion dates, changed each stored timezone, and
+performed fresh reads representing reload. The historical date values remained
+unchanged and each namespace returned only its own records. This harness used
+in-memory local storage and made no OAuth, Google API, or external-service
+request.
+
+Real browser quota/private-mode behavior and the real Google OAuth lifecycle
+(including expiry, reconnect, disconnect, and two-account switching) remain
+**NOT RUN** and owner-controlled. They are not inferred from the local harness
+or from the presence of the Google client configuration.
 
 ## Checks not run
 

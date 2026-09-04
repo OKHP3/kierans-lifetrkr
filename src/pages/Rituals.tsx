@@ -6,7 +6,7 @@ import CategoryPicker from '../components/CategoryPicker'
 import TagInput from '../components/TagInput'
 import DescriptionField from '../components/DescriptionField'
 import RecurrenceEditor from '../components/RecurrenceEditor'
-import { getTodayISO, getDayOfWeek } from '../lib/date'
+import { getTodayISO, getDayOfWeek, routineItemOccursOnDate } from '../lib/date'
 import { DAYS_OF_WEEK, DAYS_SHORT, DEFAULT_CATEGORIES, makeDefaultRecurrence } from '../constants'
 import type { RoutineDayOfWeek, RecurrenceRule, RoutineItem } from '../types'
 
@@ -27,6 +27,7 @@ export default function Rituals() {
   const [newTime, setNewTime] = useState('')
   const [newDescription, setNewDescription] = useState('')
   const [newOptional, setNewOptional] = useState(false)
+  const [newRecurrence, setNewRecurrence] = useState<RecurrenceRule | undefined>()
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
 
   // Filter & sort state
@@ -48,8 +49,12 @@ export default function Rituals() {
   const completion = state.routineCompletions.find(
     c => c.routineTemplateId === template?.id && c.date === today
   )
+  const dueItems = template
+    ? template.items.filter(item => routineItemOccursOnDate(template, item, today))
+    : []
+  const visibleItems = editMode || !isToday ? (template?.items ?? []) : dueItems
   const isItemDone = (id: string) => completion?.completedItemIds.includes(id) ?? false
-  const doneCount = template ? template.items.filter(i => isItemDone(i.id)).length : 0
+  const doneCount = dueItems.filter(i => isItemDone(i.id)).length
   const templateCategory = template?.categoryId
     ? DEFAULT_CATEGORIES.find(c => c.id === template.categoryId)
     : undefined
@@ -130,6 +135,7 @@ export default function Rituals() {
           time: newTime.trim() || undefined,
           description: newDescription.trim() || undefined,
           optional: newOptional || undefined,
+          recurrence: newRecurrence,
           sortOrder: template.items.length,
         },
       },
@@ -138,6 +144,7 @@ export default function Rituals() {
     setNewTime('')
     setNewDescription('')
     setNewOptional(false)
+    setNewRecurrence(undefined)
     setShowAdd(false)
   }
 
@@ -169,8 +176,18 @@ export default function Rituals() {
   }
 
   function toggleItem(itemId: string) {
-    if (!template || !isToday) return
+    const item = template?.items.find(candidate => candidate.id === itemId)
+    if (!template || !isToday || !item || !routineItemOccursOnDate(template, item, today)) return
     dispatch({ type: 'TOGGLE_ROUTINE_ITEM', payload: { templateId: template.id, itemId, date: today } })
+  }
+
+  function resetNewItemForm() {
+    setShowAdd(false)
+    setNewTitle('')
+    setNewTime('')
+    setNewDescription('')
+    setNewOptional(false)
+    setNewRecurrence(undefined)
   }
 
   return (
@@ -323,17 +340,19 @@ export default function Rituals() {
       )}
 
       {/* Progress */}
-      {template && template.items.length > 0 && isToday && (
+      {dueItems.length > 0 && isToday && (
         <p style={{ fontSize: 11, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace', marginBottom: 12 }}>
-          {doneCount}/{template.items.length} complete
+          {doneCount}/{dueItems.length} complete
         </p>
       )}
 
       {/* Items */}
       <div className="card">
-        {!template || template.items.length === 0 ? (
+        {!template || template.items.length === 0 || (!editMode && isToday && visibleItems.length === 0) ? (
           <p style={{ fontSize: 13, color: 'var(--text-ghost)', margin: 0, padding: '4px 0' }}>
-            No rituals for {selectedDay}.{' '}
+            {template && template.items.length > 0 && isToday
+              ? 'No ritual items are scheduled today.'
+              : `No rituals for ${selectedDay}.`}{' '}
             {!editMode && (
               <button onClick={() => setEditMode(true)} style={{ background: 'none', border: 'none', color: 'var(--accent-amethyst)', cursor: 'pointer', fontSize: 13, padding: 0 }}>
                 Add some →
@@ -342,7 +361,7 @@ export default function Rituals() {
           </p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {template.items.map((item, index) => (
+            {visibleItems.map((item, index) => (
               <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 {editMode ? (
                   <>
@@ -379,6 +398,31 @@ export default function Rituals() {
                       <input type="checkbox" aria-label={`Mark ${item.title} as optional`} checked={item.optional ?? false} onChange={event => updateItem(item, { optional: event.target.checked || undefined })} />
                       Optional ritual item
                     </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-secondary)' }}>
+                      <input
+                        type="checkbox"
+                        aria-label={`Use a different schedule for ${item.title}`}
+                        checked={item.recurrence !== undefined}
+                        onChange={event => updateItem(item, {
+                          recurrence: event.target.checked
+                            ? { ...makeDefaultRecurrence(today), frequency: 'daily' }
+                            : undefined,
+                        })}
+                      />
+                      Override parent schedule
+                    </label>
+                    {item.recurrence && (
+                      <div style={{ padding: '8px 10px', borderLeft: '2px solid var(--accent-amethyst)', background: 'var(--surface-raised)' }}>
+                        <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: '0 0 8px', lineHeight: 1.4 }}>
+                          This item is due only when both the parent ritual and this schedule occur.
+                        </p>
+                        <RecurrenceEditor
+                          value={item.recurrence}
+                          onChange={recurrence => updateItem(item, { recurrence })}
+                          idPrefix={`item-${item.id}-recurrence`}
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -397,9 +441,32 @@ export default function Rituals() {
             <input type="checkbox" aria-label="Mark ritual item as optional" checked={newOptional} onChange={e => setNewOptional(e.target.checked)} />
             Optional ritual item
           </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 12, color: 'var(--text-secondary)' }}>
+            <input
+              type="checkbox"
+              aria-label="Use a different schedule for new ritual item"
+              checked={newRecurrence !== undefined}
+              onChange={e => setNewRecurrence(e.target.checked
+                ? { ...makeDefaultRecurrence(today), frequency: 'daily' }
+                : undefined)}
+            />
+            Override parent schedule
+          </label>
+          {newRecurrence && (
+            <div style={{ marginTop: 10, padding: '8px 10px', borderLeft: '2px solid var(--accent-amethyst)', background: 'var(--surface-raised)' }}>
+              <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: '0 0 8px', lineHeight: 1.4 }}>
+                This item is due only when both the parent ritual and this schedule occur.
+              </p>
+              <RecurrenceEditor
+                value={newRecurrence}
+                onChange={setNewRecurrence}
+                idPrefix="new-item-recurrence"
+              />
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
             <button className="btn-primary" style={{ flex: 1 }} onClick={addItem}>Add</button>
-            <button className="btn-ghost" onClick={() => { setShowAdd(false); setNewTitle(''); setNewTime(''); setNewDescription(''); setNewOptional(false) }}>Cancel</button>
+            <button className="btn-ghost" onClick={resetNewItemForm}>Cancel</button>
           </div>
         </div>
       )}
