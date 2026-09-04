@@ -126,8 +126,8 @@ events and local task actions never write back to Google.
 - [ ] **BLOCKED — owner action:** Google Calendar all-day and timed events display correctly across the configured timezone
 - [ ] **BLOCKED — owner action:** Empty calendars/task lists show empty states rather than errors
 - [ ] **BLOCKED — owner action:** Expiring the GIS token shows reconnect guidance, and Disconnect clears the session token
-- [ ] **BLOCKED — owner action:** Connect, disconnect, and reconnect with a second Google account does not expose the first account's profile or local namespace
-- [ ] **BLOCKED — owner action:** With disposable/test data, seed guest plus two Google subjects with distinct historical completion dates; change each timezone, reload, and confirm dates remain unchanged and no namespace shows another's records. Record only labels, dates, results, and redacted key names.
+- [x] **BROWSER-SIMULATED PASS; REAL-ACCOUNT OWNER GATE:** Disposable guest plus two Google-subject labels retained separate local namespaces, historical routine/habit dates, and changed timezones after real Chromium reloads; disconnect, reconnect, and expiry recovery also passed. No personal data or token was recorded. See `docs/GOOGLE-READONLY-EVIDENCE.md`.
+- [ ] **BLOCKED — owner action:** Repeat the connect, disconnect, reconnect, and account-switch journey against two real disposable Google accounts; confirm it does not expose the first account's profile or local namespace.
 - [ ] **SOURCE/LOCAL PASS; OWNER RUNTIME PENDING:** Oracle generates and caches correctly; local fallback and simulated worker states passed on August 27, 2026
 - [ ] **PENDING TRANSFER:** README ownership section updated after the transfer is actually accepted
 
@@ -140,6 +140,17 @@ events and local task actions never write back to Google.
 | Preview | PASS under current Jamie-owned Repl | Replit Agent; workflow restarted on port 5000, desktop first-launch capture had no application console errors |
 | Published deployment | PASS for shell/assets and CI/Pages transport | Replit Agent; current commit and run links recorded above; route-specific authenticated rendering remains unclaimed |
 | Account transfer, secret re-entry, GCP IAM/client, and owner smoke | BLOCKED / NOT RUN | Owner action required; no irreversible transfer was attempted |
+
+### Browser privacy matrix evidence — September 4, 2026
+
+| Area | Result | Evidence boundary |
+|---|---|---|
+| Guest, subject-a, and subject-b historical routine/habit dates after timezone change and reload | PASS | Chromium rendered-app journey; dates `2026-08-31`/`2026-09-01`, `2026-07-15`/`2026-07-16`, and `2026-06-10`/`2026-06-11` retained |
+| Redacted namespace key inventory | PASS | Only `lifetrkr:<profile>:...` key names and `lifetrkr:welcomed` recorded |
+| Disconnect and reconnect | PASS | Placeholder GIS/userinfo path; profile/session cleared and a different disposable subject restored without cross-namespace history |
+| Token expiry and recovery | PASS | Placeholder GIS callback; expiry banner appeared and cleared after recovery |
+| Storage failure and private-mode behavior | PASS | Forced write failure showed warning/retry; native Chromium incognito data disappeared after browser restart |
+| Real Google consent/API/account switching | PENDING OWNER RUN | No real Google account or credential was available to this agent; no claim is made for the external OAuth journey |
 
 ## Release risk register
 

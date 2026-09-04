@@ -1,5 +1,6 @@
 - [v3.0 architecture](v3-architecture.md) — HashRouter + client-side GIS auth; no Express; gh-pages deploy; src/ at root (not client/src/)
 - [Data schema v3](data-schema-v3.md) — routineTemplates[] array (not object), completions as arrays, task status lowercase, namespaced storage lifetrkr:{sub}:entity
 - [Oracle delivery decision](oracle-delivery.md) — local tarot/celestial fallback with an optional server-side worker; no provider credential belongs in the client
+- [Browser privacy evidence](browser-privacy-evidence.md) — rendered-browser account tests must separate disposable GIS stubs from real Google OAuth claims and record only redacted labels, dates, and keys
 - [OKHP3 skill standards](okhp3-skill-standards.md) — agentskills.io uses `assertions` (not `expectations`); footer uses em dash `—` per cataloger; Gotchas sections are highest-ROI content per agentskills.io docs
 - [GitHub sync transport](github-sync-connection.md) — bound GitHub OAuth authorizes API access but does not provide Git CLI credentials; keep origin credential-free and use safe API fallback

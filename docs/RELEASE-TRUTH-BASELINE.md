@@ -571,7 +571,7 @@ records outside the process.
 | Guest historical routine and habit dates survive a timezone update and reload read | PASS | Local namespace harness |
 | Google subject A and subject B historical routine and habit dates survive a timezone update and reload read | PASS | Local namespace harness |
 | Guest, subject A, and subject B completion keys remain distinct | PASS | Local namespace harness |
-| Browser storage quota/private mode and real reload persistence | NOT RUN | Requires owner-run browser/device evidence; simulated storage failures are recorded separately |
+| Disposable Chromium reload persistence and storage failure/private-mode behavior | PASS | September 4, 2026 browser matrix; native incognito probe was absent after browser restart and forced write failure showed warning/retry |
 | Google consent, token expiry/reconnect, disconnect, and real account switching | NOT RUN | Requires owner-run disposable/test-account OAuth journey; no token or personal record was used |
 
 This closes the deterministic local regression gap for historical-date
@@ -630,3 +630,41 @@ calendar-date recurrence, item schedule intersection, reload persistence,
 account namespaces, and the evening projection. The standard type,
 accessibility, build, artifact, and owner-run release gates still apply, and
 this addendum does not change the `approve-with-limits` posture.
+
+## 19. Disposable browser privacy matrix addendum
+
+**Verification date:** September 4, 2026
+**Environment:** Chromium 152 headless on Replit Linux, isolated temporary
+profile, local Vite workflow on port 5000
+**Evidence record:** `docs/GOOGLE-READONLY-EVIDENCE.md`
+
+The rendered app was exercised with disposable guest, subject-a, and subject-b
+labels. Each profile received a distinct timezone and date-only routine and
+habit history. The visible timezone selector was changed, the page was
+reloaded, and the active namespace was checked without printing local records.
+
+| Profile label | Timezone change | Retained routine date | Retained habit date | Result |
+|---|---|---:|---:|---|
+| guest | `America/Los_Angeles` → `Asia/Tokyo` | `2026-08-31` | `2026-09-01` | PASS |
+| subject-a | `Europe/London` → `Australia/Sydney` | `2026-07-15` | `2026-07-16` | PASS |
+| subject-b | `America/New_York` → `Pacific/Auckland` | `2026-06-10` | `2026-06-11` | PASS |
+
+Disconnect cleared the disposable profile and session keys while retaining
+subject-a's namespace. Reconnect restored subject-b's disposable profile and
+history. An expired placeholder session displayed the paused-sync banner and
+recovered through the rendered reconnect action. A forced browser write failure
+displayed the storage warning and retry action. Native Chromium incognito
+storage was available within one session and absent after browser restart.
+
+Only redacted key names were retained:
+`lifetrkr:welcomed`, `lifetrkr:<profile>:settings`,
+`lifetrkr:<profile>:routineTemplates`,
+`lifetrkr:<profile>:routineCompletions`, `lifetrkr:<profile>:habits`, and
+`lifetrkr:<profile>:habitCompletions`.
+
+The GIS and userinfo steps used disposable in-page stubs so the application
+connect/disconnect and expiry state paths could be exercised without a real
+credential. Real Google consent, Google API data, and switching between real
+Google accounts remain owner-run gates. This browser evidence therefore
+strengthens the client-side privacy and persistence claim without upgrading
+the release beyond `approve-with-limits`.
