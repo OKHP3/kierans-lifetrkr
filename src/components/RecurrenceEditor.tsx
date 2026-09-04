@@ -4,6 +4,7 @@ interface Props {
   value: RecurrenceRule
   onChange: (rule: RecurrenceRule) => void
   idPrefix?: string
+  exceptionDate?: string
 }
 
 const FREQ_OPTIONS: { value: RecurrenceFrequency; label: string }[] = [
@@ -30,8 +31,13 @@ const inputClass =
 
 const labelClass = 'block text-xs font-mono text-textSecondary mb-1'
 
-export default function RecurrenceEditor({ value, onChange, idPrefix = 'recurrence' }: Props) {
-  const { frequency, interval, daysOfWeek = [], end } = value
+export default function RecurrenceEditor({
+  value,
+  onChange,
+  idPrefix = 'recurrence',
+  exceptionDate,
+}: Props) {
+  const { frequency, interval, daysOfWeek = [], end, exceptions = [] } = value
 
   function set(patch: Partial<RecurrenceRule>) {
     onChange({ ...value, ...patch })
@@ -191,6 +197,24 @@ export default function RecurrenceEditor({ value, onChange, idPrefix = 'recurren
             </label>
           </div>
         </div>
+      )}
+
+      {exceptionDate && frequency !== 'none' && (
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            aria-label={`Skip ${exceptionDate}`}
+            checked={exceptions.includes(exceptionDate)}
+            onChange={event => onChange({
+              ...value,
+              exceptions: event.target.checked
+                ? [...new Set([...exceptions, exceptionDate])]
+                : exceptions.filter(date => date !== exceptionDate),
+            })}
+            className="accent-accentAmethyst"
+          />
+          <span className="text-sm text-textPrimary">Skip {exceptionDate}</span>
+        </label>
       )}
     </div>
   )

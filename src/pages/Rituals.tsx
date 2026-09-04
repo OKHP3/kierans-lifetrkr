@@ -420,6 +420,7 @@ export default function Rituals() {
                           value={item.recurrence}
                           onChange={recurrence => updateItem(item, { recurrence })}
                           idPrefix={`item-${item.id}-recurrence`}
+                          exceptionDate={today}
                         />
                       </div>
                     )}
@@ -461,6 +462,7 @@ export default function Rituals() {
                 value={newRecurrence}
                 onChange={setNewRecurrence}
                 idPrefix="new-item-recurrence"
+                exceptionDate={today}
               />
             </div>
           )}

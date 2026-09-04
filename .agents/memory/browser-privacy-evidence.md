@@ -17,3 +17,15 @@ recording personal data that the evidence plan explicitly excludes.
 handoff records. Record only profile labels, timezone changes, date values
 needed for pass/fail, and redacted localStorage key names; keep real Google
 checks as a separate owner-run gate.
+
+For recurrence journeys, also record the configured timezone and the exact
+calendar date used by the browser check. A date-only result without its
+timezone is not reproducible evidence when due-state rules or exceptions are
+being evaluated.
+
+**Why:** The Rituals UI derives both the visible due state and completion guard
+from the configured calendar date, not necessarily the host browser's zone.
+
+**How to apply:** Seed a disposable browser profile with an explicit timezone,
+log the resulting date, and keep prior completion records in the journey so a
+skipped item can be shown not to rewrite history.

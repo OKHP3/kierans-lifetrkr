@@ -22,6 +22,7 @@
     "test:settings-timezone": "bun test scripts/settings-timezone-regression.test.ts",
     "test:account-isolation": "bun test scripts/account-isolation-regression.test.ts",
     "test:scope": "bun test scripts/scope-regression.test.ts",
+    "test:rituals-browser": "node scripts/rituals-browser-regression.mjs",
     "sync": "bash scripts/sync.sh",
     "deploy": "npm run build"
   },
