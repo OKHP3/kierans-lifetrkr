@@ -11,6 +11,7 @@ import {
   recurrenceOccursOnDate,
   routineItemOccursOnDate,
 } from '../src/lib/date.ts'
+import { getLocalHour, isEveningWrapUpAvailable } from '../src/lib/eveningWrapUp.ts'
 
 const instantNearUtcMidnight = new Date('2026-09-03T01:30:00Z')
 
@@ -100,4 +101,17 @@ test('event date and time labels use configured timezone while date-only records
   assert.equal(formatEventTime(event, false, 'America/Los_Angeles'), '6:30 PM')
   assert.equal(formatEventDate('2026-09-03', true, 'America/Los_Angeles'), 'Sep 3')
   assert.equal(formatEventTime('2026-09-03T06:30:00', false, 'Asia/Tokyo'), '6:30 AM')
+})
+
+test('evening wrap-up availability follows the configured local hour', () => {
+  const beforeEvening = new Date('2026-09-03T22:59:59Z')
+  const evening = new Date('2026-09-03T23:00:00Z')
+  assert.equal(getLocalHour('America/Chicago', beforeEvening), 17)
+  assert.equal(getLocalHour('America/Chicago', evening), 18)
+  assert.equal(isEveningWrapUpAvailable('America/Chicago', beforeEvening), false)
+  assert.equal(isEveningWrapUpAvailable('America/Chicago', evening), true)
+
+  const tokyoMorning = new Date('2026-09-03T09:00:00Z')
+  assert.equal(getLocalHour('Asia/Tokyo', tokyoMorning), 18)
+  assert.equal(isEveningWrapUpAvailable('Asia/Tokyo', tokyoMorning), true)
 })

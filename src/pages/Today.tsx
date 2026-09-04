@@ -1,7 +1,9 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useApp, genId } from '../context/AppContext'
 import CheckCircle from '../components/CheckCircle'
+import EveningWrapUp from '../components/EveningWrapUp'
 import { getCalendarDate, getTodayISO } from '../lib/date'
+import { buildEveningWrapUpSummary, isEveningWrapUpAvailable } from '../lib/eveningWrapUp'
 import { useGoogleTasks } from '../hooks/useGoogleTasks'
 import type { TaskPriority } from '../types'
 import { sortTasksByOrder } from '../lib/taskOrdering'
@@ -22,8 +24,26 @@ export default function Today() {
   const [newPriority, setNewPriority] = useState<TaskPriority>('normal')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [showDone, setShowDone] = useState(false)
+  const [showEveningWrapUp, setShowEveningWrapUp] = useState(false)
+  const [clockTick, setClockTick] = useState(() => Date.now())
 
-  const today = getTodayISO(state.settings.timezone)
+  useEffect(() => {
+    const interval = window.setInterval(() => setClockTick(Date.now()), 60_000)
+    return () => window.clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    setShowEveningWrapUp(false)
+  }, [state.profile?.sub])
+
+  const now = new Date(clockTick)
+  const today = getTodayISO(state.settings.timezone, now)
+  const eveningWrapUpAvailable = isEveningWrapUpAvailable(state.settings.timezone, now)
+  const eveningSummary = useMemo(() => buildEveningWrapUpSummary(state, today), [
+    state,
+    today,
+  ])
+  const closeEveningWrapUp = useCallback(() => setShowEveningWrapUp(false), [])
 
   const activeTasks = useMemo(() =>
     sortTasksByOrder(state.tasks.filter(t => t.status === 'today')),
@@ -195,6 +215,23 @@ export default function Today() {
         </div>
       )}
 
+      {eveningWrapUpAvailable && (
+        <section className="evening-wrap-up-entry" aria-labelledby="evening-wrap-up-entry-title">
+          <div>
+            <p className="section-label" style={{ marginTop: 0 }}>EVENING WRAP-UP</p>
+            <h2 id="evening-wrap-up-entry-title">Ready to set today down?</h2>
+            <p>See what was completed and what can wait. Nothing gets changed.</p>
+          </div>
+          <button
+            className="btn-ghost"
+            aria-haspopup="dialog"
+            onClick={() => setShowEveningWrapUp(true)}
+          >
+            Open review
+          </button>
+        </section>
+      )}
+
       {/* Add form */}
       {showAdd && (
         <div className="card" style={{ marginTop: 12 }}>
@@ -214,6 +251,10 @@ export default function Today() {
 
       {!showAdd && (
         <button className="fab" onClick={() => setShowAdd(true)}>+</button>
+      )}
+
+      {showEveningWrapUp && eveningWrapUpAvailable && (
+        <EveningWrapUp summary={eveningSummary} onClose={closeEveningWrapUp} />
       )}
     </div>
   )

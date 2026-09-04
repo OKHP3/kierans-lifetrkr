@@ -82,8 +82,9 @@ indexed `HabitCompletion.completionIndex` values. Missing values remain valid
 legacy data and are defaulted on load or during completion evaluation; no
 persistence key or namespace changes. An item recurrence override is evaluated
 with the existing parent template schedule, and date-only completion history is
-not rewritten when the rule changes. End-of-day review remains explicitly
-deferred. See
+not rewritten when the rule changes. The limited evening wrap-up is an in-memory
+projection and adds no persistence key or completion state; broader review
+analytics remain deferred. See
 [`docs/PRODUCT-SCOPE-DECISION.md`](PRODUCT-SCOPE-DECISION.md).
 
 ## 4. External and browser-facing services
@@ -602,7 +603,7 @@ handoff readiness evidence; it does not promote the release beyond
 
 ## 18. Product scope increment addendum
 
-**Decision date:** September 3, 2026
+**Decision date:** September 4, 2026
 **Decision record:** [`docs/PRODUCT-SCOPE-DECISION.md`](PRODUCT-SCOPE-DECISION.md)
 
 The approved next-release increment is deliberately small: persisted local task
@@ -615,9 +616,17 @@ individual item without changing its parent ritual. The source preserves the
 existing client-only architecture, storage namespace, configured-timezone date
 model, read-only Google boundary, and oracle privacy boundary.
 
-End-of-day review remains intentionally deferred; it is not a missing part of an
-otherwise complete v1.0. The source regression suite covers migration/order,
-habit completion semantics, calendar-date recurrence, item schedule intersection,
-reload persistence, and account namespaces. The standard type, accessibility,
-build, artifact, and owner-run release gates still apply, and this addendum does
-not change the `approve-with-limits` posture.
+The evening wrap-up is now included as a deliberately limited increment: from
+6:00 PM in the configured timezone, Today offers an optional dialog that
+summarizes due ritual items, active habit repetitions, and today's local task
+records. It is read-only, has no persisted review record, does not change
+completion semantics, and does not invoke or send data to the oracle. Empty,
+incomplete, reload, account-local, and timezone-boundary states are covered by
+the deterministic regression checks. Journaling, weekly review, and broader
+analytics remain deferred.
+
+The source regression suite covers migration/order, habit completion semantics,
+calendar-date recurrence, item schedule intersection, reload persistence,
+account namespaces, and the evening projection. The standard type,
+accessibility, build, artifact, and owner-run release gates still apply, and
+this addendum does not change the `approve-with-limits` posture.

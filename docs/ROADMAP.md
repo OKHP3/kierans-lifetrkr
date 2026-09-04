@@ -1,6 +1,6 @@
 # Kieran's LifeTrkr — Roadmap
 
-**Last updated:** September 3, 2026 — release-truth reconciliation
+**Last updated:** September 4, 2026 — evening wrap-up scope increment
 **Versioning:** See PRD-v3.0 Section 3 for semantic versioning discipline.
 
 > **Current release truth (September 3, 2026):** The source baseline is
@@ -14,7 +14,8 @@
 > boundary is recorded in [`docs/PRODUCT-SCOPE-DECISION.md`](PRODUCT-SCOPE-DECISION.md).
 > Task ordering, multi-target habits, limited ritual-item metadata/optional state,
 > ritual ordering, and limited item-level recurrence overrides are required.
-> End-of-day review remains intentionally deferred; it is not a silent v1.0 gap.
+> Evening wrap-up is now a limited, local-only Today affordance after 6:00 PM
+> in the configured timezone; broader review analytics remain future work.
 
 ---
 
@@ -72,7 +73,8 @@ gates.
 - [x] Support 1–12 habit repetitions per configured day and independent completion
 - [x] Support ritual-item title, time, description, optional marker, and keyboard ordering
 - [x] Item-level recurrence overrides — optional item rules intersect with the parent schedule and preserve legacy items
-- [ ] End-of-day review — intentionally deferred; no review surface is claimed
+- [x] Evening wrap-up — optional, read-only Today closure snapshot after 6:00 PM
+  configured local time; no persisted review state, analytics, or new completion semantics
 
 ---
 
@@ -113,7 +115,8 @@ gates.
 - [x] Cat accent asset placed tastefully in UI (one placement)
 - [ ] og-image.png verified
 - [x] Task ordering is implemented in source; pointer drag is a convenience and labelled keyboard controls are the required path
-- [ ] End-of-day review view — intentionally deferred by `PRODUCT-SCOPE-DECISION.md`
+- [x] Limited evening wrap-up view — Today-only, optional, timezone-correct, and
+  backed by existing ritual, habit, and task records; broader review analytics remain deferred
 - [x] Performance audit recorded (oracle, celestial, calendar recurrence)
 
 ---
