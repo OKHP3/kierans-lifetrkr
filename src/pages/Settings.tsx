@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext'
 import { useTheme } from '../context/ThemeContext'
 import GoogleConnectButton from '../components/GoogleConnectButton'
 import { getMoonPhase, getAstroSeason, getMercuryStatus } from '../lib/celestial'
-import { getCalendarDateParts, getTodayISO } from '../lib/date'
+import { getCalendarDateParts, getDetectedTimezone, getTimezoneOptions, getTodayISO } from '../lib/date'
 import { storage } from '../lib/storage'
 import { APP_VERSION } from '../constants'
 import type { ZodiacSign } from '../types'
@@ -86,6 +86,8 @@ export default function Settings() {
   const { theme, setTheme } = useTheme()
   const { isLoadingOracle, regenerate } = useOracle()
   const s = state.settings
+  const detectedTimezone = getDetectedTimezone()
+  const timezoneOptions = getTimezoneOptions(s.timezone)
 
   function update(patch: Partial<typeof s>) {
     dispatch({ type: 'UPDATE_SETTINGS', payload: patch })
@@ -383,9 +385,24 @@ export default function Settings() {
       {/* ── App / Danger zone ──────────────────────────────────────────── */}
       <p className="section-label" style={{ marginTop: 24 }}>APP</p>
       <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Timezone</span>
-          <span style={{ fontSize: 12, color: 'var(--text-ghost)', fontFamily: 'Space Mono, monospace' }}>{s.timezone}</span>
+        <div>
+          <label className="input-label" htmlFor="timezone-select">Timezone</label>
+          <p style={{ fontSize: 11, color: 'var(--text-ghost)', lineHeight: 1.5, margin: '0 0 8px' }}>
+            Used for today, schedules, calendar dates, and evening reminders.
+          </p>
+          <select
+            id="timezone-select"
+            className="input-field"
+            aria-label="Timezone"
+            value={s.timezone}
+            onChange={e => update({ timezone: e.target.value })}
+          >
+            {timezoneOptions.map(timezone => (
+              <option key={timezone} value={timezone}>
+                {timezone}{timezone === detectedTimezone ? ' (detected)' : ''}
+              </option>
+            ))}
+          </select>
         </div>
         <button onClick={clearAllData} style={{ marginTop: 16, width: '100%', padding: '10px 0', borderRadius: 10, border: '0.5px solid #e07070', background: 'transparent', color: '#e07070', fontSize: 13, cursor: 'pointer' }}>
           Clear all app data

@@ -3,6 +3,48 @@ import { DAYS_OF_WEEK, SEASONAL_DATES, DAILY_QUOTES } from '../constants'
 
 const DEFAULT_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 
+/** Common IANA zones for users who want to override the browser default. */
+export const PRACTICAL_TIMEZONES = [
+  'UTC',
+  'America/Los_Angeles',
+  'America/Denver',
+  'America/Chicago',
+  'America/New_York',
+  'America/Toronto',
+  'America/Mexico_City',
+  'America/Sao_Paulo',
+  'Europe/London',
+  'Europe/Paris',
+  'Europe/Berlin',
+  'Europe/Madrid',
+  'Europe/Rome',
+  'Europe/Moscow',
+  'Africa/Cairo',
+  'Africa/Johannesburg',
+  'Asia/Dubai',
+  'Asia/Kolkata',
+  'Asia/Bangkok',
+  'Asia/Singapore',
+  'Asia/Shanghai',
+  'Asia/Tokyo',
+  'Asia/Seoul',
+  'Australia/Sydney',
+  'Pacific/Auckland',
+] as const
+
+export function getDetectedTimezone(): string {
+  return DEFAULT_TIMEZONE || 'UTC'
+}
+
+/** Include the browser zone and a saved zone even when they are not in the common list. */
+export function getTimezoneOptions(currentTimezone?: string): string[] {
+  return [...new Set([
+    getDetectedTimezone(),
+    currentTimezone,
+    ...PRACTICAL_TIMEZONES,
+  ].filter((timezone): timezone is string => Boolean(timezone)))]
+}
+
 export type CalendarDateParts = {
   year: number
   month: number

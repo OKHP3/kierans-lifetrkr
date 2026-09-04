@@ -19,6 +19,7 @@
     "test:service-worker": "node --test scripts/service-worker-regression.test.mjs",
     "test:date": "bun test scripts/date-regression.test.ts",
     "test:evening-wrap-up": "bun test scripts/evening-wrap-up-regression.test.ts",
+    "test:settings-timezone": "bun test scripts/settings-timezone-regression.test.ts",
     "test:account-isolation": "bun test scripts/account-isolation-regression.test.ts",
     "test:scope": "bun test scripts/scope-regression.test.ts",
     "sync": "bash scripts/sync.sh",

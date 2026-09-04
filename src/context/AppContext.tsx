@@ -41,7 +41,7 @@ const defaultTemplates: RoutineTemplate[] = ([...DAYS_OF_WEEK] as string[]).map(
   items: [],
 }))
 
-const initialState: AppState = {
+export const initialState: AppState = {
   profile: null,
   settings: defaultSettings,
   routineTemplates: defaultTemplates,
@@ -100,7 +100,7 @@ type Action =
 
 // ─── Reducer ────────────────────────────────────────────────────────────────
 
-function reducer(state: AppState, action: Action): AppState {
+export function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'LOAD_STATE': {
       const loadedSettings = { ...defaultSettings, ...(action.payload.settings || {}) }
@@ -465,7 +465,7 @@ function loadPersistedState(): Partial<AppState> {
   return result
 }
 
-function persistState(state: AppState): boolean {
+export function persistState(state: AppState): boolean {
   let success = true
   for (const key of PERSIST_KEYS) {
     if (key === 'calendarEvents') {
