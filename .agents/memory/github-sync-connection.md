@@ -94,4 +94,17 @@ when publication and ownership records were written for a different commit.
 
 **How to apply:** Reconcile release identity and decision wording against the
 actual tree and freshly observed checks, while leaving historical candidate
-hashes and unrun owner checks clearly bounded.
+ hashes and unrun owner checks clearly bounded.
+
+Repository janitor audits that run `git fetch --all` can encounter many
+Replit-generated `subrepl-*` SSH remotes and stop at an SSH host-key prompt even
+when the canonical GitHub connection is healthy.
+
+**Why:** The workspace keeps task-agent remotes alongside the credential-free
+GitHub `origin`; generic mirror audits inspect all configured remotes, not only
+the publish target.
+
+**How to apply:** Fetch `origin` through the guarded connector sync first, then
+run read-only janitor scripts with terminal prompts disabled and SSH batch mode
+when auditing local state. Do not delete task-agent remotes or branches during
+the audit without an explicit, branch-specific recovery decision.
