@@ -149,7 +149,8 @@ events and local task actions never write back to Google.
 | Redacted namespace key inventory | PASS | Only `lifetrkr:<profile>:...` key names and `lifetrkr:welcomed` recorded |
 | Disconnect and reconnect | PASS | Placeholder GIS/userinfo path; profile/session cleared and a different disposable subject restored without cross-namespace history |
 | Token expiry and recovery | PASS | Placeholder GIS callback; expiry banner appeared and cleared after recovery |
-| Storage failure and private-mode behavior | PASS | Forced write failure showed warning/retry; native Chromium incognito data disappeared after browser restart |
+| Storage failure and private-mode behavior | PASS for disposable Chromium matrix; owner physical check pending | Chromium 152 normal profile retained a disposable record after reload; quota analogue showed warning/retry and saved after restoration; incognito data disappeared after browser restart |
+| Owner-controlled storage-limit check | PENDING OWNER RUN | Actual low-storage pressure plus normal/private-mode check on an owner-controlled browser/device has not been run in this environment |
 | Real Google consent/API/account switching | PENDING OWNER RUN | No real Google account or credential was available to this agent; no claim is made for the external OAuth journey |
 
 ## Release risk register
@@ -157,7 +158,7 @@ events and local task actions never write back to Google.
 | Risk | Owner | Mitigation / decisive evidence | Expiry trigger |
 |---|---|---|---|
 | Google consent, expiry, disconnect, pagination, or account isolation differs at runtime | Kieran with Jamie during first smoke test | Disposable/test account journey using the matrix above; keep Google reads read-only | Any OAuth scope, GIS, Google API, or account change |
-| Browser storage quota/private mode can lose a user edit without a visible recovery path | Jamie before public stable approval | Source-path harness now confirms visible warning and retry for throwing/silent non-persisting storage; real browser quota/private-mode journey remains required | Any persistence/reducer/storage change |
+| Browser storage quota/private mode can lose a user edit without a visible recovery path | Jamie before public stable approval | Chromium 152 disposable matrix confirms normal reload retention, incognito lifetime, and visible warning/retry after a quota analogue; owner-controlled physical low-storage/private-mode journey remains required | Any persistence/reducer/storage change |
 | Accessibility source check misses real keyboard, screen-reader, zoom, contrast, or touch defects | Kieran owner test, Jamie records | Complete `docs/ACCESSIBILITY-CHECKLIST.md` on phone and desktop | Any shared control, dialog, navigation, or CSS change |
 | Published Pages route/assets differ from the local artifact | Jamie until transfer; Kieran after transfer | Current commit passed Pages URL, hash-shell, required-asset, and clean-build hash read-back; retain workflow URL and timestamp | Any Pages/base-path/workflow/build change |
 | Optional oracle worker or third-party APIs change availability or privacy behavior | Kieran as service owner | Keep local fallback; inspect worker payload boundary and provider settings before enabling | Worker URL/provider/prompt or external API change |
