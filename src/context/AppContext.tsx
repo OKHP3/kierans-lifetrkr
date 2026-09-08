@@ -439,7 +439,7 @@ const CALENDAR_EVENT_DEFAULTS: CalendarEvent = {
   createdAt: undefined, updatedAt: undefined,
 }
 
-function loadPersistedState(): Partial<AppState> {
+export function loadPersistedState(): Partial<AppState> {
   const result: Partial<AppState> = {}
   for (const key of PERSIST_KEYS) {
     if (key === 'habits') {
@@ -490,17 +490,22 @@ export function persistState(state: AppState): boolean {
 // ─── Provider ───────────────────────────────────────────────────────────────
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, initialState)
+  // Read the active namespace before the first render so React's development
+  // strict-mode effect replay cannot persist the empty initial state over a
+  // returning user's saved records.
+  const [state, dispatch] = useReducer(
+    reducer,
+    initialState,
+    baseState => reducer(baseState, { type: 'LOAD_STATE', payload: loadPersistedState() }),
+  )
   const [storageWarning, setStorageWarning] = useState(false)
-  const hydrated = useRef(false)
+  const hydrated = useRef(true)
   const pendingUser = useRef<string | null>(null)
 
-  // Initial hydration runs before persistence is allowed, preventing an empty
-  // initial state from overwriting a returning user's saved data.
+  // Storage availability is checked separately from hydration so a failed
+  // probe cannot cause the initial state to be persisted.
   useEffect(() => {
-    const saved = loadPersistedState()
     if (!storage.canWrite()) setStorageWarning(true)
-    dispatch({ type: 'LOAD_STATE', payload: saved })
   }, [])
 
   // A profile switch changes the namespace used by storage. Load that
@@ -518,12 +523,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // namespace while the profile-switch LOAD_STATE is still being applied.
     if (pendingUser.current) {
       if (pendingUser.current === userId) pendingUser.current = null
-      return
-    }
-    if (!hydrated.current) {
-      // The first persistence effect runs with the reducer's empty initial
-      // state; let the queued LOAD_STATE render happen first.
-      hydrated.current = true
       return
     }
     // Do not create a guest namespace before first launch is acknowledged.

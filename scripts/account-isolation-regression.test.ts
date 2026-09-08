@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { storage } from '../src/lib/storage.ts'
+import { initialState, loadPersistedState, persistState, reducer } from '../src/context/AppContext.tsx'
 import type { GoogleProfile, HabitCompletion, RoutineCompletion, RoutineTemplate, UserSettings } from '../src/types.ts'
 
 type ProfileCase = {
@@ -227,5 +228,28 @@ test('the persisted keys remain separate for guest and both Google subjects', ()
       .filter(key => key.includes('routineTemplates') || key.includes('routineCompletions') || key.includes('habitCompletions'))
       .sort(),
     expectedKeys.sort(),
+  )
+})
+
+test('hydrated history survives immediate persistence before strict-mode effect replay', () => {
+  browserStorage.clear()
+  browserStorage.setItem('lifetrkr:welcomed', 'true')
+  browserStorage.setItem('lifetrkr:guest:settings', JSON.stringify(defaultSettings))
+  browserStorage.setItem('lifetrkr:guest:routineCompletions', JSON.stringify([
+    { date: '2026-09-03', routineTemplateId: 'guest-morning', completedItemIds: ['stretch'] },
+  ]))
+
+  const hydrated = reducer(initialState, {
+    type: 'LOAD_STATE',
+    payload: loadPersistedState(),
+  })
+
+  assert.deepEqual(hydrated.routineCompletions, [
+    { date: '2026-09-03', routineTemplateId: 'guest-morning', completedItemIds: ['stretch'] },
+  ])
+  assert.equal(persistState(hydrated), true)
+  assert.deepEqual(
+    JSON.parse(browserStorage.getItem('lifetrkr:guest:routineCompletions') ?? 'null'),
+    hydrated.routineCompletions,
   )
 })
