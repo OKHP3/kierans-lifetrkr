@@ -378,7 +378,11 @@ export default function Habits() {
                       <label className="label-muted" style={{ display: 'block', marginBottom: 6 }}>Times per day</label>
                       <input className="input-field" type="number" min={1} max={12} aria-label="Times per day" value={editForm.timesPerDay} onChange={e => patchEdit({ timesPerDay: Math.max(1, Math.min(12, parseInt(e.target.value) || 1)) })} />
                       <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: '5px 0 10px' }}>Each repetition can be completed separately.</p>
-                      <RecurrenceEditor value={editForm.recurrence} onChange={recurrence => patchEdit({ recurrence })} />
+                      <RecurrenceEditor
+                        value={editForm.recurrence}
+                        onChange={recurrence => patchEdit({ recurrence })}
+                        idPrefix={`habit-${habit.id}-recurrence`}
+                      />
                     </div>
                   )}
                   <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
@@ -436,7 +440,11 @@ export default function Habits() {
               <label className="label-muted" style={{ display: 'block', marginBottom: 6 }}>Times per day</label>
               <input className="input-field" type="number" min={1} max={12} aria-label="Times per day" value={addForm.timesPerDay} onChange={e => patchAdd({ timesPerDay: Math.max(1, Math.min(12, parseInt(e.target.value) || 1)) })} />
               <p style={{ fontSize: 11, color: 'var(--text-ghost)', margin: '5px 0 10px' }}>Each repetition can be completed separately.</p>
-              <RecurrenceEditor value={addForm.recurrence} onChange={recurrence => patchAdd({ recurrence })} />
+              <RecurrenceEditor
+                value={addForm.recurrence}
+                onChange={recurrence => patchAdd({ recurrence })}
+                idPrefix="new-habit-recurrence"
+              />
             </div>
           )}
           <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>

@@ -148,7 +148,7 @@ export default function RecurrenceEditor({
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
-                name="recurrence-end"
+                name={`${idPrefix}-end`}
                 aria-label="Ends on a date"
                 checked={end.mode === 'onDate'}
                 onChange={() => set({ end: { mode: 'onDate', date: '' } })}
@@ -170,7 +170,7 @@ export default function RecurrenceEditor({
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
-                name="recurrence-end"
+                name={`${idPrefix}-end`}
                 aria-label="Ends after a number of times"
                 checked={end.mode === 'afterCount'}
                 onChange={() => set({ end: { mode: 'afterCount', count: 12 } })}

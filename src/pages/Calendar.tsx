@@ -778,7 +778,11 @@ export default function Calendar() {
               </button>
               {form.showRecurrence && (
                 <div style={{ marginTop: 10, paddingTop: 10, borderTop: '0.5px solid var(--border)' }}>
-                  <RecurrenceEditor value={form.recurrence} onChange={recurrence => patchForm({ recurrence })} />
+                  <RecurrenceEditor
+                    value={form.recurrence}
+                    onChange={recurrence => patchForm({ recurrence })}
+                    idPrefix="calendar-event-recurrence"
+                  />
                 </div>
               )}
 

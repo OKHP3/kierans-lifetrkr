@@ -349,7 +349,11 @@ export default function Rituals() {
           </div>
           <div style={{ marginBottom: 16 }}>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '0 0 8px' }}>Recurrence</p>
-            <RecurrenceEditor value={metaRecurrence} onChange={setMetaRecurrence} />
+            <RecurrenceEditor
+              value={metaRecurrence}
+              onChange={setMetaRecurrence}
+              idPrefix="ritual-recurrence"
+            />
           </div>
           <button className="btn-primary" style={{ width: '100%' }} onClick={saveMeta}>Save details</button>
         </div>

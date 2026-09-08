@@ -555,6 +555,65 @@ async function main() {
     await page.click(`button[aria-label="Edit Keyboard ritual"]`)
     const itemFrequency = `#item-${created.id}-recurrence-frequency`
     await page.waitFor(`document.querySelector(${JSON.stringify(itemFrequency)}) !== null`, 'item recurrence editor')
+    await page.clickButton('Details')
+    await page.waitFor(
+      'document.querySelector("#ritual-recurrence-frequency") !== null',
+      'parent recurrence editor',
+    )
+
+    // Keep the parent and item end-mode controls independent while both editors are open.
+    await page.pressKey('#ritual-recurrence-frequency', 'Home')
+    await page.pressKey('#ritual-recurrence-frequency', 'ArrowDown')
+    await page.pressKey('#ritual-recurrence-frequency', 'Enter')
+    await page.waitFor(
+      'document.querySelector(\'input[name="ritual-recurrence-end"]\') !== null',
+      'parent recurrence end controls',
+    )
+    const endGroups = await page.evaluate(`(() => {
+      const groups = new Map()
+      for (const input of document.querySelectorAll('input[type="radio"][aria-label^="Ends"], input[type="radio"][aria-label="Never ends"]')) {
+        const labels = groups.get(input.name) ?? []
+        labels.push(input.getAttribute('aria-label'))
+        groups.set(input.name, labels)
+      }
+      return [...groups.entries()].map(([name, labels]) => ({ name, labels: labels.sort() }))
+    })()`)
+    assert.deepEqual(
+      endGroups.sort((left, right) => left.name.localeCompare(right.name)),
+      [
+        {
+          name: `item-${created.id}-recurrence-end`,
+          labels: ['Ends after a number of times', 'Ends on a date', 'Never ends'],
+        },
+        {
+          name: 'ritual-recurrence-end',
+          labels: ['Ends after a number of times', 'Ends on a date', 'Never ends'],
+        },
+      ].sort((left, right) => left.name.localeCompare(right.name)),
+      'open recurrence editors did not receive independent end-mode groups',
+    )
+    await page.evaluate(`(() => {
+      const click = (name, label) => {
+        const input = [...document.querySelectorAll('input[type="radio"]')]
+          .find(candidate => candidate.name === name && candidate.getAttribute('aria-label') === label)
+        if (!input) throw new Error(\`Missing \${label} control in \${name}\`)
+        input.click()
+      }
+      click('ritual-recurrence-end', 'Ends on a date')
+      click(${JSON.stringify(`item-${created.id}-recurrence-end`)}, 'Ends after a number of times')
+    })()`)
+    await delay(200)
+    assert.deepEqual(
+      await page.evaluate(`(() => [...document.querySelectorAll('input[type="radio"]:checked')].map(input => ({
+        name: input.name,
+        label: input.getAttribute('aria-label'),
+      })).filter(selection => selection.name.endsWith('-recurrence-end')).sort((left, right) => left.name.localeCompare(right.name)))()`),
+      [
+        { name: `item-${created.id}-recurrence-end`, label: 'Ends after a number of times' },
+        { name: 'ritual-recurrence-end', label: 'Ends on a date' },
+      ].sort((left, right) => left.name.localeCompare(right.name)),
+      'changing one open recurrence editor changed the other editor end mode',
+    )
 
     // Edit the rule to Daily with Home/ArrowDown, again through keyboard input.
     await page.pressKey(itemFrequency, 'Home')
