@@ -120,6 +120,28 @@ test('routine schedule preview labels inherited, due, and skipped items without 
   )
 })
 
+test('routine schedule preview jumps to long-interval dates without an unbounded scan', () => {
+  const template = {
+    dayOfWeek: 'Monday' as const,
+    recurrence: rule('daily', '2026-08-24', { interval: 400 }),
+    items: [{ id: 'ritual', title: 'Long interval', sortOrder: 0 }],
+  }
+
+  const preview = getUpcomingRoutineSchedule(template, '2026-08-24', 21, 2)
+  assert.deepEqual(preview.map(entry => entry.date), ['2026-08-24', '2034-04-24'])
+})
+
+test('sparse preview candidates still use the configured-date evaluator', () => {
+  const template = {
+    dayOfWeek: 'Monday' as const,
+    recurrence: rule('monthly', '2026-01-01', { interval: 24, dayOfMonth: 1 }),
+    items: [{ id: 'ritual', title: 'Every two years', sortOrder: 0 }],
+  }
+
+  const preview = getUpcomingRoutineSchedule(template, '2026-01-02', 30, 2)
+  assert.deepEqual(preview.map(entry => entry.date), ['2046-01-01', '2052-01-01'])
+})
+
 test('event date and time labels use configured timezone while date-only records stay stable', () => {
   const event = '2026-09-03T01:30:00Z'
   assert.equal(getCalendarDate(event, 'America/Los_Angeles'), '2026-09-02')

@@ -322,6 +322,107 @@ export function routineItemOccursOnDate(
   return item.recurrence ? recurrenceOccursOnDate(item.recurrence, date) : true
 }
 
+const LONG_INTERVAL_CANDIDATE_LIMIT = 2_000
+
+function formatCalendarDate(year: number, month: number, day: number): string {
+  return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+}
+
+function dateForMonth(monthIndex: number, day: number): string | null {
+  const year = Math.floor(monthIndex / 12)
+  const month = ((monthIndex % 12) + 12) % 12 + 1
+  if (day < 1 || day > getDaysInMonth(year, month)) return null
+  return formatCalendarDate(year, month, day)
+}
+
+/**
+ * Return possible dates after the normal preview window for sparse schedules.
+ * These calculations only produce candidates; routineTemplateOccursOnDate
+ * remains the source of truth for whether a candidate is actually scheduled.
+ */
+function getSparseRoutineCandidates(
+  template: Pick<RoutineTemplate, 'dayOfWeek' | 'recurrence'>,
+  searchDate: string,
+  requestedDates: number,
+): string[] {
+  const rule = template.recurrence
+  if (!rule || rule.frequency === 'none' || requestedDates <= 0) return []
+
+  const interval = Math.max(1, Math.floor(rule.interval || 1))
+  const sparseFrequency = rule.frequency === 'daily' || rule.frequency === 'custom'
+    ? interval > 1
+    : rule.frequency === 'weekly'
+      ? interval > 1
+      : rule.frequency === 'monthly' || rule.frequency === 'yearly'
+  if (!sparseFrequency) return []
+
+  const candidates: string[] = []
+  const addCandidate = (date: string | null) => {
+    if (
+      date
+      && date >= searchDate
+      && routineTemplateOccursOnDate(template, date)
+      && !candidates.includes(date)
+    ) {
+      candidates.push(date)
+    }
+  }
+
+  if (rule.frequency === 'daily' || rule.frequency === 'custom') {
+    const daysToSearch = calendarDayDifference(rule.startDate, searchDate)
+    let occurrence = Math.max(0, Math.ceil(daysToSearch / interval))
+    for (let attempt = 0; attempt < LONG_INTERVAL_CANDIDATE_LIMIT && candidates.length < requestedDates; attempt += 1) {
+      addCandidate(addCalendarDays(rule.startDate, occurrence * interval))
+      occurrence += 1
+    }
+    return candidates
+  }
+
+  if (rule.frequency === 'weekly') {
+    const selected = (rule.daysOfWeek ?? [])
+      .map(day => DAY_NUMBERS[day])
+      .filter((day): day is number => day !== undefined)
+      .sort((a, b) => a - b)
+    const startWeekday = weekdayNumber(rule.startDate)
+    const daysToSearch = Math.max(0, calendarDayDifference(rule.startDate, searchDate))
+    const firstWeek = Math.max(0, Math.floor(daysToSearch / 7 / interval))
+    const offsets = selected.length > 0
+      ? [...new Set(selected)].map(day => (day - startWeekday + 7) % 7).sort((a, b) => a - b)
+      : [0]
+
+    for (let week = firstWeek; week < firstWeek + LONG_INTERVAL_CANDIDATE_LIMIT && candidates.length < requestedDates; week += 1) {
+      for (const offset of offsets) {
+        addCandidate(addCalendarDays(rule.startDate, week * 7 * interval + offset))
+        if (candidates.length >= requestedDates) break
+      }
+    }
+    return candidates
+  }
+
+  const [startYear, startMonth, startDay] = rule.startDate.split('-').map(Number)
+  if (rule.frequency === 'monthly') {
+    const startMonthIndex = startYear * 12 + startMonth - 1
+    const [searchYear, searchMonth] = searchDate.split('-').map(Number)
+    const searchMonthIndex = searchYear * 12 + searchMonth - 1
+    let occurrence = Math.max(0, Math.ceil((searchMonthIndex - startMonthIndex) / interval))
+    for (let attempt = 0; attempt < LONG_INTERVAL_CANDIDATE_LIMIT && candidates.length < requestedDates; attempt += 1) {
+      const monthIndex = startMonthIndex + occurrence * interval
+      addCandidate(dateForMonth(monthIndex, rule.dayOfMonth ?? startDay))
+      occurrence += 1
+    }
+    return candidates
+  }
+
+  const [searchYear] = searchDate.split('-').map(Number)
+  let occurrence = Math.max(0, Math.ceil((searchYear - startYear) / interval))
+  for (let attempt = 0; attempt < LONG_INTERVAL_CANDIDATE_LIMIT && candidates.length < requestedDates; attempt += 1) {
+    const year = startYear + occurrence * interval
+    addCandidate(dateForMonth(year * 12 + startMonth - 1, startDay))
+    occurrence += 1
+  }
+  return candidates
+}
+
 /**
  * Expand a selected ritual template into upcoming configured-local calendar dates.
  * The parent and item evaluators above remain the only source of scheduling truth.
@@ -349,6 +450,25 @@ export function getUpcomingRoutineSchedule(
       })),
     })
   }
+
+  // The bounded daily scan keeps ordinary previews cheap. Sparse schedules
+  // get a bounded candidate jump past the window instead of an unbounded scan.
+  if (preview.length < maxDates) {
+    const searchDate = addCalendarDays(startDate, lookAheadDays)
+    for (const date of getSparseRoutineCandidates(template, searchDate, maxDates - preview.length)) {
+      preview.push({
+        date,
+        items: template.items.map(item => ({
+          item,
+          status: item.recurrence
+            ? routineItemOccursOnDate(template, item, date) ? 'due' : 'skipped'
+            : 'inherited',
+        })),
+      })
+    }
+    preview.sort((a, b) => a.date.localeCompare(b.date))
+  }
+
   return preview
 }
 
