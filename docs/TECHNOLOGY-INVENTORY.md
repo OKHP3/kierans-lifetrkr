@@ -1,28 +1,28 @@
 # LifeTrkr Technology Inventory
 
-**Audit date:** July 13, 2026
+**Audit date:** July 13, 2026 (original) · version table corrected September 16, 2026 against the current `package.json`/`package-lock.json`
 **Application version:** `v0.1.10` (`src/constants.ts`)
 **Scope:** Technologies present in the shipped source, package manifest/lockfile, build configuration, CI, and external browser integrations.
 
-This inventory records the version resolved in the current lockfile/install and the latest stable release available at audit time. The July 13, 2026 foundation upgrade is applied in the current working tree; future major framework/toolchain upgrades remain review-required because they can require source/configuration changes.
+This inventory records the version resolved in the current lockfile/install and the latest stable release available at audit time. The July 13, 2026 foundation upgrade is applied in the current working tree; future major framework/toolchain upgrades remain review-required because they can require source/configuration changes. The "In-place version" column below was corrected on September 16, 2026 — the original audit table still showed pre-upgrade values (React 18, Router 6, Vite 6, TypeScript 6.0.3) despite this paragraph already describing the upgrade as applied.
 
 ## Application and build stack
 
 | Technology | How LifeTrkr uses it | In-place version | Latest stable at audit | Upgrade note |
 |---|---|---:|---:|---|
 | JavaScript / ECMAScript | Runtime language emitted by the TypeScript/Vite build | ES2020 target (`tsconfig.json`) | Living standard; no project package version | Keep the target aligned with supported browsers and TypeScript/Vite defaults. |
-| TypeScript | Application language and type-checker for `.ts`/`.tsx` | `6.0.3` | `7.0.2` | Major upgrade; test compiler changes before adoption. |
-| React | UI library | `18.3.1` | `19.2.7` | Major upgrade; review React 19 migration guidance. |
-| React DOM | Browser renderer | `18.3.1` | `19.2.7` | Upgrade with React. |
-| React Router DOM | Hash-based client routing and navigation | `6.30.4` | `7.18.1` | Major upgrade; preserve `HashRouter` for GitHub Pages. |
-| Vite | Dev server, bundler, and production build | `6.4.3` | `8.1.4` | Major upgrade; review Vite 7/8 migration notes and plugin compatibility. |
-| `@vitejs/plugin-react` | React JSX transform and Fast Refresh integration | `4.7.0` | `6.0.3` | Upgrade with Vite and verify React 18 compatibility if React is not upgraded yet. |
+| TypeScript | Application language and type-checker for `.ts`/`.tsx` | `7.0.2` | `7.0.2` | Upgraded; compiler changes validated. |
+| React | UI library | `19.2.7` | `19.2.7` | Upgraded; React 19 migration complete. |
+| React DOM | Browser renderer | `19.2.7` | `19.2.7` | Upgraded with React. |
+| React Router DOM | Hash-based client routing and navigation | `7.18.1` | `7.18.1` | Upgraded; `HashRouter` preserved for GitHub Pages. |
+| Vite | Dev server, bundler, and production build | `8.1.4` | `8.1.4` | Upgraded; plugin compatibility validated. |
+| `@vitejs/plugin-react` | React JSX transform and Fast Refresh integration | `6.0.3` | `6.0.3` | Upgraded with Vite; compatible with React 19. |
 | Tailwind CSS | Utility-first CSS generation and design tokens | `4.3.2` | `4.3.2` | Upgraded; v4 configuration is loaded through the CSS `@config` directive. |
 | `@tailwindcss/postcss` | Tailwind CSS v4 PostCSS plugin | `4.3.2` | `4.3.2` | Added as the supported v4 PostCSS integration. |
 | PostCSS | CSS transformation pipeline | `8.5.19` | `8.5.19` | Updated; used by the Tailwind v4 PostCSS plugin. |
 | Autoprefixer | Browser vendor-prefix processing in PostCSS | Removed during Tailwind v4 migration | `10.5.2` | Tailwind v4 handles the required CSS compatibility work without this separate plugin. |
-| `@types/react` | React TypeScript declarations | `18.3.31` | `19.2.17` | Upgrade with React types and React. |
-| `@types/react-dom` | React DOM TypeScript declarations | `18.3.7` | `19.2.3` | Upgrade with React DOM types and React. |
+| `@types/react` | React TypeScript declarations | `19.2.17` | `19.2.17` | Upgraded with React types and React. |
+| `@types/react-dom` | React DOM TypeScript declarations | `19.2.3` | `19.2.3` | Upgraded with React DOM types and React. |
 | `@replit/connectors-sdk` | Installed connector SDK dependency | `0.4.1` | `0.4.1` | No newer npm `latest` version found at audit time; no direct source import was found. |
 
 The versions in the “in-place” column come from `package-lock.json`/`npm ls`, not merely the semver ranges in `package.json`.
