@@ -13,6 +13,8 @@
     "build": "tsc && vite build && node scripts/prepare-service-worker.mjs",
     "preview": "vite preview",
     "check": "tsc --noEmit",
+    "audit:technology": "node scripts/technology-audit.mjs",
+    "test:technology": "node --test scripts/technology-audit.test.mjs",
     "check:a11y": "node scripts/accessibility-check.mjs",
     "release:check": "node scripts/inspect-artifact.mjs",
     "test:sync": "node --test scripts/sync-regression.test.mjs",
@@ -23,7 +25,7 @@
     "test:account-isolation": "bun test scripts/account-isolation-regression.test.ts",
     "test:scope": "bun test scripts/scope-regression.test.ts",
     "test:rituals-browser": "node scripts/rituals-browser-regression.mjs",
-    "sync": "bash scripts/sync.sh",
+    "sync": "node scripts/run-sync.mjs",
     "deploy": "npm run build"
   },
   "dependencies": {

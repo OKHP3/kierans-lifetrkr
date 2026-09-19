@@ -7,6 +7,8 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
+import { truncateSync } from "node:fs";
+import { bashPath, shellPath } from "./run-sync.mjs";
 
 const projectRoot = join(import.meta.dirname, "..");
 const syncScript = join(projectRoot, "scripts", "sync.sh");
@@ -30,9 +32,9 @@ function configureRepo(cwd) {
 }
 
 async function createFixture() {
-  const root = await mkdtemp(join(tmpdir(), "lifetrkr-sync-"));
-  const local = join(root, "local");
-  const remote = join(root, "remote.git");
+  const root = await mkdtemp(join(tmpdir(), "lifetrkr sync-"));
+  const local = shellPath(join(root, "local"));
+  const remote = shellPath(join(root, "remote.git"));
   await mkdir(local);
   execFileSync("git", ["init", "--bare", remote], { encoding: "utf8" });
   execFileSync("git", ["init", "--initial-branch=main", local], { encoding: "utf8" });
@@ -45,8 +47,8 @@ async function createFixture() {
   git(local, "push", "--set-upstream", "origin", "main");
   git(local, "fetch", "origin", "main");
 
-  const hookLog = join(remote, "hooks", "receive.log");
-  const hook = `#!/bin/sh\ncat >> ${JSON.stringify(hookLog)}\n`;
+  const hookLog = shellPath(join(remote, "hooks", "receive.log"));
+  const hook = `#!/bin/sh\ncat >> '${hookLog.replaceAll("'", "'\\''")}'\n`;
   await writeFile(join(remote, "hooks", "pre-receive"), hook, { mode: 0o755 });
   await writeFile(hookLog, "");
 
@@ -58,7 +60,7 @@ async function cleanupFixture(fixture) {
 }
 
 function clearHookLog(fixture) {
-  execFileSync("truncate", ["-s", "0", fixture.hookLog]);
+  truncateSync(fixture.hookLog, 0);
 }
 
 async function createRemoteCommit(fixture, name, contents) {
@@ -73,7 +75,7 @@ async function createRemoteCommit(fixture, name, contents) {
 }
 
 function runSync(fixture, extraEnv = {}) {
-  const result = spawnSync("bash", [syncScript], {
+  const result = spawnSync(bashPath(), [shellPath(syncScript)], {
     cwd: fixture.local,
     encoding: "utf8",
     env: {
