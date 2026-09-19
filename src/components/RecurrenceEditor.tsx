@@ -1,4 +1,8 @@
 import type { RecurrenceRule, DayOfWeek, RecurrenceFrequency } from '../types'
+import {
+  MAX_RECURRENCE_INTERVAL,
+  normalizeRecurrenceInterval,
+} from '../lib/date'
 
 interface Props {
   value: RecurrenceRule
@@ -37,10 +41,18 @@ export default function RecurrenceEditor({
   idPrefix = 'recurrence',
   exceptionDate,
 }: Props) {
-  const { frequency, interval, daysOfWeek = [], end, exceptions = [] } = value
+  const { frequency, daysOfWeek = [], end, exceptions = [] } = value
+  const interval = normalizeRecurrenceInterval(value.interval)
 
   function set(patch: Partial<RecurrenceRule>) {
-    onChange({ ...value, ...patch })
+    onChange({
+      ...value,
+      interval,
+      ...patch,
+      ...(patch.interval === undefined
+        ? {}
+        : { interval: normalizeRecurrenceInterval(patch.interval) }),
+    })
   }
 
   function toggleDay(day: DayOfWeek) {
@@ -87,9 +99,9 @@ export default function RecurrenceEditor({
               type="number"
               aria-label={`Repeat every number of ${unitLabel}s`}
               min={1}
-              max={99}
+              max={MAX_RECURRENCE_INTERVAL}
               value={interval}
-              onChange={e => set({ interval: Math.max(1, parseInt(e.target.value) || 1) })}
+              onChange={e => set({ interval: Number(e.target.value) })}
               className={`${inputClass} w-20`}
             />
             <span className="text-sm text-textSecondary">{unitLabel}{interval !== 1 ? 's' : ''}</span>

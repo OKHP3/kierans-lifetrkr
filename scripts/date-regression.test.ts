@@ -9,6 +9,7 @@ import {
   getDayOfWeekForDate,
   getTodayISO,
   getUpcomingRoutineSchedule,
+  normalizeRecurrenceInterval,
   recurrenceOccursOnDate,
   routineItemOccursOnDate,
 } from '../src/lib/date.ts'
@@ -80,6 +81,35 @@ test('weekly, monthly, yearly, and custom recurrence use calendar dates', () => 
   assert.equal(recurrenceOccursOnDate(custom, '2026-08-28'), false)
 })
 
+test('malformed recurrence intervals normalize to bounded editor-compatible values', () => {
+  assert.equal(normalizeRecurrenceInterval(Number.NaN), 1)
+  assert.equal(normalizeRecurrenceInterval(Number.POSITIVE_INFINITY), 1)
+  assert.equal(normalizeRecurrenceInterval(-10), 1)
+  assert.equal(normalizeRecurrenceInterval(2.9), 2)
+  assert.equal(normalizeRecurrenceInterval(Number.MAX_VALUE), 99)
+})
+
+test('daily, weekly, monthly, and yearly previews stay valid for malformed intervals', () => {
+  const cases = [
+    rule('daily', '2026-01-05', { interval: Number.POSITIVE_INFINITY }),
+    rule('weekly', '2026-01-05', { interval: Number.MAX_VALUE, daysOfWeek: ['monday'] }),
+    rule('monthly', '2026-01-05', { interval: Number.MAX_VALUE }),
+    rule('yearly', '2026-01-05', { interval: Number.MAX_VALUE }),
+  ]
+
+  for (const recurrence of cases) {
+    const preview = getUpcomingRoutineSchedule({
+      dayOfWeek: 'Monday',
+      recurrence,
+      items: [{ id: recurrence.frequency, title: recurrence.frequency, sortOrder: 0 }],
+    }, '2026-01-05', 14, 2)
+
+    assert.equal(preview.length, 2)
+    assert.ok(preview.every(entry => /^\d{4}-\d{2}-\d{2}$/.test(entry.date)))
+    assert.ok(preview.every(entry => Number.isFinite(Date.parse(`${entry.date}T00:00:00Z`))))
+  }
+})
+
 test('routine item overrides intersect the parent schedule and honor date exceptions', () => {
   const mondayTemplate = { dayOfWeek: 'Monday' as const }
   const inheritedItem = {}
@@ -120,7 +150,7 @@ test('routine schedule preview labels inherited, due, and skipped items without 
   )
 })
 
-test('routine schedule preview jumps to long-interval dates without an unbounded scan', () => {
+test('routine schedule preview clamps persisted long intervals before its bounded jump', () => {
   const template = {
     dayOfWeek: 'Monday' as const,
     recurrence: rule('daily', '2026-08-24', { interval: 400 }),
@@ -128,7 +158,7 @@ test('routine schedule preview jumps to long-interval dates without an unbounded
   }
 
   const preview = getUpcomingRoutineSchedule(template, '2026-08-24', 21, 2)
-  assert.deepEqual(preview.map(entry => entry.date), ['2026-08-24', '2034-04-24'])
+  assert.deepEqual(preview.map(entry => entry.date), ['2026-08-24', '2028-07-17'])
 })
 
 test('sparse preview candidates still use the configured-date evaluator', () => {

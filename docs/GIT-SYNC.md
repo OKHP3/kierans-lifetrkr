@@ -60,6 +60,10 @@ logs.
 Only `origin` is used for release synchronization. Replit backup/subrepl
 remotes may exist for the workspace, but they are not release sources.
 
+The September 19, 2026 review of preserved task-agent branches is recorded in
+[`TASK-AGENT-SNAPSHOT-LEDGER.md`](TASK-AGENT-SNAPSHOT-LEDGER.md). Archived
+snapshot refs are recovery evidence, not release branches or merge approvals.
+
 ## Remote-ahead recovery
 
 If GitHub has commits not present locally, sync uses a fast-forward only:

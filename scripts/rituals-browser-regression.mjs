@@ -372,8 +372,9 @@ function createPageClient(connection) {
   }
 }
 
-export async function startBrowser() {
-  const profileDirectory = await mkdtemp(`${tmpdir()}/lifetrkr-rituals-browser-`)
+export async function startBrowser(options = {}) {
+  const profileDirectory = options.profileDirectory
+    ?? await mkdtemp(`${tmpdir()}/lifetrkr-rituals-browser-`)
   const browser = spawn(chromiumPath, [
     '--headless=new',
     '--no-sandbox',
@@ -384,6 +385,7 @@ export async function startBrowser() {
     '--disable-background-networking',
     '--remote-debugging-port=0',
     `--user-data-dir=${profileDirectory}`,
+    ...(options.incognito ? ['--incognito'] : []),
     'about:blank',
   ], { stdio: ['ignore', 'pipe', 'pipe'] })
 
@@ -432,7 +434,14 @@ async function main() {
         String(calendar.getUTCMonth() + 1).padStart(2, '0'),
         String(calendar.getUTCDate()).padStart(2, '0'),
       ].join('-')
-      return { date, previousDate, weekday: value('weekday'), timezone: 'UTC' }
+      const longIntervalOccurrence = new Date(\`\${date}T00:00:00Z\`)
+      longIntervalOccurrence.setUTCDate(longIntervalOccurrence.getUTCDate() + 2_800)
+      const longIntervalDate = [
+        longIntervalOccurrence.getUTCFullYear(),
+        String(longIntervalOccurrence.getUTCMonth() + 1).padStart(2, '0'),
+        String(longIntervalOccurrence.getUTCDate()).padStart(2, '0'),
+      ].join('-')
+      return { date, previousDate, longIntervalDate, weekday: value('weekday'), timezone: 'UTC' }
     })()`)
 
     await page.evaluate(`(() => {
@@ -441,8 +450,29 @@ async function main() {
         timezone: 'UTC',
         googleConnected: false,
       }))
+      localStorage.setItem('lifetrkr:guest:routineTemplates', JSON.stringify([{
+        id: ${JSON.stringify(configured.weekday.toLowerCase())},
+        dayOfWeek: ${JSON.stringify(configured.weekday)},
+        name: ${JSON.stringify(`${configured.weekday} Ritual`)},
+        recurrence: {
+          frequency: 'daily',
+          interval: 400,
+          startDate: ${JSON.stringify(configured.date)},
+          end: { mode: 'never' },
+          exceptions: [],
+        },
+        items: [{
+          id: 'long-interval-ritual',
+          title: 'Long interval ritual',
+          sortOrder: 0,
+        }, {
+          id: 'historic-item',
+          title: 'Historical ritual',
+          sortOrder: 1,
+        }],
+      }]))
       localStorage.setItem('lifetrkr:guest:routineCompletions', JSON.stringify([{
-        date: ${JSON.stringify(configured.previousDate)},
+        date: ${JSON.stringify(configured.date)},
         routineTemplateId: ${JSON.stringify(configured.weekday.toLowerCase())},
         completedItemIds: ['historic-item'],
       }]))
@@ -456,11 +486,41 @@ async function main() {
     assert.deepEqual(
       await page.evaluate("JSON.parse(localStorage.getItem('lifetrkr:guest:routineCompletions') || '[]')"),
       [{
-        date: configured.previousDate,
+        date: configured.date,
         routineTemplateId: configured.weekday.toLowerCase(),
         completedItemIds: ['historic-item'],
       }],
       'seeded completion history was not available after hydration',
+    )
+
+    const beforeLongIntervalPreview = await page.evaluate(`JSON.parse(
+      localStorage.getItem('lifetrkr:guest:routineCompletions') || '[]'
+    )`)
+    await page.clickButton('Preview')
+    await page.waitFor(
+      `document.body.innerText.includes(${JSON.stringify(configured.longIntervalDate)})`,
+      'long-interval evaluator-approved preview date',
+    )
+    assert.deepEqual(
+      await page.evaluate(`JSON.parse(
+        localStorage.getItem('lifetrkr:guest:routineCompletions') || '[]'
+      )`),
+      beforeLongIntervalPreview,
+      'long-interval preview changed completion history',
+    )
+    await page.clickButton('Close preview')
+    await page.evaluate(`(() => {
+      localStorage.removeItem('lifetrkr:guest:routineTemplates')
+      localStorage.setItem('lifetrkr:guest:routineCompletions', JSON.stringify([{
+        date: ${JSON.stringify(configured.previousDate)},
+        routineTemplateId: ${JSON.stringify(configured.weekday.toLowerCase())},
+        completedItemIds: ['historic-item'],
+      }]))
+    })()`)
+    await page.reload()
+    await page.waitFor(
+      `document.querySelector('h1')?.textContent?.trim() === 'Rituals'`,
+      'restored Rituals page',
     )
 
     await page.clickButton('Edit')
@@ -690,6 +750,7 @@ async function main() {
       timezone: configured.timezone,
       configuredDate: configured.date,
       previousHistoryDate: configured.previousDate,
+      longIntervalPreviewDate: configured.longIntervalDate,
       createdOverride: 'weekly',
       editedOverride: 'daily',
       skippedDate: configured.date,

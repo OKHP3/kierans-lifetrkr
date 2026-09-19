@@ -75,7 +75,7 @@ accounts; those remain owner-run release gates.
 
 ## Storage-limit browser matrix
 
-**Verification date:** September 8, 2026
+**Verification date:** September 19, 2026
 **Environment:** Chromium 152 headless on the Replit Linux workspace; isolated
 temporary browser profiles; local Vite app at `http://127.0.0.1:5000`
 **Data boundary:** one disposable record label was used only in browser memory;
@@ -83,9 +83,9 @@ no record content was copied into project files.
 
 | Browser/device label | Scenario | Result |
 |---|---|---|
-| Chromium 152 headless — normal temporary profile | Disposable local record wrote successfully and was retained after reload | PASS |
-| Chromium 152 headless — incognito temporary profile | Disposable local record was readable in-session and absent after browser restart | PASS |
-| Chromium 152 headless — quota analogue | Forced `QuotaExceededError` made the warning and `Try saving again` action visible; restoring writes and retrying cleared the warning and saved state | PASS |
+| Chromium 152 headless — normal temporary profile | Checked-in command retained a disposable probe after reload | PASS |
+| Chromium 152 headless — incognito temporary profile | Checked-in command read a disposable probe in-session and confirmed it was absent after browser restart | PASS |
+| Chromium 152 headless — quota analogue | Checked-in command forced `QuotaExceededError`, asserted the warning text and visible retry action, then restored writes and confirmed the in-memory change saved and survived reload | PASS |
 | Owner-controlled browser/device — actual low-storage pressure | Physical normal-browser, private-mode, and real quota-pressure check | PENDING OWNER RUN |
 
 The quota analogue confirms that a failed write is surfaced rather than
@@ -93,6 +93,10 @@ silently claimed as saved: the warning says the latest changes are only in
 memory and may be lost on reload. The available rendered-browser checks do not
 prove behavior under physical device storage pressure or across every browser's
 private-mode implementation.
+
+These results were produced by `npm run test:storage-warning-browser`. The
+command uses isolated temporary Chromium profiles and disposable labels, and
+prints only check outcomes rather than local record contents.
 
 ## Real-account gate
 

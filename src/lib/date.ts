@@ -205,6 +205,14 @@ export type SimpleRecurrencePattern = {
   daysOfWeek?: number[]  // 0=Sun…6=Sat
 }
 
+export const MAX_RECURRENCE_INTERVAL = 99
+
+/** Recover malformed persisted intervals before they reach recurrence arithmetic. */
+export function normalizeRecurrenceInterval(interval: unknown): number {
+  if (typeof interval !== 'number' || !Number.isFinite(interval)) return 1
+  return Math.min(MAX_RECURRENCE_INTERVAL, Math.max(1, Math.floor(interval)))
+}
+
 function calendarDateToUTC(date: string): Date {
   const [year, month, day] = date.split('-').map(Number)
   return new Date(Date.UTC(year, month - 1, day))
@@ -246,7 +254,7 @@ export function recurrenceOccursOnDate(rule: RecurrenceRule | undefined, date: s
   if (rule.exceptions?.includes(date)) return false
   if (rule.end.mode === 'onDate' && date > rule.end.date) return false
 
-  const interval = Math.max(1, Math.floor(rule.interval || 1))
+  const interval = normalizeRecurrenceInterval(rule.interval)
   const days = calendarDayDifference(rule.startDate, date)
   const currentWeekday = weekdayNumber(date)
   let occurrenceIndex = -1
@@ -348,7 +356,7 @@ function getSparseRoutineCandidates(
   const rule = template.recurrence
   if (!rule || rule.frequency === 'none' || requestedDates <= 0) return []
 
-  const interval = Math.max(1, Math.floor(rule.interval || 1))
+  const interval = normalizeRecurrenceInterval(rule.interval)
   const sparseFrequency = rule.frequency === 'daily' || rule.frequency === 'custom'
     ? interval > 1
     : rule.frequency === 'weekly'

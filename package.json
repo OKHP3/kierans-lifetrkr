@@ -26,6 +26,9 @@
     "test:account-isolation": "bun test scripts/account-isolation-regression.test.ts",
     "test:scope": "bun test scripts/scope-regression.test.ts",
     "test:rituals-browser": "node scripts/rituals-browser-regression.mjs",
+    "test:habits-browser": "node scripts/habits-browser-regression.mjs",
+    "test:calendar-browser": "node scripts/calendar-browser-regression.mjs",
+    "test:storage-warning-browser": "node scripts/storage-warning-browser-regression.mjs",
     "sync": "node scripts/run-sync.mjs",
     "deploy": "npm run build"
   },
