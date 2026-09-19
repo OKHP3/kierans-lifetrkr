@@ -1,0 +1,2915 @@
+{
+  "schemaVersion": 1,
+  "retrievedAt": "2026-09-19T03:50:05.929Z",
+  "sourceCommit": "38554e511aae5df62d11e85f8e703ed6ec4d2ee2",
+  "sourceHasUncommittedChanges": true,
+  "appVersion": "0.1.10",
+  "host": "win32",
+  "configuration": {
+    "engines": {
+      "node": ">=20.19.0",
+      "npm": ">=10"
+    },
+    "lockfileVersion": 3,
+    "nodeSelections": {
+      ".github/workflows/ci.yml": [
+        "22.x"
+      ],
+      ".github/workflows/static.yml": [
+        "22.x"
+      ],
+      ".github/workflows/technology-watch.yml": [
+        "22.x",
+        "lts/*"
+      ]
+    },
+    "replitModules": "[\"nodejs-20\", \"python-3.11\"]",
+    "replitChannel": "stable-25_05",
+    "typescriptTarget": "ES2020",
+    "pythonFiles": [
+      ".agents/skills/okhp3-brand-style-registry/scripts/extract_css_signals.py",
+      ".agents/skills/okhp3-equilibrium-review/scripts/run_equilibrium_review.py",
+      ".agents/skills/okhp3-outcome-modeling-core/scripts/calculate-outcome-model.py",
+      ".agents/skills/okhp3-outcome-modeling-core/tests/test_calculations.py",
+      ".agents/skills/okhp3-repl-repo-janitor/scripts/audit-repo.py",
+      ".agents/skills/okhp3-replit-repl-janitor/scripts/audit-repo.py",
+      ".agents/skills/okhp3-replit-repl-janitor/tests/test_audit_repo.py",
+      ".agents/skills/okhp3-repository-janitor/scripts/audit_mirrors.py",
+      ".agents/skills/okhp3-repository-organizer/scripts/inventory_repo.py",
+      ".agents/skills/okhp3-skill-cataloger/scripts/gen-skills-readme.py",
+      ".agents/skills/okhp3-skill-cataloger/tests/test_write_family_md.py",
+      ".agents/skills/okhp3-skill-promotion/scripts/sync_skill_mirror.py",
+      ".agents/skills/okhp3-skill-promotion/tests/test_sync_skill_mirror.py",
+      ".agents/skills/okhp3-thread-context-extraction/scripts/create_thread_extract.py",
+      ".agents/skills/okhp3-thread-context-extraction/scripts/validate_package.py",
+      ".agents/skills/okhp3-thread-extract-chatgpt/scripts/create_thread_extract.py",
+      ".agents/skills/okhp3-thread-extract-chatgpt/scripts/validate_package.py",
+      ".agents/skills/okhp3-thread-extract-claude/scripts/create_thread_extract.py",
+      ".agents/skills/okhp3-thread-extract-claude/scripts/validate_package.py",
+      "skills/okhp3-skill-promotion/scripts/sync_skill_mirror.py",
+      "skills/okhp3-skill-promotion/tests/test_sync_skill_mirror.py"
+    ],
+    "supportManifests": [
+      {
+        "path": ".agents/skills/okhp3-as-is-process-capture/package.json",
+        "name": "@bp-skill/as-is-process-capture",
+        "version": "0.1.0",
+        "dependencies": {}
+      },
+      {
+        "path": ".agents/skills/okhp3-decision-model-authoring/package.json",
+        "name": "@bp-skill/decision-model-authoring",
+        "version": "0.1.0",
+        "dependencies": {}
+      },
+      {
+        "path": ".agents/skills/okhp3-elicitation-interviews/package.json",
+        "name": "@bp-skill/elicitation-and-interview-facilitation",
+        "version": "0.1.0",
+        "dependencies": {}
+      },
+      {
+        "path": ".agents/skills/okhp3-future-state-strategy/package.json",
+        "name": "@bp-skill/future-state-and-change-strategy",
+        "version": "0.1.0",
+        "dependencies": {}
+      },
+      {
+        "path": ".agents/skills/okhp3-handoff-packaging/package.json",
+        "name": "@bp-skill/publication-and-handoff-packaging",
+        "version": "0.1.0",
+        "dependencies": {}
+      },
+      {
+        "path": ".agents/skills/okhp3-process-gap-analysis/package.json",
+        "name": "@bp-skill/process-gap-and-exception-analysis",
+        "version": "0.1.0",
+        "dependencies": {}
+      },
+      {
+        "path": ".agents/skills/okhp3-process-intake-and-scope/package.json",
+        "name": "@bp-skill/process-intake-and-scope",
+        "version": "0.1.0",
+        "dependencies": {}
+      }
+    ]
+  },
+  "packages": [
+    {
+      "name": "@alloc/quick-lru",
+      "path": "node_modules/@alloc/quick-lru",
+      "locked": "5.2.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "5.2.0",
+      "latest": "5.3.0",
+      "source": "https://registry.npmjs.org/%40alloc%2Fquick-lru/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@emnapi/core",
+      "path": "node_modules/@emnapi/core",
+      "locked": "1.11.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.11.3",
+      "source": "https://registry.npmjs.org/%40emnapi%2Fcore/latest",
+      "status": "current"
+    },
+    {
+      "name": "@emnapi/wasi-threads",
+      "path": "node_modules/@emnapi/core/node_modules/@emnapi/wasi-threads",
+      "locked": "1.2.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "2.1.0",
+      "source": "https://registry.npmjs.org/%40emnapi%2Fwasi-threads/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@emnapi/runtime",
+      "path": "node_modules/@emnapi/runtime",
+      "locked": "1.11.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.11.3",
+      "source": "https://registry.npmjs.org/%40emnapi%2Fruntime/latest",
+      "status": "current"
+    },
+    {
+      "name": "@jridgewell/gen-mapping",
+      "path": "node_modules/@jridgewell/gen-mapping",
+      "locked": "0.3.13",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "0.3.13",
+      "latest": "0.3.13",
+      "source": "https://registry.npmjs.org/%40jridgewell%2Fgen-mapping/latest",
+      "status": "current"
+    },
+    {
+      "name": "@jridgewell/remapping",
+      "path": "node_modules/@jridgewell/remapping",
+      "locked": "2.3.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "2.3.5",
+      "latest": "2.3.5",
+      "source": "https://registry.npmjs.org/%40jridgewell%2Fremapping/latest",
+      "status": "current"
+    },
+    {
+      "name": "@jridgewell/resolve-uri",
+      "path": "node_modules/@jridgewell/resolve-uri",
+      "locked": "3.1.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "3.1.2",
+      "latest": "3.1.2",
+      "source": "https://registry.npmjs.org/%40jridgewell%2Fresolve-uri/latest",
+      "status": "current"
+    },
+    {
+      "name": "@jridgewell/sourcemap-codec",
+      "path": "node_modules/@jridgewell/sourcemap-codec",
+      "locked": "1.5.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "1.5.5",
+      "latest": "1.6.0",
+      "source": "https://registry.npmjs.org/%40jridgewell%2Fsourcemap-codec/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@jridgewell/trace-mapping",
+      "path": "node_modules/@jridgewell/trace-mapping",
+      "locked": "0.3.31",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "0.3.31",
+      "latest": "0.3.31",
+      "source": "https://registry.npmjs.org/%40jridgewell%2Ftrace-mapping/latest",
+      "status": "current"
+    },
+    {
+      "name": "@oxc-project/types",
+      "path": "node_modules/@oxc-project/types",
+      "locked": "0.146.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "0.146.0",
+      "latest": "0.150.0",
+      "source": "https://registry.npmjs.org/%40oxc-project%2Ftypes/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@replit/connectors-sdk",
+      "path": "node_modules/@replit/connectors-sdk",
+      "locked": "0.4.2",
+      "scope": "direct runtime",
+      "declared": "^0.4.2",
+      "optional": false,
+      "dev": false,
+      "installed": "0.4.2",
+      "latest": "0.4.3",
+      "source": "https://registry.npmjs.org/%40replit%2Fconnectors-sdk/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@rolldown/binding-android-arm-eabi",
+      "path": "node_modules/@rolldown/binding-android-arm-eabi",
+      "locked": "1.2.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.2.9",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-android-arm-eabi/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@rolldown/binding-android-arm64",
+      "path": "node_modules/@rolldown/binding-android-arm64",
+      "locked": "1.2.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.2.9",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-android-arm64/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@rolldown/binding-darwin-arm64",
+      "path": "node_modules/@rolldown/binding-darwin-arm64",
+      "locked": "1.2.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.2.9",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-darwin-arm64/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@rolldown/binding-darwin-x64",
+      "path": "node_modules/@rolldown/binding-darwin-x64",
+      "locked": "1.2.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.2.9",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-darwin-x64/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@rolldown/binding-freebsd-x64",
+      "path": "node_modules/@rolldown/binding-freebsd-x64",
+      "locked": "1.2.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.2.9",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-freebsd-x64/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@rolldown/binding-linux-arm-gnueabihf",
+      "path": "node_modules/@rolldown/binding-linux-arm-gnueabihf",
+      "locked": "1.2.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.2.9",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-linux-arm-gnueabihf/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@rolldown/binding-linux-arm64-gnu",
+      "path": "node_modules/@rolldown/binding-linux-arm64-gnu",
+      "locked": "1.2.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.2.9",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-linux-arm64-gnu/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@rolldown/binding-linux-arm64-musl",
+      "path": "node_modules/@rolldown/binding-linux-arm64-musl",
+      "locked": "1.2.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.2.9",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-linux-arm64-musl/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@rolldown/binding-linux-ppc64-gnu",
+      "path": "node_modules/@rolldown/binding-linux-ppc64-gnu",
+      "locked": "1.2.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.2.9",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-linux-ppc64-gnu/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@rolldown/binding-linux-s390x-gnu",
+      "path": "node_modules/@rolldown/binding-linux-s390x-gnu",
+      "locked": "1.2.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.2.9",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-linux-s390x-gnu/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@rolldown/binding-linux-x64-gnu",
+      "path": "node_modules/@rolldown/binding-linux-x64-gnu",
+      "locked": "1.2.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.2.9",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-linux-x64-gnu/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@rolldown/binding-linux-x64-musl",
+      "path": "node_modules/@rolldown/binding-linux-x64-musl",
+      "locked": "1.2.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.2.9",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-linux-x64-musl/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@rolldown/binding-openharmony-arm64",
+      "path": "node_modules/@rolldown/binding-openharmony-arm64",
+      "locked": "1.2.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.2.9",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-openharmony-arm64/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@rolldown/binding-win32-arm64-msvc",
+      "path": "node_modules/@rolldown/binding-win32-arm64-msvc",
+      "locked": "1.2.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.2.9",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-win32-arm64-msvc/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@rolldown/binding-win32-x64-msvc",
+      "path": "node_modules/@rolldown/binding-win32-x64-msvc",
+      "locked": "1.2.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": "1.2.5",
+      "latest": "1.2.9",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-win32-x64-msvc/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@rolldown/pluginutils",
+      "path": "node_modules/@rolldown/pluginutils",
+      "locked": "1.0.1",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "1.0.1",
+      "latest": "1.0.1",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fpluginutils/latest",
+      "status": "current"
+    },
+    {
+      "name": "@tailwindcss/node",
+      "path": "node_modules/@tailwindcss/node",
+      "locked": "4.3.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "4.3.3",
+      "latest": "4.3.3",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Fnode/latest",
+      "status": "current"
+    },
+    {
+      "name": "@tailwindcss/oxide",
+      "path": "node_modules/@tailwindcss/oxide",
+      "locked": "4.3.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "4.3.3",
+      "latest": "4.3.3",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide/latest",
+      "status": "current"
+    },
+    {
+      "name": "@tailwindcss/oxide-android-arm64",
+      "path": "node_modules/@tailwindcss/oxide-android-arm64",
+      "locked": "4.3.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "4.3.3",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-android-arm64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@tailwindcss/oxide-darwin-arm64",
+      "path": "node_modules/@tailwindcss/oxide-darwin-arm64",
+      "locked": "4.3.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "4.3.3",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-darwin-arm64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@tailwindcss/oxide-darwin-x64",
+      "path": "node_modules/@tailwindcss/oxide-darwin-x64",
+      "locked": "4.3.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "4.3.3",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-darwin-x64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@tailwindcss/oxide-freebsd-x64",
+      "path": "node_modules/@tailwindcss/oxide-freebsd-x64",
+      "locked": "4.3.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "4.3.3",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-freebsd-x64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@tailwindcss/oxide-linux-arm-gnueabihf",
+      "path": "node_modules/@tailwindcss/oxide-linux-arm-gnueabihf",
+      "locked": "4.3.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "4.3.3",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-linux-arm-gnueabihf/latest",
+      "status": "current"
+    },
+    {
+      "name": "@tailwindcss/oxide-linux-arm64-gnu",
+      "path": "node_modules/@tailwindcss/oxide-linux-arm64-gnu",
+      "locked": "4.3.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "4.3.3",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-linux-arm64-gnu/latest",
+      "status": "current"
+    },
+    {
+      "name": "@tailwindcss/oxide-linux-arm64-musl",
+      "path": "node_modules/@tailwindcss/oxide-linux-arm64-musl",
+      "locked": "4.3.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "4.3.3",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-linux-arm64-musl/latest",
+      "status": "current"
+    },
+    {
+      "name": "@tailwindcss/oxide-linux-x64-gnu",
+      "path": "node_modules/@tailwindcss/oxide-linux-x64-gnu",
+      "locked": "4.3.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "4.3.3",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-linux-x64-gnu/latest",
+      "status": "current"
+    },
+    {
+      "name": "@tailwindcss/oxide-linux-x64-musl",
+      "path": "node_modules/@tailwindcss/oxide-linux-x64-musl",
+      "locked": "4.3.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "4.3.3",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-linux-x64-musl/latest",
+      "status": "current"
+    },
+    {
+      "name": "@tailwindcss/oxide-wasm32-wasi",
+      "path": "node_modules/@tailwindcss/oxide-wasm32-wasi",
+      "locked": "4.3.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "4.3.3",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-wasm32-wasi/latest",
+      "status": "current"
+    },
+    {
+      "name": "@emnapi/wasi-threads",
+      "path": "node_modules/@tailwindcss/oxide-wasm32-wasi/node_modules/@emnapi/wasi-threads",
+      "locked": "1.2.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "2.1.0",
+      "source": "https://registry.npmjs.org/%40emnapi%2Fwasi-threads/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@napi-rs/wasm-runtime",
+      "path": "node_modules/@tailwindcss/oxide-wasm32-wasi/node_modules/@napi-rs/wasm-runtime",
+      "locked": "1.1.4",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.2.4",
+      "source": "https://registry.npmjs.org/%40napi-rs%2Fwasm-runtime/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@tybys/wasm-util",
+      "path": "node_modules/@tailwindcss/oxide-wasm32-wasi/node_modules/@tybys/wasm-util",
+      "locked": "0.10.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "0.10.4",
+      "source": "https://registry.npmjs.org/%40tybys%2Fwasm-util/latest",
+      "status": "update available"
+    },
+    {
+      "name": "tslib",
+      "path": "node_modules/@tailwindcss/oxide-wasm32-wasi/node_modules/tslib",
+      "locked": "2.8.1",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "2.8.1",
+      "source": "https://registry.npmjs.org/tslib/latest",
+      "status": "current"
+    },
+    {
+      "name": "@tailwindcss/oxide-win32-arm64-msvc",
+      "path": "node_modules/@tailwindcss/oxide-win32-arm64-msvc",
+      "locked": "4.3.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "4.3.3",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-win32-arm64-msvc/latest",
+      "status": "current"
+    },
+    {
+      "name": "@tailwindcss/oxide-win32-x64-msvc",
+      "path": "node_modules/@tailwindcss/oxide-win32-x64-msvc",
+      "locked": "4.3.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": "4.3.3",
+      "latest": "4.3.3",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-win32-x64-msvc/latest",
+      "status": "current"
+    },
+    {
+      "name": "@tailwindcss/postcss",
+      "path": "node_modules/@tailwindcss/postcss",
+      "locked": "4.3.3",
+      "scope": "direct development",
+      "declared": "^4.3.3",
+      "optional": false,
+      "dev": true,
+      "installed": "4.3.3",
+      "latest": "4.3.3",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Fpostcss/latest",
+      "status": "current"
+    },
+    {
+      "name": "@types/react",
+      "path": "node_modules/@types/react",
+      "locked": "19.2.18",
+      "scope": "direct development",
+      "declared": "^19.2.18",
+      "optional": false,
+      "dev": true,
+      "installed": "19.2.18",
+      "latest": "19.3.0",
+      "source": "https://registry.npmjs.org/%40types%2Freact/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@types/react-dom",
+      "path": "node_modules/@types/react-dom",
+      "locked": "19.2.5",
+      "scope": "direct development",
+      "declared": "^19.2.5",
+      "optional": false,
+      "dev": true,
+      "installed": "19.2.5",
+      "latest": "19.3.0",
+      "source": "https://registry.npmjs.org/%40types%2Freact-dom/latest",
+      "status": "update available"
+    },
+    {
+      "name": "@typescript/typescript-aix-ppc64",
+      "path": "node_modules/@typescript/typescript-aix-ppc64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-aix-ppc64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-darwin-arm64",
+      "path": "node_modules/@typescript/typescript-darwin-arm64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-darwin-arm64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-darwin-x64",
+      "path": "node_modules/@typescript/typescript-darwin-x64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-darwin-x64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-freebsd-arm64",
+      "path": "node_modules/@typescript/typescript-freebsd-arm64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-freebsd-arm64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-freebsd-x64",
+      "path": "node_modules/@typescript/typescript-freebsd-x64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-freebsd-x64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-linux-arm",
+      "path": "node_modules/@typescript/typescript-linux-arm",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-linux-arm/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-linux-arm64",
+      "path": "node_modules/@typescript/typescript-linux-arm64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-linux-arm64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-linux-loong64",
+      "path": "node_modules/@typescript/typescript-linux-loong64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-linux-loong64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-linux-mips64el",
+      "path": "node_modules/@typescript/typescript-linux-mips64el",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-linux-mips64el/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-linux-ppc64",
+      "path": "node_modules/@typescript/typescript-linux-ppc64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-linux-ppc64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-linux-riscv64",
+      "path": "node_modules/@typescript/typescript-linux-riscv64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-linux-riscv64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-linux-s390x",
+      "path": "node_modules/@typescript/typescript-linux-s390x",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-linux-s390x/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-linux-x64",
+      "path": "node_modules/@typescript/typescript-linux-x64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-linux-x64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-netbsd-arm64",
+      "path": "node_modules/@typescript/typescript-netbsd-arm64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-netbsd-arm64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-netbsd-x64",
+      "path": "node_modules/@typescript/typescript-netbsd-x64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-netbsd-x64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-openbsd-arm64",
+      "path": "node_modules/@typescript/typescript-openbsd-arm64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-openbsd-arm64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-openbsd-x64",
+      "path": "node_modules/@typescript/typescript-openbsd-x64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-openbsd-x64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-sunos-x64",
+      "path": "node_modules/@typescript/typescript-sunos-x64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-sunos-x64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-win32-arm64",
+      "path": "node_modules/@typescript/typescript-win32-arm64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-win32-arm64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@typescript/typescript-win32-x64",
+      "path": "node_modules/@typescript/typescript-win32-x64",
+      "locked": "7.0.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": "7.0.2",
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-win32-x64/latest",
+      "status": "current"
+    },
+    {
+      "name": "@vitejs/plugin-react",
+      "path": "node_modules/@vitejs/plugin-react",
+      "locked": "6.1.0",
+      "scope": "direct development",
+      "declared": "^6.1.0",
+      "optional": false,
+      "dev": true,
+      "installed": "6.1.0",
+      "latest": "6.1.1",
+      "source": "https://registry.npmjs.org/%40vitejs%2Fplugin-react/latest",
+      "status": "update available"
+    },
+    {
+      "name": "autoprefixer",
+      "path": "node_modules/autoprefixer",
+      "locked": "10.5.4",
+      "scope": "direct development",
+      "declared": "^10.5.4",
+      "optional": false,
+      "dev": true,
+      "installed": "10.5.4",
+      "latest": "10.6.1",
+      "source": "https://registry.npmjs.org/autoprefixer/latest",
+      "status": "update available"
+    },
+    {
+      "name": "baseline-browser-mapping",
+      "path": "node_modules/baseline-browser-mapping",
+      "locked": "2.11.12",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "2.11.12",
+      "latest": "2.11.25",
+      "source": "https://registry.npmjs.org/baseline-browser-mapping/latest",
+      "status": "update available"
+    },
+    {
+      "name": "browserslist",
+      "path": "node_modules/browserslist",
+      "locked": "4.28.7",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "4.28.7",
+      "latest": "4.29.0",
+      "source": "https://registry.npmjs.org/browserslist/latest",
+      "status": "update available"
+    },
+    {
+      "name": "caniuse-lite",
+      "path": "node_modules/caniuse-lite",
+      "locked": "1.0.30001806",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "1.0.30001806",
+      "latest": "1.0.30001810",
+      "source": "https://registry.npmjs.org/caniuse-lite/latest",
+      "status": "update available"
+    },
+    {
+      "name": "cookie",
+      "path": "node_modules/cookie",
+      "locked": "1.1.1",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": false,
+      "installed": "1.1.1",
+      "latest": "2.0.1",
+      "source": "https://registry.npmjs.org/cookie/latest",
+      "status": "update available"
+    },
+    {
+      "name": "csstype",
+      "path": "node_modules/csstype",
+      "locked": "3.2.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "3.2.3",
+      "latest": "3.2.3",
+      "source": "https://registry.npmjs.org/csstype/latest",
+      "status": "current"
+    },
+    {
+      "name": "detect-libc",
+      "path": "node_modules/detect-libc",
+      "locked": "2.1.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "2.1.2",
+      "latest": "2.1.2",
+      "source": "https://registry.npmjs.org/detect-libc/latest",
+      "status": "current"
+    },
+    {
+      "name": "electron-to-chromium",
+      "path": "node_modules/electron-to-chromium",
+      "locked": "1.5.400",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "1.5.400",
+      "latest": "1.5.433",
+      "source": "https://registry.npmjs.org/electron-to-chromium/latest",
+      "status": "update available"
+    },
+    {
+      "name": "enhanced-resolve",
+      "path": "node_modules/enhanced-resolve",
+      "locked": "5.24.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "5.24.3",
+      "latest": "5.25.1",
+      "source": "https://registry.npmjs.org/enhanced-resolve/latest",
+      "status": "update available"
+    },
+    {
+      "name": "escalade",
+      "path": "node_modules/escalade",
+      "locked": "3.2.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "3.2.0",
+      "latest": "3.2.0",
+      "source": "https://registry.npmjs.org/escalade/latest",
+      "status": "current"
+    },
+    {
+      "name": "fraction.js",
+      "path": "node_modules/fraction.js",
+      "locked": "5.3.4",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "5.3.4",
+      "latest": "5.3.4",
+      "source": "https://registry.npmjs.org/fraction.js/latest",
+      "status": "current"
+    },
+    {
+      "name": "fsevents",
+      "path": "node_modules/fsevents",
+      "locked": "2.3.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "2.3.3",
+      "source": "https://registry.npmjs.org/fsevents/latest",
+      "status": "current"
+    },
+    {
+      "name": "graceful-fs",
+      "path": "node_modules/graceful-fs",
+      "locked": "4.2.11",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "4.2.11",
+      "latest": "4.2.11",
+      "source": "https://registry.npmjs.org/graceful-fs/latest",
+      "status": "current"
+    },
+    {
+      "name": "jiti",
+      "path": "node_modules/jiti",
+      "locked": "2.7.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "2.7.0",
+      "latest": "2.7.0",
+      "source": "https://registry.npmjs.org/jiti/latest",
+      "status": "current"
+    },
+    {
+      "name": "lightningcss",
+      "path": "node_modules/lightningcss",
+      "locked": "1.32.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "1.32.0",
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss/latest",
+      "status": "update available"
+    },
+    {
+      "name": "lightningcss-android-arm64",
+      "path": "node_modules/lightningcss-android-arm64",
+      "locked": "1.32.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-android-arm64/latest",
+      "status": "update available"
+    },
+    {
+      "name": "lightningcss-darwin-arm64",
+      "path": "node_modules/lightningcss-darwin-arm64",
+      "locked": "1.32.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-darwin-arm64/latest",
+      "status": "update available"
+    },
+    {
+      "name": "lightningcss-darwin-x64",
+      "path": "node_modules/lightningcss-darwin-x64",
+      "locked": "1.32.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-darwin-x64/latest",
+      "status": "update available"
+    },
+    {
+      "name": "lightningcss-freebsd-x64",
+      "path": "node_modules/lightningcss-freebsd-x64",
+      "locked": "1.32.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-freebsd-x64/latest",
+      "status": "update available"
+    },
+    {
+      "name": "lightningcss-linux-arm-gnueabihf",
+      "path": "node_modules/lightningcss-linux-arm-gnueabihf",
+      "locked": "1.32.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-linux-arm-gnueabihf/latest",
+      "status": "update available"
+    },
+    {
+      "name": "lightningcss-linux-arm64-gnu",
+      "path": "node_modules/lightningcss-linux-arm64-gnu",
+      "locked": "1.32.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-linux-arm64-gnu/latest",
+      "status": "update available"
+    },
+    {
+      "name": "lightningcss-linux-arm64-musl",
+      "path": "node_modules/lightningcss-linux-arm64-musl",
+      "locked": "1.32.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-linux-arm64-musl/latest",
+      "status": "update available"
+    },
+    {
+      "name": "lightningcss-linux-x64-gnu",
+      "path": "node_modules/lightningcss-linux-x64-gnu",
+      "locked": "1.32.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-linux-x64-gnu/latest",
+      "status": "update available"
+    },
+    {
+      "name": "lightningcss-linux-x64-musl",
+      "path": "node_modules/lightningcss-linux-x64-musl",
+      "locked": "1.32.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-linux-x64-musl/latest",
+      "status": "update available"
+    },
+    {
+      "name": "lightningcss-win32-arm64-msvc",
+      "path": "node_modules/lightningcss-win32-arm64-msvc",
+      "locked": "1.32.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-win32-arm64-msvc/latest",
+      "status": "update available"
+    },
+    {
+      "name": "lightningcss-win32-x64-msvc",
+      "path": "node_modules/lightningcss-win32-x64-msvc",
+      "locked": "1.32.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": "1.32.0",
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-win32-x64-msvc/latest",
+      "status": "update available"
+    },
+    {
+      "name": "magic-string",
+      "path": "node_modules/magic-string",
+      "locked": "0.30.21",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "0.30.21",
+      "latest": "1.4.1",
+      "source": "https://registry.npmjs.org/magic-string/latest",
+      "status": "update available"
+    },
+    {
+      "name": "nanoid",
+      "path": "node_modules/nanoid",
+      "locked": "3.3.18",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "3.3.18",
+      "latest": "6.0.1",
+      "source": "https://registry.npmjs.org/nanoid/latest",
+      "status": "update available"
+    },
+    {
+      "name": "node-releases",
+      "path": "node_modules/node-releases",
+      "locked": "2.0.52",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "2.0.52",
+      "latest": "2.0.56",
+      "source": "https://registry.npmjs.org/node-releases/latest",
+      "status": "update available"
+    },
+    {
+      "name": "picocolors",
+      "path": "node_modules/picocolors",
+      "locked": "1.1.1",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "1.1.1",
+      "latest": "1.1.1",
+      "source": "https://registry.npmjs.org/picocolors/latest",
+      "status": "current"
+    },
+    {
+      "name": "picomatch",
+      "path": "node_modules/picomatch",
+      "locked": "4.0.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "4.0.5",
+      "latest": "4.0.7",
+      "source": "https://registry.npmjs.org/picomatch/latest",
+      "status": "update available"
+    },
+    {
+      "name": "postcss",
+      "path": "node_modules/postcss",
+      "locked": "8.5.26",
+      "scope": "direct development",
+      "declared": "^8.5.26",
+      "optional": false,
+      "dev": true,
+      "installed": "8.5.26",
+      "latest": "8.5.28",
+      "source": "https://registry.npmjs.org/postcss/latest",
+      "status": "update available"
+    },
+    {
+      "name": "postcss-value-parser",
+      "path": "node_modules/postcss-value-parser",
+      "locked": "4.2.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "4.2.0",
+      "latest": "4.2.0",
+      "source": "https://registry.npmjs.org/postcss-value-parser/latest",
+      "status": "current"
+    },
+    {
+      "name": "react",
+      "path": "node_modules/react",
+      "locked": "19.2.8",
+      "scope": "direct runtime",
+      "declared": "^19.2.8",
+      "optional": false,
+      "dev": false,
+      "installed": "19.2.8",
+      "latest": "19.3.0",
+      "source": "https://registry.npmjs.org/react/latest",
+      "status": "update available"
+    },
+    {
+      "name": "react-dom",
+      "path": "node_modules/react-dom",
+      "locked": "19.2.8",
+      "scope": "direct runtime",
+      "declared": "^19.2.8",
+      "optional": false,
+      "dev": false,
+      "installed": "19.2.8",
+      "latest": "19.3.0",
+      "source": "https://registry.npmjs.org/react-dom/latest",
+      "status": "update available"
+    },
+    {
+      "name": "react-router",
+      "path": "node_modules/react-router",
+      "locked": "7.18.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": false,
+      "installed": "7.18.2",
+      "latest": "8.4.0",
+      "source": "https://registry.npmjs.org/react-router/latest",
+      "status": "update available"
+    },
+    {
+      "name": "react-router-dom",
+      "path": "node_modules/react-router-dom",
+      "locked": "7.18.2",
+      "scope": "direct runtime",
+      "declared": "^7.18.2",
+      "optional": false,
+      "dev": false,
+      "installed": "7.18.2",
+      "latest": "7.18.4",
+      "source": "https://registry.npmjs.org/react-router-dom/latest",
+      "status": "update available"
+    },
+    {
+      "name": "rolldown",
+      "path": "node_modules/rolldown",
+      "locked": "1.2.5",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "1.2.5",
+      "latest": "1.2.9",
+      "source": "https://registry.npmjs.org/rolldown/latest",
+      "status": "update available"
+    },
+    {
+      "name": "scheduler",
+      "path": "node_modules/scheduler",
+      "locked": "0.27.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": false,
+      "installed": "0.27.0",
+      "latest": "0.28.0",
+      "source": "https://registry.npmjs.org/scheduler/latest",
+      "status": "update available"
+    },
+    {
+      "name": "set-cookie-parser",
+      "path": "node_modules/set-cookie-parser",
+      "locked": "2.7.2",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": false,
+      "installed": "2.7.2",
+      "latest": "3.1.2",
+      "source": "https://registry.npmjs.org/set-cookie-parser/latest",
+      "status": "update available"
+    },
+    {
+      "name": "source-map-js",
+      "path": "node_modules/source-map-js",
+      "locked": "1.2.1",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "1.2.1",
+      "latest": "1.2.1",
+      "source": "https://registry.npmjs.org/source-map-js/latest",
+      "status": "current"
+    },
+    {
+      "name": "tailwindcss",
+      "path": "node_modules/tailwindcss",
+      "locked": "4.3.3",
+      "scope": "direct development",
+      "declared": "^4.3.3",
+      "optional": false,
+      "dev": true,
+      "installed": "4.3.3",
+      "latest": "4.3.3",
+      "source": "https://registry.npmjs.org/tailwindcss/latest",
+      "status": "current"
+    },
+    {
+      "name": "tapable",
+      "path": "node_modules/tapable",
+      "locked": "2.3.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "2.3.3",
+      "latest": "2.3.3",
+      "source": "https://registry.npmjs.org/tapable/latest",
+      "status": "current"
+    },
+    {
+      "name": "tinyglobby",
+      "path": "node_modules/tinyglobby",
+      "locked": "0.2.17",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "0.2.17",
+      "latest": "0.2.17",
+      "source": "https://registry.npmjs.org/tinyglobby/latest",
+      "status": "current"
+    },
+    {
+      "name": "fdir",
+      "path": "node_modules/tinyglobby/node_modules/fdir",
+      "locked": "6.5.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "6.5.0",
+      "latest": "6.5.0",
+      "source": "https://registry.npmjs.org/fdir/latest",
+      "status": "current"
+    },
+    {
+      "name": "tslib",
+      "path": "node_modules/tslib",
+      "locked": "2.8.1",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "2.8.1",
+      "source": "https://registry.npmjs.org/tslib/latest",
+      "status": "current"
+    },
+    {
+      "name": "typescript",
+      "path": "node_modules/typescript",
+      "locked": "7.0.2",
+      "scope": "direct development",
+      "declared": "^7.0.2",
+      "optional": false,
+      "dev": true,
+      "installed": "7.0.2",
+      "latest": "7.0.2",
+      "source": "https://registry.npmjs.org/typescript/latest",
+      "status": "current"
+    },
+    {
+      "name": "update-browserslist-db",
+      "path": "node_modules/update-browserslist-db",
+      "locked": "1.2.3",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "1.2.3",
+      "latest": "1.3.3",
+      "source": "https://registry.npmjs.org/update-browserslist-db/latest",
+      "status": "update available"
+    },
+    {
+      "name": "vite",
+      "path": "node_modules/vite",
+      "locked": "8.2.2",
+      "scope": "direct development",
+      "declared": "^8.2.2",
+      "optional": false,
+      "dev": true,
+      "installed": "8.2.2",
+      "latest": "8.3.0",
+      "source": "https://registry.npmjs.org/vite/latest",
+      "status": "update available"
+    },
+    {
+      "name": "lightningcss",
+      "path": "node_modules/vite/node_modules/lightningcss",
+      "locked": "1.33.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": false,
+      "dev": true,
+      "installed": "1.33.0",
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss/latest",
+      "status": "current"
+    },
+    {
+      "name": "lightningcss-android-arm64",
+      "path": "node_modules/vite/node_modules/lightningcss-android-arm64",
+      "locked": "1.33.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-android-arm64/latest",
+      "status": "current"
+    },
+    {
+      "name": "lightningcss-darwin-arm64",
+      "path": "node_modules/vite/node_modules/lightningcss-darwin-arm64",
+      "locked": "1.33.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-darwin-arm64/latest",
+      "status": "current"
+    },
+    {
+      "name": "lightningcss-darwin-x64",
+      "path": "node_modules/vite/node_modules/lightningcss-darwin-x64",
+      "locked": "1.33.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-darwin-x64/latest",
+      "status": "current"
+    },
+    {
+      "name": "lightningcss-freebsd-x64",
+      "path": "node_modules/vite/node_modules/lightningcss-freebsd-x64",
+      "locked": "1.33.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-freebsd-x64/latest",
+      "status": "current"
+    },
+    {
+      "name": "lightningcss-linux-arm-gnueabihf",
+      "path": "node_modules/vite/node_modules/lightningcss-linux-arm-gnueabihf",
+      "locked": "1.33.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-linux-arm-gnueabihf/latest",
+      "status": "current"
+    },
+    {
+      "name": "lightningcss-linux-arm64-gnu",
+      "path": "node_modules/vite/node_modules/lightningcss-linux-arm64-gnu",
+      "locked": "1.33.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-linux-arm64-gnu/latest",
+      "status": "current"
+    },
+    {
+      "name": "lightningcss-linux-arm64-musl",
+      "path": "node_modules/vite/node_modules/lightningcss-linux-arm64-musl",
+      "locked": "1.33.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-linux-arm64-musl/latest",
+      "status": "current"
+    },
+    {
+      "name": "lightningcss-linux-x64-gnu",
+      "path": "node_modules/vite/node_modules/lightningcss-linux-x64-gnu",
+      "locked": "1.33.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-linux-x64-gnu/latest",
+      "status": "current"
+    },
+    {
+      "name": "lightningcss-linux-x64-musl",
+      "path": "node_modules/vite/node_modules/lightningcss-linux-x64-musl",
+      "locked": "1.33.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-linux-x64-musl/latest",
+      "status": "current"
+    },
+    {
+      "name": "lightningcss-win32-arm64-msvc",
+      "path": "node_modules/vite/node_modules/lightningcss-win32-arm64-msvc",
+      "locked": "1.33.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": null,
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-win32-arm64-msvc/latest",
+      "status": "current"
+    },
+    {
+      "name": "lightningcss-win32-x64-msvc",
+      "path": "node_modules/vite/node_modules/lightningcss-win32-x64-msvc",
+      "locked": "1.33.0",
+      "scope": "transitive",
+      "declared": null,
+      "optional": true,
+      "dev": true,
+      "installed": "1.33.0",
+      "latest": "1.33.0",
+      "source": "https://registry.npmjs.org/lightningcss-win32-x64-msvc/latest",
+      "status": "current"
+    }
+  ],
+  "registry": [
+    {
+      "name": "@alloc/quick-lru",
+      "source": "https://registry.npmjs.org/%40alloc%2Fquick-lru/latest",
+      "latest": "5.3.0",
+      "engines": {
+        "node": ">=10"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@emnapi/core",
+      "source": "https://registry.npmjs.org/%40emnapi%2Fcore/latest",
+      "latest": "1.11.3",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "@emnapi/runtime",
+      "source": "https://registry.npmjs.org/%40emnapi%2Fruntime/latest",
+      "latest": "1.11.3",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "@emnapi/wasi-threads",
+      "source": "https://registry.npmjs.org/%40emnapi%2Fwasi-threads/latest",
+      "latest": "2.1.0",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "@jridgewell/gen-mapping",
+      "source": "https://registry.npmjs.org/%40jridgewell%2Fgen-mapping/latest",
+      "latest": "0.3.13",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "@jridgewell/remapping",
+      "source": "https://registry.npmjs.org/%40jridgewell%2Fremapping/latest",
+      "latest": "2.3.5",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "@jridgewell/resolve-uri",
+      "source": "https://registry.npmjs.org/%40jridgewell%2Fresolve-uri/latest",
+      "latest": "3.1.2",
+      "engines": {
+        "node": ">=6.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@jridgewell/sourcemap-codec",
+      "source": "https://registry.npmjs.org/%40jridgewell%2Fsourcemap-codec/latest",
+      "latest": "1.6.0",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "@jridgewell/trace-mapping",
+      "source": "https://registry.npmjs.org/%40jridgewell%2Ftrace-mapping/latest",
+      "latest": "0.3.31",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "@napi-rs/wasm-runtime",
+      "source": "https://registry.npmjs.org/%40napi-rs%2Fwasm-runtime/latest",
+      "latest": "1.2.4",
+      "engines": {
+        "node": "^20.19.0 || ^22.13.0 || >=23.5.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@oxc-project/types",
+      "source": "https://registry.npmjs.org/%40oxc-project%2Ftypes/latest",
+      "latest": "0.150.0",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "@replit/connectors-sdk",
+      "source": "https://registry.npmjs.org/%40replit%2Fconnectors-sdk/latest",
+      "latest": "0.4.3",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "@rolldown/binding-android-arm-eabi",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-android-arm-eabi/latest",
+      "latest": "1.2.9",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@rolldown/binding-android-arm64",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-android-arm64/latest",
+      "latest": "1.2.9",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@rolldown/binding-darwin-arm64",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-darwin-arm64/latest",
+      "latest": "1.2.9",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@rolldown/binding-darwin-x64",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-darwin-x64/latest",
+      "latest": "1.2.9",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@rolldown/binding-freebsd-x64",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-freebsd-x64/latest",
+      "latest": "1.2.9",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@rolldown/binding-linux-arm-gnueabihf",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-linux-arm-gnueabihf/latest",
+      "latest": "1.2.9",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@rolldown/binding-linux-arm64-gnu",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-linux-arm64-gnu/latest",
+      "latest": "1.2.9",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@rolldown/binding-linux-arm64-musl",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-linux-arm64-musl/latest",
+      "latest": "1.2.9",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@rolldown/binding-linux-ppc64-gnu",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-linux-ppc64-gnu/latest",
+      "latest": "1.2.9",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@rolldown/binding-linux-s390x-gnu",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-linux-s390x-gnu/latest",
+      "latest": "1.2.9",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@rolldown/binding-linux-x64-gnu",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-linux-x64-gnu/latest",
+      "latest": "1.2.9",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@rolldown/binding-linux-x64-musl",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-linux-x64-musl/latest",
+      "latest": "1.2.9",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@rolldown/binding-openharmony-arm64",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-openharmony-arm64/latest",
+      "latest": "1.2.9",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@rolldown/binding-win32-arm64-msvc",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-win32-arm64-msvc/latest",
+      "latest": "1.2.9",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@rolldown/binding-win32-x64-msvc",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fbinding-win32-x64-msvc/latest",
+      "latest": "1.2.9",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@rolldown/pluginutils",
+      "source": "https://registry.npmjs.org/%40rolldown%2Fpluginutils/latest",
+      "latest": "1.0.1",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "@tailwindcss/node",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Fnode/latest",
+      "latest": "4.3.3",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "@tailwindcss/oxide",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide/latest",
+      "latest": "4.3.3",
+      "engines": {
+        "node": ">= 20"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@tailwindcss/oxide-android-arm64",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-android-arm64/latest",
+      "latest": "4.3.3",
+      "engines": {
+        "node": ">= 20"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@tailwindcss/oxide-darwin-arm64",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-darwin-arm64/latest",
+      "latest": "4.3.3",
+      "engines": {
+        "node": ">= 20"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@tailwindcss/oxide-darwin-x64",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-darwin-x64/latest",
+      "latest": "4.3.3",
+      "engines": {
+        "node": ">= 20"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@tailwindcss/oxide-freebsd-x64",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-freebsd-x64/latest",
+      "latest": "4.3.3",
+      "engines": {
+        "node": ">= 20"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@tailwindcss/oxide-linux-arm-gnueabihf",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-linux-arm-gnueabihf/latest",
+      "latest": "4.3.3",
+      "engines": {
+        "node": ">= 20"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@tailwindcss/oxide-linux-arm64-gnu",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-linux-arm64-gnu/latest",
+      "latest": "4.3.3",
+      "engines": {
+        "node": ">= 20"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@tailwindcss/oxide-linux-arm64-musl",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-linux-arm64-musl/latest",
+      "latest": "4.3.3",
+      "engines": {
+        "node": ">= 20"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@tailwindcss/oxide-linux-x64-gnu",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-linux-x64-gnu/latest",
+      "latest": "4.3.3",
+      "engines": {
+        "node": ">= 20"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@tailwindcss/oxide-linux-x64-musl",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-linux-x64-musl/latest",
+      "latest": "4.3.3",
+      "engines": {
+        "node": ">= 20"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@tailwindcss/oxide-wasm32-wasi",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-wasm32-wasi/latest",
+      "latest": "4.3.3",
+      "engines": {
+        "node": ">=14.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@tailwindcss/oxide-win32-arm64-msvc",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-win32-arm64-msvc/latest",
+      "latest": "4.3.3",
+      "engines": {
+        "node": ">= 20"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@tailwindcss/oxide-win32-x64-msvc",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Foxide-win32-x64-msvc/latest",
+      "latest": "4.3.3",
+      "engines": {
+        "node": ">= 20"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@tailwindcss/postcss",
+      "source": "https://registry.npmjs.org/%40tailwindcss%2Fpostcss/latest",
+      "latest": "4.3.3",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "@tybys/wasm-util",
+      "source": "https://registry.npmjs.org/%40tybys%2Fwasm-util/latest",
+      "latest": "0.10.4",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "@types/react",
+      "source": "https://registry.npmjs.org/%40types%2Freact/latest",
+      "latest": "19.3.0",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "@types/react-dom",
+      "source": "https://registry.npmjs.org/%40types%2Freact-dom/latest",
+      "latest": "19.3.0",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-aix-ppc64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-aix-ppc64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-darwin-arm64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-darwin-arm64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-darwin-x64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-darwin-x64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-freebsd-arm64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-freebsd-arm64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-freebsd-x64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-freebsd-x64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-linux-arm",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-linux-arm/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-linux-arm64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-linux-arm64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-linux-loong64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-linux-loong64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-linux-mips64el",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-linux-mips64el/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-linux-ppc64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-linux-ppc64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-linux-riscv64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-linux-riscv64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-linux-s390x",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-linux-s390x/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-linux-x64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-linux-x64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-netbsd-arm64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-netbsd-arm64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-netbsd-x64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-netbsd-x64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-openbsd-arm64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-openbsd-arm64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-openbsd-x64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-openbsd-x64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-sunos-x64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-sunos-x64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-win32-arm64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-win32-arm64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@typescript/typescript-win32-x64",
+      "source": "https://registry.npmjs.org/%40typescript%2Ftypescript-win32-x64/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "@vitejs/plugin-react",
+      "source": "https://registry.npmjs.org/%40vitejs%2Fplugin-react/latest",
+      "latest": "6.1.1",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "autoprefixer",
+      "source": "https://registry.npmjs.org/autoprefixer/latest",
+      "latest": "10.6.1",
+      "engines": {
+        "node": "^10 || ^12 || >=14"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "baseline-browser-mapping",
+      "source": "https://registry.npmjs.org/baseline-browser-mapping/latest",
+      "latest": "2.11.25",
+      "engines": {
+        "node": ">=6.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "browserslist",
+      "source": "https://registry.npmjs.org/browserslist/latest",
+      "latest": "4.29.0",
+      "engines": {
+        "node": "^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "bun",
+      "source": "https://registry.npmjs.org/bun/latest",
+      "latest": "1.4.2",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "caniuse-lite",
+      "source": "https://registry.npmjs.org/caniuse-lite/latest",
+      "latest": "1.0.30001810",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "cookie",
+      "source": "https://registry.npmjs.org/cookie/latest",
+      "latest": "2.0.1",
+      "engines": {
+        "node": ">=22"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "csstype",
+      "source": "https://registry.npmjs.org/csstype/latest",
+      "latest": "3.2.3",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "detect-libc",
+      "source": "https://registry.npmjs.org/detect-libc/latest",
+      "latest": "2.1.2",
+      "engines": {
+        "node": ">=8"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "electron-to-chromium",
+      "source": "https://registry.npmjs.org/electron-to-chromium/latest",
+      "latest": "1.5.433",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "enhanced-resolve",
+      "source": "https://registry.npmjs.org/enhanced-resolve/latest",
+      "latest": "5.25.1",
+      "engines": {
+        "node": ">=10.13.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "escalade",
+      "source": "https://registry.npmjs.org/escalade/latest",
+      "latest": "3.2.0",
+      "engines": {
+        "node": ">=6"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "fdir",
+      "source": "https://registry.npmjs.org/fdir/latest",
+      "latest": "6.5.0",
+      "engines": {
+        "node": ">=12.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "fraction.js",
+      "source": "https://registry.npmjs.org/fraction.js/latest",
+      "latest": "5.3.4",
+      "engines": {
+        "node": "*"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "fsevents",
+      "source": "https://registry.npmjs.org/fsevents/latest",
+      "latest": "2.3.3",
+      "engines": {
+        "node": "^8.16.0 || ^10.6.0 || >=11.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "graceful-fs",
+      "source": "https://registry.npmjs.org/graceful-fs/latest",
+      "latest": "4.2.11",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "jiti",
+      "source": "https://registry.npmjs.org/jiti/latest",
+      "latest": "2.7.0",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "lightningcss",
+      "source": "https://registry.npmjs.org/lightningcss/latest",
+      "latest": "1.33.0",
+      "engines": {
+        "node": ">= 12.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "lightningcss-android-arm64",
+      "source": "https://registry.npmjs.org/lightningcss-android-arm64/latest",
+      "latest": "1.33.0",
+      "engines": {
+        "node": ">= 12.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "lightningcss-darwin-arm64",
+      "source": "https://registry.npmjs.org/lightningcss-darwin-arm64/latest",
+      "latest": "1.33.0",
+      "engines": {
+        "node": ">= 12.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "lightningcss-darwin-x64",
+      "source": "https://registry.npmjs.org/lightningcss-darwin-x64/latest",
+      "latest": "1.33.0",
+      "engines": {
+        "node": ">= 12.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "lightningcss-freebsd-x64",
+      "source": "https://registry.npmjs.org/lightningcss-freebsd-x64/latest",
+      "latest": "1.33.0",
+      "engines": {
+        "node": ">= 12.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "lightningcss-linux-arm-gnueabihf",
+      "source": "https://registry.npmjs.org/lightningcss-linux-arm-gnueabihf/latest",
+      "latest": "1.33.0",
+      "engines": {
+        "node": ">= 12.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "lightningcss-linux-arm64-gnu",
+      "source": "https://registry.npmjs.org/lightningcss-linux-arm64-gnu/latest",
+      "latest": "1.33.0",
+      "engines": {
+        "node": ">= 12.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "lightningcss-linux-arm64-musl",
+      "source": "https://registry.npmjs.org/lightningcss-linux-arm64-musl/latest",
+      "latest": "1.33.0",
+      "engines": {
+        "node": ">= 12.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "lightningcss-linux-x64-gnu",
+      "source": "https://registry.npmjs.org/lightningcss-linux-x64-gnu/latest",
+      "latest": "1.33.0",
+      "engines": {
+        "node": ">= 12.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "lightningcss-linux-x64-musl",
+      "source": "https://registry.npmjs.org/lightningcss-linux-x64-musl/latest",
+      "latest": "1.33.0",
+      "engines": {
+        "node": ">= 12.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "lightningcss-win32-arm64-msvc",
+      "source": "https://registry.npmjs.org/lightningcss-win32-arm64-msvc/latest",
+      "latest": "1.33.0",
+      "engines": {
+        "node": ">= 12.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "lightningcss-win32-x64-msvc",
+      "source": "https://registry.npmjs.org/lightningcss-win32-x64-msvc/latest",
+      "latest": "1.33.0",
+      "engines": {
+        "node": ">= 12.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "magic-string",
+      "source": "https://registry.npmjs.org/magic-string/latest",
+      "latest": "1.4.1",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "mermaid",
+      "source": "https://registry.npmjs.org/mermaid/latest",
+      "latest": "12.0.0",
+      "engines": {
+        "node": ">=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "nanoid",
+      "source": "https://registry.npmjs.org/nanoid/latest",
+      "latest": "6.0.1",
+      "engines": {
+        "node": "^22 || ^24 || >=26"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "node-releases",
+      "source": "https://registry.npmjs.org/node-releases/latest",
+      "latest": "2.0.56",
+      "engines": {
+        "node": ">=18"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "npm",
+      "source": "https://registry.npmjs.org/npm/latest",
+      "latest": "12.0.2",
+      "engines": {
+        "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "picocolors",
+      "source": "https://registry.npmjs.org/picocolors/latest",
+      "latest": "1.1.1",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "picomatch",
+      "source": "https://registry.npmjs.org/picomatch/latest",
+      "latest": "4.0.7",
+      "engines": {
+        "node": ">=12"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "postcss",
+      "source": "https://registry.npmjs.org/postcss/latest",
+      "latest": "8.5.28",
+      "engines": {
+        "node": "^10 || ^12 || >=14"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "postcss-value-parser",
+      "source": "https://registry.npmjs.org/postcss-value-parser/latest",
+      "latest": "4.2.0",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "react",
+      "source": "https://registry.npmjs.org/react/latest",
+      "latest": "19.3.0",
+      "engines": {
+        "node": ">=0.10.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "react-dom",
+      "source": "https://registry.npmjs.org/react-dom/latest",
+      "latest": "19.3.0",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "react-router",
+      "source": "https://registry.npmjs.org/react-router/latest",
+      "latest": "8.4.0",
+      "engines": {
+        "node": ">=22.22.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "react-router-dom",
+      "source": "https://registry.npmjs.org/react-router-dom/latest",
+      "latest": "7.18.4",
+      "engines": {
+        "node": ">=20.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "rolldown",
+      "source": "https://registry.npmjs.org/rolldown/latest",
+      "latest": "1.2.9",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "scheduler",
+      "source": "https://registry.npmjs.org/scheduler/latest",
+      "latest": "0.28.0",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "set-cookie-parser",
+      "source": "https://registry.npmjs.org/set-cookie-parser/latest",
+      "latest": "3.1.2",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "source-map-js",
+      "source": "https://registry.npmjs.org/source-map-js/latest",
+      "latest": "1.2.1",
+      "engines": {
+        "node": ">=0.10.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "tailwindcss",
+      "source": "https://registry.npmjs.org/tailwindcss/latest",
+      "latest": "4.3.3",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "tapable",
+      "source": "https://registry.npmjs.org/tapable/latest",
+      "latest": "2.3.3",
+      "engines": {
+        "node": ">=6"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "tinyglobby",
+      "source": "https://registry.npmjs.org/tinyglobby/latest",
+      "latest": "0.2.17",
+      "engines": {
+        "node": ">=12.0.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "tslib",
+      "source": "https://registry.npmjs.org/tslib/latest",
+      "latest": "2.8.1",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "typescript",
+      "source": "https://registry.npmjs.org/typescript/latest",
+      "latest": "7.0.2",
+      "engines": {
+        "node": ">=16.20.0"
+      },
+      "deprecated": null
+    },
+    {
+      "name": "update-browserslist-db",
+      "source": "https://registry.npmjs.org/update-browserslist-db/latest",
+      "latest": "1.3.3",
+      "engines": null,
+      "deprecated": null
+    },
+    {
+      "name": "vite",
+      "source": "https://registry.npmjs.org/vite/latest",
+      "latest": "8.3.0",
+      "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+      },
+      "deprecated": null
+    }
+  ],
+  "actions": [
+    {
+      "name": "actions/checkout",
+      "version": "v7.0.1",
+      "files": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/static.yml",
+        ".github/workflows/technology-watch.yml",
+        ".github/workflows/technology-watch.yml"
+      ],
+      "source": "https://api.github.com/repos/actions/checkout/releases/latest",
+      "latest": "v7.0.1",
+      "publishedAt": "2026-07-20T15:10:05Z",
+      "status": "current"
+    },
+    {
+      "name": "actions/setup-node",
+      "version": "v7.0.0",
+      "files": [
+        ".github/workflows/ci.yml",
+        ".github/workflows/static.yml",
+        ".github/workflows/technology-watch.yml",
+        ".github/workflows/technology-watch.yml"
+      ],
+      "source": "https://api.github.com/repos/actions/setup-node/releases/latest",
+      "latest": "v7.0.0",
+      "publishedAt": "2026-07-14T02:46:05Z",
+      "status": "current"
+    },
+    {
+      "name": "actions/configure-pages",
+      "version": "v6.0.0",
+      "files": [
+        ".github/workflows/static.yml"
+      ],
+      "source": "https://api.github.com/repos/actions/configure-pages/releases/latest",
+      "latest": "v6.0.0",
+      "publishedAt": "2026-03-25T17:00:49Z",
+      "status": "current"
+    },
+    {
+      "name": "actions/upload-pages-artifact",
+      "version": "v5.0.0",
+      "files": [
+        ".github/workflows/static.yml"
+      ],
+      "source": "https://api.github.com/repos/actions/upload-pages-artifact/releases/latest",
+      "latest": "v5.0.0",
+      "publishedAt": "2026-04-10T18:22:59Z",
+      "status": "current"
+    },
+    {
+      "name": "actions/deploy-pages",
+      "version": "v5.0.0",
+      "files": [
+        ".github/workflows/static.yml"
+      ],
+      "source": "https://api.github.com/repos/actions/deploy-pages/releases/latest",
+      "latest": "v5.0.1",
+      "publishedAt": "2026-09-01T21:31:19Z",
+      "status": "update available"
+    },
+    {
+      "name": "actions/upload-artifact",
+      "version": "v7.0.1",
+      "files": [
+        ".github/workflows/technology-watch.yml"
+      ],
+      "source": "https://api.github.com/repos/actions/upload-artifact/releases/latest",
+      "latest": "v7.0.1",
+      "publishedAt": "2026-04-10T17:31:14Z",
+      "status": "current"
+    }
+  ],
+  "runtimes": [
+    {
+      "name": "Node.js Current",
+      "current": "v24.11.1",
+      "latest": "v26.9.0",
+      "source": "https://nodejs.org/dist/index.json"
+    },
+    {
+      "name": "Node.js LTS",
+      "current": "v24.11.1",
+      "latest": "v24.21.0",
+      "source": "https://nodejs.org/dist/index.json"
+    },
+    {
+      "name": "npm",
+      "current": "11.6.2",
+      "latest": "12.0.2",
+      "source": "https://registry.npmjs.org/npm/latest"
+    },
+    {
+      "name": "Python (support tools)",
+      "current": "Python 3.14.0rc1",
+      "latest": "3.14.7",
+      "source": "https://www.python.org/downloads/"
+    },
+    {
+      "name": "Bun (test runner)",
+      "current": null,
+      "latest": "1.4.2",
+      "source": "https://registry.npmjs.org/bun/latest"
+    },
+    {
+      "name": "Mermaid (reference only; not installed)",
+      "current": "not an application dependency",
+      "latest": "12.0.0",
+      "source": "https://registry.npmjs.org/mermaid/latest"
+    }
+  ],
+  "errors": []
+}

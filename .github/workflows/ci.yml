@@ -39,6 +39,9 @@ jobs:
       - name: Type-check
         run: npm run check
 
+      - name: Technology audit regression tests (offline)
+        run: npm run test:technology
+
       - name: Accessibility source check
         run: npm run check:a11y
 

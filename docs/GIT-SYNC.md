@@ -18,6 +18,11 @@ From the repository root:
 npm run sync
 ```
 
+On Windows this command selects Git Bash from Git for Windows, avoiding the
+Windows `bash.exe` alias that requires WSL. `SYNC_BASH` can select a portable
+Git Bash installation. Linux and Replit use Bash from `PATH`. Shell files
+use LF line endings through `.gitattributes`.
+
 The command type-checks, commits the current working tree, fetches
 `origin/main`, classifies the two histories, reconciles safely, pushes without
 force, and confirms that local `main` equals `origin/main`. In Replit, if the
@@ -28,6 +33,23 @@ connection is available in Replit), it also prints Actions runs for the pushed
 commit. Use
 `npm run sync -- --check` for a type-check-only check with no commit or network
 activity.
+
+A remote-only update fast-forwards and stops without attempting a push.
+Fetching does not prune unrelated refs. Divergent local commits receive a
+recovery ref under `refs/archive/sync-before-rebase/` before rebasing. When
+the API fallback publishes an equivalent tree with a different commit SHA,
+sync preserves the old commit, requires a clean checkout, and moves only the
+branch ref with an expected-old-SHA guard. It never uses a hard reset.
+
+If GitHub rejects publication because branch rules require a pull request,
+publish a reviewed `codex/` branch and merge it through GitHub after CI.
+Do not change protections or retry the same rejected push repeatedly.
+
+Replit's Git panel and the Replit app connector have separate authorization
+from Shell Git. A clean checkout and matching commit SHAs do not prove those
+connections are authenticated. Refresh the Git panel after Shell recovery;
+if it still requests GitHub access, reconnect the existing GitHub provider in
+Replit account settings and complete any owner-only passkey confirmation.
 
 If the bound connector rejects a protected tree path such as
 `.github/workflows`, the publisher retries that API request through

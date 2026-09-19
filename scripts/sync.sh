@@ -46,7 +46,7 @@ report_actions() {
         warn "GitHub Actions status could not be read; inspect the Actions tab for ${commit:0:12}."
       return 0
     fi
-  elif [[ -n "${REPLIT_CONNECTORS_HOSTNAME:-}" || -n "${REPL_IDENTITY:-}" ]]; then
+  elif [[ -n "${REPLIT_CONNECTORS_HOSTNAME:-}" || -n "${REPLIT_IDENTITY:-}" ]]; then
     log "Recording GitHub Actions status for ${commit:0:12} via the bound connection..."
     node scripts/github-actions-status.mjs "$commit" ||
       warn "GitHub Actions status could not be read; inspect the Actions tab for ${commit:0:12}."
@@ -112,7 +112,7 @@ fi
 
 # ── Step 3: Fetch and classify remote state ──────────────────────────────────
 log "Fetching origin/main before reconciliation..."
-git fetch --prune origin main ||
+git fetch --no-prune origin main ||
   fail "Fetch failed. No push was attempted; check network access and GitHub authorization."
 
 LOCAL=$(git rev-parse main)
@@ -128,10 +128,14 @@ elif [[ "$LOCAL" == "$BASE" ]]; then
   log "Remote is ahead; fast-forwarding local main..."
   git merge --ff-only origin/main ||
     fail "Remote-ahead recovery was not a fast-forward. No push was attempted."
+  ok "Local main equals origin/main (${REMOTE:0:12}); no push is needed."
+  report_actions "$REMOTE"
+  exit 0
 elif [[ "$REMOTE" == "$BASE" ]]; then
   ok "Local main is ahead of origin/main; no rebase needed."
 else
   warn "Local and remote have diverged; rebasing local commits onto origin/main."
+  git update-ref "refs/archive/sync-before-rebase/${LOCAL}" "$LOCAL"
   if ! git rebase origin/main; then
     git rebase --abort >/dev/null 2>&1 || true
     fail "Rebase conflict detected. Rebase was aborted; resolve the conflict manually, then rerun sync. No push was attempted."
@@ -145,24 +149,32 @@ LOCAL=$(git rev-parse main)
 # ── Step 4: Safe push and post-push convergence check ────────────────────────
 log "Pushing main without force..."
 if ! git push --set-upstream origin main; then
-  warn "Git transport could not authenticate. Trying the bound GitHub connection without storing credentials..."
+  warn "Git push failed. Trying the bound GitHub connection without storing credentials..."
   if [[ -n "${REPLIT_CONNECTORS_HOSTNAME:-}" || -n "${REPLIT_IDENTITY:-}" ]] &&
      node scripts/github-api-publish.mjs "$(git rev-parse main)"; then
     log "Fetching the published commit for local convergence..."
-    git fetch --prune origin main ||
+    git fetch --no-prune origin main ||
       fail "The commit was published, but its public read-back failed. Inspect origin/main before retrying."
     REMOTE=$(git rev-parse origin/main)
     LOCAL_TREE=$(git rev-parse main^{tree})
     REMOTE_TREE=$(git rev-parse origin/main^{tree})
     [[ "$LOCAL_TREE" == "$REMOTE_TREE" ]] ||
       fail "Published tree differs from local main. No further update was attempted."
-    [[ "$LOCAL" == "$REMOTE" ]] || git reset --hard origin/main
+    if [[ "$LOCAL" != "$REMOTE" ]]; then
+      [[ -z "$(git status --porcelain)" ]] ||
+        fail "New local work appeared during publication. It was preserved; reconcile main manually."
+      git update-ref "refs/archive/sync-before-api/${LOCAL}" "$LOCAL"
+      # Identical trees mean the index and files already match. Only move
+      # main, with an expected-old-SHA guard; never discard working files.
+      git update-ref refs/heads/main "$REMOTE" "$LOCAL" ||
+        fail "Local main moved during publication; no checkout was overwritten."
+    fi
   else
     fail "Push rejected. No force-push is used; fetch again and follow docs/GIT-SYNC.md."
   fi
 fi
 
-git fetch --prune origin main ||
+git fetch --no-prune origin main ||
   fail "Could not refresh origin/main after pushing. Stop and inspect remote state."
 LOCAL=$(git rev-parse main)
 REMOTE=$(git rev-parse origin/main)
