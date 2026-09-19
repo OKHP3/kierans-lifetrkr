@@ -10,7 +10,7 @@ import { URL } from 'node:url'
 const baseUrl = process.env.BROWSER_TEST_URL ?? 'http://127.0.0.1:5000'
 const chromiumPath = process.env.CHROMIUM_PATH ?? '/repl/tools/bin/chromium'
 
-function delay(milliseconds) {
+export function delay(milliseconds) {
   return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 
@@ -372,7 +372,7 @@ function createPageClient(connection) {
   }
 }
 
-async function startBrowser() {
+export async function startBrowser() {
   const profileDirectory = await mkdtemp(`${tmpdir()}/lifetrkr-rituals-browser-`)
   const browser = spawn(chromiumPath, [
     '--headless=new',
@@ -703,7 +703,9 @@ async function main() {
   }
 }
 
-main().catch(error => {
-  console.error(error.stack ?? error)
-  process.exitCode = 1
-})
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch(error => {
+    console.error(error.stack ?? error)
+    process.exitCode = 1
+  })
+}
