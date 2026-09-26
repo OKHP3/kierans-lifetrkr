@@ -15,6 +15,7 @@
     "check": "tsc --noEmit",
     "audit:technology": "node scripts/technology-audit.mjs",
     "test:technology": "node --test scripts/technology-audit.test.mjs",
+    "test:browser-harness": "node --test scripts/browser-harness.test.mjs",
     "check:a11y": "node scripts/accessibility-check.mjs",
     "release:check": "node scripts/inspect-artifact.mjs",
     "test:sync": "node --test scripts/sync-regression.test.mjs",

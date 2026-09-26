@@ -5,18 +5,54 @@ import { spawn } from 'node:child_process'
 import { request } from 'node:http'
 import net from 'node:net'
 import { randomBytes } from 'node:crypto'
-import { URL } from 'node:url'
+import { URL, fileURLToPath } from 'node:url'
+import { resolve, relative, isAbsolute, basename } from 'node:path'
 
 const baseUrl = process.env.BROWSER_TEST_URL ?? 'http://127.0.0.1:5000'
 const chromiumPath = process.env.CHROMIUM_PATH ?? '/repl/tools/bin/chromium'
+const isEdge = /(?:^|[\\/])msedge(?:\.exe)?$/i.test(chromiumPath)
 
 export function delay(milliseconds) {
   return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 
 function waitForProcessExit(child) {
-  if (child.exitCode !== null) return Promise.resolve()
-  return new Promise(resolve => child.once('exit', resolve))
+  if (child.exitCode !== null || child.signalCode !== null) return Promise.resolve()
+  return new Promise((resolve, reject) => {
+    const exited = () => { clearTimeout(timeout); resolve() }
+    const timeout = setTimeout(() => {
+      child.off('exit', exited)
+      reject(new Error('Test browser did not exit within 10 seconds'))
+    }, 10_000)
+    child.once('exit', exited)
+  })
+}
+
+export async function stopBrowser(runtime, { removeProfile = true } = {}) {
+  const { browser, profileDirectory, page } = runtime
+  // Some Windows launchers exit before the actual browser does.
+  await Promise.race([
+    page.connection.send('Browser.close').catch(() => {}),
+    delay(2_000),
+  ])
+  if (browser.exitCode === null && browser.signalCode === null) {
+    // Let Chromium close its child processes and profile files before cleanup.
+    await Promise.race([waitForProcessExit(browser), delay(3_000)])
+    if (browser.exitCode === null && browser.signalCode === null) {
+      browser.kill('SIGKILL')
+      await waitForProcessExit(browser)
+    }
+  }
+  page.connection.close()
+  if (removeProfile) await removeBrowserProfile(profileDirectory)
+}
+
+export async function removeBrowserProfile(profileDirectory) {
+  const profile = resolve(profileDirectory)
+  const insideTemp = relative(resolve(tmpdir()), profile)
+  assert.ok(insideTemp && !insideTemp.startsWith('..') && !isAbsolute(insideTemp)
+    && basename(profile).startsWith('lifetrkr-'), 'Refusing to remove a non-test browser profile')
+  await rm(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
 }
 
 function getJson(url, options = {}) {
@@ -97,7 +133,10 @@ function connectWebSocket(webSocketUrl) {
 
   function cleanup(error) {
     if (!handshakeComplete) rejectReady(error)
-    for (const { reject } of pending.values()) reject(error)
+    for (const { reject, timeout } of pending.values()) {
+      clearTimeout(timeout)
+      reject(error)
+    }
     pending.clear()
   }
 
@@ -168,7 +207,8 @@ function connectWebSocket(webSocketUrl) {
         continue
       }
       if (!message.id || !pending.has(message.id)) continue
-      const { resolve, reject } = pending.get(message.id)
+      const { resolve, reject, timeout } = pending.get(message.id)
+      clearTimeout(timeout)
       pending.delete(message.id)
       if (message.error) reject(new Error(message.error.message))
       else resolve(message.result)
@@ -202,7 +242,11 @@ function connectWebSocket(webSocketUrl) {
   function send(method, params = {}) {
     const id = ++nextId
     return new Promise((resolve, reject) => {
-      pending.set(id, { resolve, reject })
+      const timeout = setTimeout(() => {
+        pending.delete(id)
+        reject(new Error(`Chrome DevTools timed out: ${method}`))
+      }, 15_000)
+      pending.set(id, { resolve, reject, timeout })
       writeFrame(0x1, JSON.stringify({ id, method, params }))
     })
   }
@@ -224,7 +268,7 @@ function connectWebSocket(webSocketUrl) {
     send,
     ready,
     close() {
-      socket.end()
+      socket.destroy()
     },
   }
 }
@@ -377,6 +421,8 @@ export async function startBrowser(options = {}) {
     ?? await mkdtemp(`${tmpdir()}/lifetrkr-rituals-browser-`)
   const browser = spawn(chromiumPath, [
     '--headless=new',
+    ...(process.platform === 'win32' && isEdge
+      ? ['--edge-skip-compat-layer-relaunch'] : []),
     '--no-sandbox',
     '--disable-gpu',
     '--disable-dev-shm-usage',
@@ -385,9 +431,9 @@ export async function startBrowser(options = {}) {
     '--disable-background-networking',
     '--remote-debugging-port=0',
     `--user-data-dir=${profileDirectory}`,
-    ...(options.incognito ? ['--incognito'] : []),
+    ...(options.incognito ? [isEdge ? '--inprivate' : '--incognito'] : []),
     'about:blank',
-  ], { stdio: ['ignore', 'pipe', 'pipe'] })
+  ], { stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true })
 
   try {
     const port = await waitForLine(browser.stderr, /DevTools listening on ws:\/\/127\.0\.0\.1:(\d+)\//)
@@ -406,14 +452,14 @@ export async function startBrowser(options = {}) {
   } catch (error) {
     browser.kill('SIGKILL')
     await waitForProcessExit(browser)
-    await rm(profileDirectory, { recursive: true, force: true })
+    await removeBrowserProfile(profileDirectory)
     throw error
   }
 }
 
 async function main() {
   const runtime = await startBrowser()
-  const { browser, profileDirectory, page } = runtime
+  const { page } = runtime
   try {
     await page.navigate(`${baseUrl}/#/rituals`)
 
@@ -435,7 +481,8 @@ async function main() {
         String(calendar.getUTCDate()).padStart(2, '0'),
       ].join('-')
       const longIntervalOccurrence = new Date(\`\${date}T00:00:00Z\`)
-      longIntervalOccurrence.setUTCDate(longIntervalOccurrence.getUTCDate() + 2_800)
+      // Persisted interval 400 is normalized to 99; the weekday intersects every 7 occurrences.
+      longIntervalOccurrence.setUTCDate(longIntervalOccurrence.getUTCDate() + 693)
       const longIntervalDate = [
         longIntervalOccurrence.getUTCFullYear(),
         String(longIntervalOccurrence.getUTCMonth() + 1).padStart(2, '0'),
@@ -757,14 +804,11 @@ async function main() {
       completionGuard: 'passed',
     }, null, 2))
   } finally {
-    page.connection.close()
-    browser.kill('SIGKILL')
-    await waitForProcessExit(browser)
-    await rm(profileDirectory, { recursive: true, force: true })
+    await stopBrowser(runtime)
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
   main().catch(error => {
     console.error(error.stack ?? error)
     process.exitCode = 1
