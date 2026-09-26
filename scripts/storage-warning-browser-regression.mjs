@@ -1,28 +1,12 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { delay, startBrowser } from './rituals-browser-regression.mjs'
+import { delay, startBrowser, stopBrowser, removeBrowserProfile } from './rituals-browser-regression.mjs'
 
 const baseUrl = process.env.BROWSER_TEST_URL ?? 'http://127.0.0.1:5000'
 const normalProbeKey = 'lifetrkr:storage-regression:disposable-normal'
 const incognitoProbeKey = 'lifetrkr:storage-regression:disposable-incognito'
 const warningText = 'Local storage is unavailable. Your latest changes are only in memory and may be lost if you reload.'
-
-async function stopBrowser(runtime, { removeProfile = true } = {}) {
-  runtime.page.connection.close()
-  runtime.browser.kill('SIGKILL')
-  if (runtime.browser.exitCode === null) {
-    await new Promise(resolve => runtime.browser.once('exit', resolve))
-  }
-  if (removeProfile) {
-    await rm(runtime.profileDirectory, {
-      recursive: true,
-      force: true,
-      maxRetries: 5,
-      retryDelay: 100,
-    })
-  }
-}
 
 async function checkNormalReloadRetention() {
   const runtime = await startBrowser()
@@ -61,15 +45,8 @@ async function checkIncognitoRestartLifetime() {
       'incognito disposable probe survived a browser restart',
     )
   } finally {
-    if (runtime.browser.exitCode === null) {
-      await stopBrowser(runtime, { removeProfile: false })
-    }
-    await rm(profileDirectory, {
-      recursive: true,
-      force: true,
-      maxRetries: 5,
-      retryDelay: 100,
-    })
+    await stopBrowser(runtime, { removeProfile: false })
+    await removeBrowserProfile(profileDirectory)
   }
 }
 

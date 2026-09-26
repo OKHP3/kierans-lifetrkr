@@ -1,17 +1,12 @@
 import assert from 'node:assert/strict'
-import { rm } from 'node:fs/promises'
 
-import { delay, startBrowser } from './rituals-browser-regression.mjs'
+import { delay, startBrowser, stopBrowser } from './rituals-browser-regression.mjs'
 
 const baseUrl = process.env.BROWSER_TEST_URL ?? 'http://127.0.0.1:5000'
 
-function waitForProcessExit(child) {
-  if (child.exitCode !== null) return Promise.resolve()
-  return new Promise(resolve => child.once('exit', resolve))
-}
-
 async function main() {
-  const { browser, profileDirectory, page } = await startBrowser()
+  const runtime = await startBrowser()
+  const { page } = runtime
 
   try {
     await page.navigate(`${baseUrl}/#/habits`)
@@ -137,10 +132,7 @@ async function main() {
       result: 'passed',
     }, null, 2))
   } finally {
-    page.connection.close()
-    browser.kill('SIGKILL')
-    await waitForProcessExit(browser)
-    await rm(profileDirectory, { recursive: true, force: true })
+    await stopBrowser(runtime)
   }
 }
 

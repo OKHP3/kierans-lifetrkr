@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict'
-import { rm } from 'node:fs/promises'
-import { delay, startBrowser } from './rituals-browser-regression.mjs'
+import { delay, startBrowser, stopBrowser } from './rituals-browser-regression.mjs'
 
 const baseUrl = process.env.BROWSER_TEST_URL ?? 'http://127.0.0.1:5000'
 const beforeThreshold = Date.parse('2026-09-19T17:59:00.000Z')
@@ -106,7 +105,7 @@ async function assertMobileLayout(page, expectedState) {
 
 async function main() {
   const runtime = await startBrowser()
-  const { browser, profileDirectory, page } = runtime
+  const { page } = runtime
   const results = []
   try {
     await page.connection.send('Emulation.setDeviceMetricsOverride', {
@@ -200,16 +199,10 @@ async function main() {
 
       console.log(JSON.stringify({ suite: 'evening-wrap-up-browser', results }, null, 2))
     } finally {
-      thresholdRuntime.page.connection.close()
-      thresholdRuntime.browser.kill('SIGKILL')
-      await new Promise(resolve => thresholdRuntime.browser.once('exit', resolve))
-      await rm(thresholdRuntime.profileDirectory, { recursive: true, force: true })
+      await stopBrowser(thresholdRuntime)
     }
   } finally {
-    page.connection.close()
-    browser.kill('SIGKILL')
-    await new Promise(resolve => browser.once('exit', resolve))
-    await rm(profileDirectory, { recursive: true, force: true })
+    await stopBrowser(runtime)
   }
 }
 
