@@ -3,6 +3,10 @@
 **Reviewed:** September 19, 2026  
 **Baseline:** local `main` at `9713900`
 
+The September 19 entries below are historical review decisions. See the
+September 26 completion record at the end for verified archive execution and
+the disposition of the newer task branches.
+
 This ledger records the disposition of the 21 `subrepl-*` branches retained by
 the September 19 safe cleanup. Branch names were not used as deletion evidence.
 Each tip was compared with `main` by ancestry, patch identity, tree difference,
@@ -88,3 +92,68 @@ git branch review/subrepl-2jrgbhf7 \
 Do not merge an archived snapshot wholesale. Review and recover the specific
 patch or file needed because every archived tree predates substantial work on
 `main`.
+
+## September 26, 2026 completion record
+
+The owner delegated selection and publication of the best file versions to
+`origin/main`. A fresh comparison found Windows, GitHub, and Replit main at
+`6cb6320afc3ebf58501576452caae6c2ab79aff0`, with clean working trees. Replit still
+had 35 non-main branches, and the September 19 task-snapshot archive namespace
+contained no refs. The prior ledger was therefore a decision record, not proof
+that its cleanup had executed.
+
+Review covered all 35 branch tips: commit divergence, patch equivalence,
+changed paths, exact file contents at the tips, and files absent from current
+main. The newer calendar, habits, storage, evening-review, and recurrence work
+was already incorporated into main. Older whole-branch trees would remove later
+application, testing, and skill updates. Old-only files were retired skills,
+the superseded Archive page, an old skill lockfile, and historical pasted
+attachments; they remain recoverable rather than being restored into the app.
+
+### Executed preservation and cleanup
+
+- Preserved all 35 exact tips under
+  `refs/archive/2026-09-26/reviewed-branches/<original-branch-name>`.
+- Created and successfully verified a 22,085,766-byte Git bundle containing
+  all refs before deleting any branch:
+  `/home/runner/workspace/.cache/reconciliation-2026-09-26/replit-all-refs.bundle`.
+- Recorded the full before-state and exact archive-ref mappings in
+  `branches-before.json` and `archive-ledger.json` in that same Replit directory.
+- Removed each redundant local branch only after verifying its archive ref,
+  using an expected-old-SHA guard. Replit's sole remaining working branch is
+  `main`. No stash, archive ref, source file, or worktree was discarded.
+- Set `skipFetchAll=true` on 46 `subrepl-*` remotes so routine fetch-all does
+  not contact historical task-agent SSH endpoints. Their definitions and refs
+  remain preserved; the canonical origin and platform backup were retained.
+
+This includes the 21 older snapshots listed above, the eight newer branches
+previously protected from review, `subrepl-s4dd03ji`, and these five older
+integration/recovery branches:
+
+- `backup/main-before-ec025-reconcile`
+- `backup/main-before-reconcile`
+- `backup/reconcile-origin-before-merge`
+- `reconcile-origin-main`
+- `replit-agent`
+
+The archive refs and bundle are **Replit-local recovery material**, not GitHub
+branches or files. Keep them when migrating/replacing that workspace. Restore
+an individual tip into a separate review branch with:
+
+```bash
+git branch review/<name> refs/archive/2026-09-26/reviewed-branches/<name>
+```
+
+### Validation repair
+
+[PR #17](https://github.com/OKHP3/kierans-lifetrkr/pull/17) repaired the browser
+harness: Windows entry-point detection, Edge startup/private mode, bounded
+DevTools requests, guarded profile cleanup, and the stale expected date for
+persisted intervals normalized to 99. It keeps the current application behavior
+and version. All five browser journeys passed on Windows Edge and Replit
+Chromium. Replit also passed 26 logic tests, the harness guards, installation,
+build, and artifact validation. Its stale preview process had to be restarted
+after reinstalling dependencies; the initial blank-page results were not passes.
+The new
+entry-point/cleanup guard tests run in CI and the latest-Node-LTS canary.
+The merged repair is `9b16969ba4f525da7f5eced2ac429bce4d3ef3fd`.
