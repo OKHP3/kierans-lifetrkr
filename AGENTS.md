@@ -297,3 +297,5 @@ or alter the client-only architecture.
 
 _Guide refreshed July 24, 2026 from the current source, manifest, lockfile,
 workflows, recent history, and repository documents._
+
+## Imported Claude Cowork project instructions
