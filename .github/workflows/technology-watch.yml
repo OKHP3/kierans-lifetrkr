@@ -36,7 +36,7 @@ jobs:
           fi
       - name: Save reports, including partial lookup failures
         if: always()
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: technology-audit
           path: .cache/technology-audit/
