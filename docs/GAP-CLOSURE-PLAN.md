@@ -1,5 +1,13 @@
 # LifeTrkr — Vision vs. Delivery Gap Analysis and Closure Plan
 
+> **October 27, 2026 — historical analysis.** This August 26 plan is not a
+> current implementation checklist. Subsequent work has changed several
+> capabilities and release-evidence records. Reconcile each proposed action
+> against current source, `docs/PRODUCT-SCOPE-DECISION.md`, and the dated
+> release records before acting; the vision-delivery matrix contains some
+> contradictory older rows. The section 3 OAuth recommendation remains a
+> proposal, not an owner decision.
+
 **Prepared:** August 26, 2026
 **Prepared by:** Claude, at Jamie's request
 **Scope:** Cross-reference original vision/purpose docs in this repo against overkillhill.com/projects/, then identify in-scope items not fully implemented or delivered.
@@ -13,8 +21,11 @@ finding was subsequently addressed with a deliberately separate public
 project page: [overkillhill.com/projects/kierans-lifetrkr/](https://overkillhill.com/projects/kierans-lifetrkr/).
 The page returns HTTP 200 and follows the site's existing project-page pattern.
 It links to the GitHub Pages app and source repository, and deep-links to the
-Manifesto section that identifies Rylee Hill as Kieran; it does not embed the
-app or expose the app's private Google-OAuth context.
+Manifesto section that identifies Rylee Hill as Kieran. The initial page was a
+link-out; the live page reviewed October 27 includes a sandboxed app iframe and
+an external-app disclosure. This differs from the initial link-out assumption;
+the appropriate embed boundary requires owner review. An iframe's presence
+alone does not establish that private Google data was exposed.
 
 The app itself remains deliberately "Not OKHP3-branded" per `docs/DESIGN.md`
 and the README. The OverKill Hill page is therefore a public provenance and

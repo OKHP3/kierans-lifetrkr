@@ -1,5 +1,14 @@
 # Kieran's LifeTrkr v0.2.0 Completion PRD
 
+> **October 27, 2026 — historical planning baseline.** This PRD describes the
+> August 26 state, not a verified current backlog. Subsequent development has
+> implemented parts of it, including the dark default, ritual item recurrence,
+> and a limited evening wrap-up. Before assigning any task, compare its criteria
+> with current source, `docs/PRODUCT-SCOPE-DECISION.md`, and the dated release
+> evidence. The vision-delivery matrix also contains older contradictory rows;
+> verify those rows against the scope decision and source. Owner-run release and
+> account-handoff gates remain separate from source-level implementation.
+
 **Status:** Implementation directive for Replit, pending owner approval of the
 explicit decisions in Section 6
 
