@@ -4,7 +4,7 @@
 **Date:** June 22, 2026 (second session — Summer Solstice)
 **Live app:** https://okhp3.github.io/kierans-lifetrkr/#/
 **Repository:** https://github.com/OKHP3/kierans-lifetrkr
-**Notion hub:** https://app.notion.com/p/overkillhill/Kieran-s-LifeTrkr-Project-Hub-386812e0ced481878291e92d5e428ce5
+**Notion hub:** Private workspace reference redacted from the public repository.
 **Status:** Historical planning record — current status is governed by the release matrix
 
 > **Baseline notice (September 3, 2026):** This document contains historical

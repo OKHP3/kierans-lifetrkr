@@ -23,13 +23,13 @@ The page returns HTTP 200 and follows the site's existing project-page pattern.
 It links to the GitHub Pages app and source repository, and deep-links to the
 Manifesto section that identifies Rylee Hill as Kieran. The initial page was a
 link-out; the live page reviewed October 27 includes a sandboxed app iframe and
-an external-app disclosure. This differs from the initial link-out assumption;
-the appropriate embed boundary requires owner review. An iframe's presence
-alone does not establish that private Google data was exposed.
+an external-app disclosure. On October 27 the owner approved retaining the
+iframe with that disclosure. An iframe's presence alone does not establish that
+private Google data was exposed.
 
 The app itself remains deliberately "Not OKHP3-branded" per `docs/DESIGN.md`
 and the README. The OverKill Hill page is therefore a public provenance and
-link-out surface, not a change to the product's primary interface or ownership
+project surface, not a change to the product's primary interface or ownership
 model. The remaining gap work below is vision-docs versus actual shipped code
 and verified runtime behavior.
 

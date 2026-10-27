@@ -6,7 +6,7 @@
 
 **Project:** `OKHP3/kierans-lifetrkr`, local Mac checkout
 
-**Status:** BLOCKED — NOT READY TO ARCHIVE
+**Status:** Owner decisions received; publication and final verification in progress.
 
 **Record type:** Summary and evidence ledger; not a lossless transcript.
 
@@ -46,12 +46,12 @@ the discrepancy is a maintenance issue, not authority to introduce either.
 | Vision and gap review, original request | Historical analysis and plan exist in `GAP-CLOSURE-PLAN.md` and the PRD. Later code changes invalidate several August status claims; dated notices added in this closeout direct readers to current evidence. | This task | Verified complete as historical analysis |
 | Long-form, multi-task Replit PRD, second request | `PRD-v0.2.0-replit-completion-plan.md` has gap register, acceptance/validation, decisions, R0–R12 and Notion reconciliation. It is a planning artifact, not proof that Replit accepted or finished the work. October notice marks the baseline historical. | This task; owner/Replit for subsequent execution | Verified complete as a handoff artifact; receiving execution unverified |
 | Compare two reference pages, second request | October 27 HTTPS fetches of Glee-fully Chai Chasers and Abrahamic Reference Engine matched the corresponding OverKill-Hill GitHub `main` HTML byte for byte. Parity does not test all assets or live app behavior. | This task | Verified complete |
-| Build and deploy LifeTrkr project page with manifesto link, second request | The public page returns 200, matches current GitHub HTML byte for byte, links to the app and manifesto anchor, and remains marked pre-production. Original publication commit `f185f02` is historical; the page has since changed. | This task / website owner | Publication verified; current iframe boundary blocked pending owner decision |
+| Build and deploy LifeTrkr project page with manifesto link, second request | The public page returns 200, matches current GitHub HTML byte for byte, links to the app and manifesto anchor, and remains marked pre-production. Original publication commit `f185f02` is historical; the page has since changed. The owner approved its iframe with disclosure. | This task / website owner | Verified complete; owner-approved iframe retained |
 | Consider Notion information and update stale records, third and fourth requests | The original Notion sources were fetched and reconciled in PRD section 12; the Hub, routing record, handoff row and tracker were updated and read back August 26. On October 27 a dated Hub note and tracker-row observations were added, and the PRD row gained its committed artifact URL; each was re-fetched. Historical acceptance text remains for context. | This task; owner maintains tracker | Verified update; wider tracker freshness not audited |
-| Push local saved files, fifth request | Commit `43f21bd` pushed four public-safe artifacts; subsequent reconciliation commit `83ca5f3` brought the four Notion-mirror files onto `main`. Remote and local tips matched at the October 27 baseline. The later publication of private locators and copied context is a separate unresolved privacy issue. | This task / repository owner | Push verified; privacy hold below |
+| Push local saved files, fifth request | Commit `43f21bd` pushed four public-safe artifacts; subsequent reconciliation commit `83ca5f3` brought the four Notion-mirror files onto `main`. Remote and local tips matched at the October 27 baseline. The owner later directed current-tree redaction and private preservation. | This task / repository owner | Original push verified; redaction publication pending |
 | Preserve this thread and test the conclusion, October 27 request | This record, dated notices, Notion readback, direct page comparison, Git evidence, and independent review provide continuation context. | This task | Unfinished until holds are resolved and final checks are refreshed |
 | Account transfer, real Google lifecycle, manual accessibility, storage/device tests, provider activation | Identified in PRD and release/handoff documents as owner-controlled product work. The original request asked for a plan, not automatic execution or transfer. | Jamie and Kieran / product owner | Outside this thread's completed handoff; not claimed complete |
-| Archive this exact thread | Only after mandatory holds, review, and final receipt are resolved. | This task | Blocked |
+| Archive this exact thread | Only after publication, review, and final receipt are verified. | This task | Pending |
 
 ## Decisions and reusable evidence
 
@@ -64,14 +64,14 @@ the discrepancy is a maintenance issue, not authority to introduce either.
   and evening wrap-up, although two rows of `VISION-DELIVERY-MATRIX.md` still
   call them deferred. Current source contains these limited features.
 - The original page was described as link-out only. Current live HTML contains
-  a sandboxed iframe and an external-app disclosure; this alone does not prove a
-  data leak. The old link-out acceptance criterion remains in the Notion row so
-  the change is visible for review.
-- The public repository now contains private Notion locators and copied project
-  context in the four `docs/notion-mirror/` files. The original August push
-  deliberately excluded them, but a later reconciliation included them. The
-  repository is public; a locator does not itself establish access to the
-  private Notion page. No source was deleted or history rewritten in this task.
+  a sandboxed iframe and an external-app disclosure; the owner approved that
+  arrangement on October 27. This alone does not prove a data leak. The Notion
+  criterion now records the owner's decision.
+- Before the October redaction, the public repository contained private Notion
+  locators and copied project context in the four `docs/notion-mirror/` files
+  and a consolidated snapshot. The original August push deliberately excluded
+  the folder, but a later reconciliation included it. The repository is public;
+  a locator does not itself establish access to a private Notion page.
 
 ## Artifact manifest
 
@@ -103,11 +103,11 @@ records were re-fetched and their October corrections observed.
 PRD, scope decision, source, live page, repository and Notion records. The
 reviewer identified the iframe/privacy discrepancy, the public private-source
 mirror, stale planning documents and contradictory delivery-matrix rows.
-Historical notices and Notion corrections address misleading handoff claims;
-the owner-controlled privacy and embed choices remain open. The reviewer was
-closed after returning the report.
+Historical notices and Notion corrections address misleading handoff claims.
+The reviewer was closed after returning the report. The subsequent owner
+decisions and resolution are recorded below.
 
-**Mandatory holds:** Decide (1) whether to preserve the published Notion
+**Prior holds, now resolved by the owner decisions below:** Decide (1) whether to preserve the published Notion
 snapshot as-is or remove/redact it from the current public tree while preserving
 a private copy, and separately whether any Git-history remediation is desired;
 and (2) whether the live LifeTrkr iframe should remain or the original
@@ -116,9 +116,40 @@ does not remove prior Git history. History rewriting and publication require
 separate explicit authorization. Do not infer that Notion access permissions
 were exposed solely from a URL.
 
-**Resume:** Re-read current Git status and concurrent ownership; execute the
-owner's two decisions, verify the exact published revision and Notion readback,
-reconcile any affected acceptance criteria, refresh both quality passes and
-this ledger, then archive only when all mandatory gates are met. Application
-release and ownership-transfer work should remain assigned to its established
-project records rather than being silently marked complete here.
+**Remaining closeout steps:** Verify the exact published revision and Notion
+readback, refresh the evidence, then archive only when all mandatory gates are
+met. Application release and ownership-transfer work should remain assigned to
+its established project records rather than being silently marked complete here.
+
+## Owner decisions and resolution — October 27, 2026
+
+The owner directed this task to redact the private Notion snapshots from the
+public repository, preserve a private copy, retain the iframe with its
+external-app disclosure, and publish the necessary changes. These decisions
+resolve the two mandatory holds above. History rewriting was not requested;
+prior Git commits can still contain the earlier material.
+
+Before redaction, five snapshot files and two historical documents containing
+private hub references were copied byte for byte into an owner-restricted
+private archive. Each copy was compared with its source; the private archive
+includes a SHA-256 manifest. The five public snapshot files now contain concise
+notices, and only private hub locators were redacted from the two historical
+documents. The Notion tracker criterion was updated to record the approved
+iframe and disclosure. The public project page already provides both, so no
+website redeployment is needed for that decision.
+
+The task's final receipt will record the published commit, its exact-revision
+checks, readback of the public tree, private-copy verification, and archival
+result. This record cannot attest to an archive action before it occurs. The
+existing product release gates and subsequent Replit execution remain project
+work rather than claims of completion by this thread.
+
+Pre-publication checks passed for the seven private SHA-256 payloads and
+owner-only archive-directory permissions, the targeted tracked-tree locator
+scan, `git diff --check`, `npm run check`, `npm run build`,
+`npm run check:a11y`, and `npm run release:check`. The latter inspected a dirty
+local build and is not exact-revision deployment evidence. The separate personal
+workshop validator reported pre-existing catalog and filesystem failures and
+was stopped while recursively scanning unrelated worktrees; it did not finish
+and is not recorded as a pass. Targeted copy and permissions checks provide the
+relevant evidence for this preservation task.

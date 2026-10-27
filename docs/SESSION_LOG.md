@@ -180,7 +180,7 @@ All v0.3.0-planned features were pulled forward and shipped in this session (v0.
 - Section 17 (expanded): Version history split into family lineage, build session history, PRD document history
 
 **Notion project hub sync**
-- `docs/PRD-v4.0.md` content synced to the Notion project hub at https://app.notion.com/p/overkillhill/Kieran-s-LifeTrkr-Project-Hub
+- `docs/PRD-v4.0.md` content synced to the private Notion project hub (workspace reference redacted from the public repository).
 
 **Infrastructure**
 - `scripts/post-merge.sh` created (runs `npm install` after task agent merges)

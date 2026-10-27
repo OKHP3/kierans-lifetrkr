@@ -964,6 +964,11 @@ path; it is not evidence that a live secret value exists in the repository.
 
 #### G. Existing Notion mirror material is not yet safe or complete
 
+> **October 27, 2026 update:** The owner requested current-tree redaction and
+> private preservation of the snapshots described below. The original
+> paragraph is retained as the August planning observation; it is not current
+> Git status. Earlier Git commits may retain the original material.
+
 The worktree also contains untracked `docs/notion-mirror/` mirror material that
 includes private Notion links and was not part of the tracked repository
 baseline. Its README says 23 deliverables while the latest database-view
